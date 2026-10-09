@@ -48,15 +48,15 @@
       ? '<a class="boton boton--acento boton--chico boton--cotizar" href="#pedido" data-t="wc.cta"></a>'
       : `<a class="boton boton--acento boton--chico boton--cotizar" href="${ancla('cotizar')}" data-t="nav.cotizar"></a>`;
     const puertas = [
-      { id: 'agencia', href: inicio, img: 'img/marcas/nfg-negro.png', nombre: 'Negrofarto Group', clave: 'puerta.nfg', ruta: 'negrofarto.com', clase: 'nfg' },
-      { id: 'merch', href: base + 'merch/index.html', img: 'img/marcas/lafarteda-oscuro.png', nombre: 'La Fartedá', clave: 'puerta.lf', ruta: '/merch', clase: 'lf' },
-      { id: 'wuanda', href: base + 'wuandacrafts/index.html', img: 'img/marcas/wuandacrafts-avatar.png', nombre: 'WuandaCrafts', clave: 'puerta.wc', ruta: '/wuandacrafts', clase: 'wc' },
+      { id: 'agencia', href: inicio, img: 'img/marcas/nfg-negro.svg', nombre: 'Negrofarto Group', clave: 'puerta.nfg', ruta: 'negrofarto.com', clase: 'nfg' },
+      { id: 'merch', href: base + 'merch/index.html', img: 'img/marcas/lafarteda-icono.svg', nombre: 'La Fartedá', clave: 'puerta.lf', ruta: '/merch', clase: 'lf' },
+      { id: 'wuanda', href: base + 'wuandacrafts/index.html', img: 'img/marcas/wuandacrafts-avatar.svg', nombre: 'WuandaCrafts', clave: 'puerta.wc', ruta: '/wuandacrafts', clase: 'wc' },
     ];
 
     document.body.insertAdjacentHTML('afterbegin', window.NFG_ICONOS
       + '<div class="aviso" data-t="aviso"></div>'
       + '<header class="cabecera"><div class="caja">'
-      +   `<a class="logo" href="${inicio}" aria-label="Negrofarto Group"><img src="${base}img/marcas/marca-negro.png" alt="negrofarto group." width="101" height="34" /></a>`
+      +   `<a class="logo" href="${inicio}" aria-label="Negrofarto Group"><img src="${base}img/marcas/marca-negro.svg" alt="negrofarto group." width="113" height="34" /></a>`
       +   '<nav class="menu" id="menu">'
       +     `<a href="${ancla('servicios')}" data-t="nav.servicios"></a>`
       +     `<a href="${ancla('trabajos')}" data-t="nav.trabajos"></a>`
@@ -75,7 +75,7 @@
 
     document.body.insertAdjacentHTML('beforeend',
       '<footer class="pie" id="contacto"><div class="caja"><div class="pie-grilla">'
-      + `<div><a class="pie-logo" href="${inicio}"><img src="${base}img/marcas/marca-negro.png" alt="negrofarto group." width="119" height="40" /></a>`
+      + `<div><a class="pie-logo" href="${inicio}"><img src="${base}img/marcas/marca-negro.svg" alt="negrofarto group." width="132" height="40" /></a>`
       +   '<p class="pie-lema" data-t="pie.lema"></p>'
       +   `<div class="pie-redes"><a href="https://www.instagram.com/negrofartogroup/" target="_blank" rel="noopener" aria-label="Instagram">${icono('i-instagram')}</a></div></div>`
       + '<div><h4 data-t="pie.agencia"></h4><ul>'

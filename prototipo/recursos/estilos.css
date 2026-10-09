@@ -11,10 +11,12 @@
   --linea: #e2e7e6;
   --fondo: #fff;
   --suave: #f2f6f5;
+  /* Turquesa y sus cuatro tonos oficiales: manual de marca 2026, p.13. */
   --turquesa: #1daa9f;
-  --turquesa-claro: #73e3d9;
-  --turquesa-oscuro: #10766e;
-  --turquesa-tinta: #0a3b37;
+  --turquesa-aqua: #2edccd;
+  --turquesa-claro: #62e4da;
+  --turquesa-oscuro: #157a72;
+  --turquesa-tinta: #0c4641;
   --acento: var(--turquesa);
   --acento-oscuro: var(--turquesa-oscuro);
   --sobre-acento: #000;
@@ -24,6 +26,11 @@
   --sombra: 0 14px 40px rgba(0, 0, 0, .09);
   --caja: 1180px;
   --alto-cabecera: 66px;
+  /* Tipografías del manual: Brother 1816 para títulos y Montserrat para texto. Brother 1816 es comercial y aún no
+     tenemos sus archivos ni su licencia web, así que los títulos caen a Montserrat. Cuando lleguen, basta declarar
+     su @font-face y todos los títulos la toman sin tocar nada más. */
+  --fuente-titulo: 'Brother 1816', 'Montserrat', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --fuente-texto: 'Montserrat', system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
 .marca-lf {
   --acento: #b4464f;
@@ -46,7 +53,7 @@
 html { scroll-behavior: smooth; scroll-padding-top: calc(var(--alto-cabecera) + 18px); }
 body {
   margin: 0;
-  font-family: 'Montserrat', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-family: var(--fuente-texto);
   font-size: 16px;
   line-height: 1.55;
   color: var(--texto);
@@ -56,7 +63,7 @@ body {
 img { display: block; max-width: 100%; }
 a { color: inherit; }
 button, input, select, textarea { font: inherit; color: inherit; }
-h1, h2, h3, h4 { margin: 0; line-height: 1.12; letter-spacing: -0.02em; }
+h1, h2, h3, h4 { margin: 0; font-family: var(--fuente-titulo); line-height: 1.12; letter-spacing: -0.02em; }
 p { margin: 0; }
 [hidden] { display: none !important; }
 .caja { max-width: var(--caja); margin: 0 auto; padding: 0 24px; }
@@ -263,7 +270,7 @@ h2 em { font-style: normal; color: var(--acento-oscuro); }
 .marca { display: flex; flex-direction: column; gap: 18px; padding: 34px; overflow: hidden; border-radius: 22px; }
 .marca--lf { background: #292929; color: #f4ecdd; }
 .marca--wc { background: #fb6e04; color: #000; }
-.marca-logo { align-self: flex-start; height: 84px; width: auto; }
+.marca-logo { align-self: flex-start; height: 64px; width: auto; margin: 10px 0; }
 .marca-wc-cabeza { display: flex; align-items: center; gap: 14px; min-height: 84px; }
 .marca-avatar { width: 64px; height: 64px; border-radius: 50%; box-shadow: 0 0 0 3px #fff; }
 .marca-wc-cabeza strong { font-size: 30px; font-weight: 900; letter-spacing: -0.03em; }
@@ -390,7 +397,7 @@ dialog::backdrop { background: rgba(0, 0, 0, .6); }
 .marca-lf { background: var(--lf-crema); }
 .lf-hero { padding: 56px 0 64px; overflow: hidden; background: var(--lf-oscuro); color: var(--lf-crema); }
 .lf-hero-grilla { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
-.lf-logo { height: 112px; width: auto; margin: 0 0 14px -12px; }
+.lf-logo { height: 86px; width: auto; margin: 0 0 18px; }
 .lf-hero h1 { font-size: clamp(34px, 4.4vw, 56px); font-weight: 800; color: #fff; }
 .lf-hero p { max-width: 30em; margin: 16px 0 22px; font-size: 18px; color: rgba(244, 236, 221, .82); }
 .chips-texto { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 26px; padding: 0; list-style: none; }
@@ -486,9 +493,8 @@ dialog.cajon[open] { display: flex; flex-direction: column; animation: deslizar 
 /* ── WuandaCrafts (/wuandacrafts) ── */
 .wc-hero { padding: 56px 0 64px; overflow: hidden; background: var(--wc-crema); }
 .wc-hero-grilla { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
-.wc-marca { display: flex; align-items: center; gap: 14px; margin-bottom: 22px; }
-.wc-marca img { width: 64px; height: 64px; }
-.wc-marca strong { display: block; font-size: 26px; font-weight: 900; letter-spacing: -0.03em; line-height: 1.1; }
+.wc-marca { display: grid; justify-items: start; gap: 12px; margin-bottom: 22px; }
+.wc-marca img { width: auto; height: 118px; }
 .wc-marca span { font-size: 13px; font-weight: 600; color: var(--wc-cafe); }
 .wc-hero h1 { font-size: clamp(36px, 4.6vw, 58px); font-weight: 800; }
 .wc-hero h1 em { font-style: normal; color: var(--acento-oscuro); }
