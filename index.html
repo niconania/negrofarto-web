@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Negrofarto Group — Vista previa del sitio</title>
+  <meta name="description" content="Versión de prueba del sitio de Negrofarto Group para revisar: página temporal, agencia, La Fartedá y WuandaCrafts." />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Negrofarto Group — Vista previa del sitio" />
+  <meta property="og:description" content="Versión de prueba para revisar: página temporal, agencia, La Fartedá y WuandaCrafts." />
+  <meta property="og:image" content="https://niconania.github.io/negrofarto-web/temporal/nfg-negro.png" />
+  <meta name="theme-color" content="#000000" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&amp;display=swap" rel="stylesheet" />
+  <style>
+    /* Portada de la vista previa: reúne los accesos a lo que se está construyendo. */
+    *, *::before, *::after { box-sizing: border-box; }
+    :root { --turquesa: #1daa9f; --gris: rgba(255, 255, 255, .7); }
+    html, body { height: 100%; }
+    body {
+      margin: 0; display: flex; flex-direction: column; min-height: 100%;
+      background: #000; color: #fff; font-family: 'Montserrat', system-ui, sans-serif; -webkit-font-smoothing: antialiased;
+    }
+    .arriba { padding: 22px 28px; }
+    .arriba img { display: block; height: 30px; width: auto; }
+    main { flex: 1; display: grid; place-items: center; padding: 24px 24px 40px; text-align: center; }
+    .marco { position: relative; width: min(680px, 100%); padding: 56px 40px; }
+    .marco::before, .marco::after {
+      content: ''; position: absolute; width: 30%; height: 34%; border: 9px solid var(--turquesa);
+      animation: dibujar .9s cubic-bezier(.2, .8, .2, 1) both;
+    }
+    .marco::before { top: 0; left: 0; border-right: 0; border-bottom: 0; border-top-left-radius: 26px; }
+    .marco::after { right: 0; bottom: 0; border-top: 0; border-left: 0; border-bottom-right-radius: 26px; animation-delay: .15s; }
+    @keyframes dibujar { from { width: 0; height: 0; opacity: 0; } }
+    .ceja { margin: 0 0 12px; font-size: 12.5px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; color: var(--turquesa); text-wrap: balance; }
+    h1 { margin: 0; font-size: clamp(28px, 4.2vw, 42px); font-weight: 800; line-height: 1.12; letter-spacing: -.02em; text-wrap: balance; }
+    .texto { max-width: 30em; margin: 16px auto 28px; font-size: 16.5px; line-height: 1.55; color: var(--gris); text-wrap: pretty; }
+    .opciones { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; text-align: left; }
+    .opcion { display: block; padding: 18px 20px; border: 2px solid rgba(255, 255, 255, .3); border-radius: 18px; color: #fff; text-decoration: none; transition: border-color .15s, background .15s; }
+    .opcion:hover { border-color: var(--turquesa); background: rgba(29, 170, 159, .1); }
+    .opcion strong { display: block; font-size: 17px; font-weight: 800; }
+    .opcion span { display: block; margin-top: 4px; font-size: 13.5px; line-height: 1.4; color: var(--gris); }
+    .marcas { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 22px; margin-top: 26px; font-size: 13.5px; color: var(--gris); }
+    .marcas a { color: #fff; font-weight: 700; text-decoration: none; border-bottom: 1px solid rgba(255, 255, 255, .3); }
+    a:focus-visible { outline: 3px solid var(--turquesa); outline-offset: 3px; }
+    footer { padding: 18px 24px 24px; text-align: center; font-size: 12.5px; color: rgba(255, 255, 255, .5); }
+    @media (max-width: 560px) { .marco { padding: 44px 22px; } .arriba { padding: 16px; } }
+    @media (prefers-reduced-motion: reduce) { .marco::before, .marco::after { animation: none; } }
+  </style>
+</head>
+<body>
+  <header class="arriba">
+    <img src="temporal/marca-negro.png" alt="negrofarto group." width="89" height="30" />
+  </header>
+  <main>
+    <div class="marco">
+      <p class="ceja">Vista previa · versión de prueba</p>
+      <h1>Así va el sitio de Negrofarto Group</h1>
+      <p class="texto">Revísalo en el celular y en el computador. Los botones de WhatsApp todavía no envían nada. ¿Algo que cambiar? Cuéntaselo a Nicola.</p>
+      <div class="opciones">
+        <a class="opcion" href="temporal/">
+          <strong>Página temporal</strong>
+          <span>Lo que mostrará negrofarto.com el primer día.</span>
+        </a>
+        <a class="opcion" href="prototipo/">
+          <strong>Sitio completo</strong>
+          <span>La agencia y sus dos marcas hermanas.</span>
+        </a>
+      </div>
+      <div class="marcas">
+        <a href="prototipo/merch/">La Fartedá · tienda</a>
+        <a href="prototipo/wuandacrafts/">WuandaCrafts · pedidos</a>
+      </div>
+    </div>
+  </main>
+  <footer>negrofarto.com · versión de prueba · © 2026 Negrofarto Group LLC</footer>
+</body>
+</html>

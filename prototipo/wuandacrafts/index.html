@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>WuandaCrafts — Custom gifts by Negrofarto Group</title>
+  <meta name="description" content="WuandaCrafts: custom apparel, gifts, merch and events, made one by one in Miami and Cartagena." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../recursos/estilos.css" />
+</head>
+<body class="marca-wc" data-pagina="wuanda" data-base="../">
+  <main>
+    <section class="wc-hero">
+      <div class="caja wc-hero-grilla">
+        <div>
+          <div class="wc-marca">
+            <img src="../img/marcas/wuandacrafts-avatar.png" alt="" width="64" height="64" />
+            <div><strong>WuandaCrafts</strong><span data-t="wc.firma"></span></div>
+          </div>
+          <h1 data-t-html="wc.h1"></h1>
+          <p data-t="wc.texto"></p>
+          <ul class="chips-texto">
+            <li>Miami · Cartagena</li>
+            <li data-t="wc.chip2"></li>
+          </ul>
+          <div class="acciones">
+            <a class="boton boton--acento" href="#pedido" data-t="wc.cta"></a>
+            <a class="boton boton--borde" href="#piezas" data-t="wc.cta2"></a>
+          </div>
+        </div>
+        <div class="wc-collage">
+          <img src="../img/wuanda/tote-joe-jonas.webp" alt="" />
+          <img src="../img/wuanda/termos.webp" alt="" />
+          <img src="../img/wuanda/baby-shower.webp" alt="" />
+          <img src="../img/wuanda/gorra.webp" alt="" />
+        </div>
+      </div>
+    </section>
+
+    <section class="seccion wc-uno">
+      <div class="caja">
+        <p class="ceja" data-t="wc.uno_ceja"></p>
+        <h2 data-t="wc.uno_titulo"></h2>
+        <div class="uno-grilla">
+          <div class="uno"><span class="uno-num">01</span><h3 data-t="wc.u1t"></h3><p data-t="wc.u1x"></p></div>
+          <div class="uno"><span class="uno-num">02</span><h3 data-t="wc.u2t"></h3><p data-t="wc.u2x"></p></div>
+          <div class="uno"><span class="uno-num">03</span><h3 data-t="wc.u3t"></h3><p data-t="wc.u3x"></p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="seccion" id="que">
+      <div class="caja">
+        <div class="cabeza-seccion">
+          <p class="ceja" data-t="wc.tipos_ceja"></p>
+          <h2 data-t="wc.tipos_titulo"></h2>
+        </div>
+        <div class="tipos" id="lista-tipos"></div>
+      </div>
+    </section>
+
+    <section class="seccion seccion--suave" id="piezas">
+      <div class="caja">
+        <div class="cabeza-seccion cabeza-seccion--fila">
+          <div>
+            <p class="ceja" data-t="wc.piezas_ceja"></p>
+            <h2 data-t="wc.piezas_titulo"></h2>
+          </div>
+          <a class="boton boton--borde" href="https://www.instagram.com/wuandacrafts/" target="_blank" rel="noopener"><svg class="icono" aria-hidden="true"><use href="#i-instagram"/></svg>@wuandacrafts</a>
+        </div>
+        <div class="piezas" id="lista-piezas"></div>
+      </div>
+    </section>
+
+    <section class="seccion" id="pedido">
+      <div class="caja pedido">
+        <div>
+          <p class="ceja" data-t="wc.form_ceja"></p>
+          <h2 data-t="wc.form_titulo"></h2>
+          <p class="bajada" data-t="wc.form_texto"></p>
+          <ul class="pedido-pasos">
+            <li><svg class="icono" aria-hidden="true"><use href="#i-chat"/></svg><span data-t="wc.u1x"></span></li>
+            <li><svg class="icono" aria-hidden="true"><use href="#i-pincel"/></svg><span data-t="wc.u2x"></span></li>
+            <li><svg class="icono" aria-hidden="true"><use href="#i-regalo"/></svg><span data-t="wc.u3x"></span></li>
+          </ul>
+        </div>
+        <form class="formulario" id="form-pedido" novalidate>
+          <fieldset class="campo">
+            <legend data-t="wc.que"></legend>
+            <div class="chips chips--claro" id="wc-tipos"></div>
+            <p class="error-campo" data-error="tipos" data-t="wc.err_que" hidden></p>
+          </fieldset>
+          <fieldset class="campo">
+            <legend><span data-t="wc.ocasion"></span> <span class="opcional">(<span data-t="cot.opcional"></span>)</span></legend>
+            <div class="chips chips--claro" id="wc-ocasiones"></div>
+          </fieldset>
+          <div class="fila-2">
+            <label class="campo"><span class="etiqueta-campo" data-t="wc.cantidad"></span><input name="cantidad" type="number" min="1" max="500" value="1" inputmode="numeric" /></label>
+            <label class="campo"><span class="etiqueta-campo"><span data-t="wc.fecha"></span> <span class="opcional">(<span data-t="cot.opcional"></span>)</span></span><input name="fecha" type="date" /><span class="aviso-fecha" id="wc-fecha-aviso" data-t="wc.fecha_aviso" hidden></span></label>
+          </div>
+          <fieldset class="campo">
+            <legend data-t="wc.donde"></legend>
+            <div class="opciones-radio opciones-radio--2">
+              <label class="opcion"><input type="radio" name="donde" value="usa" /><span data-t="wc.usa"></span></label>
+              <label class="opcion"><input type="radio" name="donde" value="col" /><span data-t="wc.col"></span></label>
+            </div>
+            <p class="ruta" id="wc-ruta" hidden></p>
+            <p class="error-campo" data-error="donde" data-t="wc.err_donde" hidden></p>
+          </fieldset>
+          <label class="campo"><span class="etiqueta-campo" data-t="wc.idea"></span><textarea name="idea" rows="4" data-t-ph="wc.idea_ph"></textarea><span class="error-campo" data-error="idea" data-t="wc.err_idea" hidden></span></label>
+          <div class="campo">
+            <span class="etiqueta-campo"><span data-t="wc.foto"></span> <span class="opcional">(<span data-t="cot.opcional"></span>)</span></span>
+            <div class="foto-ref">
+              <input type="file" id="wc-foto" name="foto" accept="image/*" />
+              <label class="boton boton--borde boton--chico" for="wc-foto"><svg class="icono" aria-hidden="true"><use href="#i-foto"/></svg><span data-t="wc.foto_boton"></span></label>
+              <img class="foto-vista" id="foto-vista" alt="" hidden />
+              <button class="quitar" type="button" id="quitar-foto" data-t="wc.foto_quitar" hidden></button>
+            </div>
+            <span class="nota-campo" data-t="wc.foto_nota"></span>
+          </div>
+          <div class="fila-2">
+            <label class="campo"><span class="etiqueta-campo" data-t="wc.nombre"></span><input name="nombre" autocomplete="name" /><span class="error-campo" data-error="nombre" data-t="wc.err_nombre" hidden></span></label>
+            <label class="campo"><span class="etiqueta-campo" data-t="wc.whatsapp"></span><input name="telefono" type="tel" autocomplete="tel" /><span class="error-campo" data-error="telefono" data-t="wc.err_tel" hidden></span></label>
+          </div>
+          <button class="boton boton--acento boton--ancho" type="submit" data-t="wc.enviar"></button>
+          <p class="nota-form" data-t="cot.nota"></p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <script src="../recursos/iconos.js"></script>
+  <script src="../recursos/textos.js"></script>
+  <script src="../recursos/datos.js"></script>
+  <script src="../recursos/app.js"></script>
+</body>
+</html>

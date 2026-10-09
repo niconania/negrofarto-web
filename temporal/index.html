@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Negrofarto Group — Coming soon</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&amp;display=swap" rel="stylesheet" />
+  <style>
+    /* Página temporal de negrofarto.com: lo único que hace falta para imprimir
+       las tarjetas mientras se construye el sitio completo. */
+    *, *::before, *::after { box-sizing: border-box; }
+    :root { --turquesa: #1daa9f; --gris: rgba(255, 255, 255, .7); }
+    html, body { height: 100%; }
+    body {
+      margin: 0; display: flex; flex-direction: column; min-height: 100%;
+      background: #000; color: #fff; font-family: 'Montserrat', system-ui, sans-serif; -webkit-font-smoothing: antialiased;
+    }
+    .arriba { display: flex; justify-content: space-between; align-items: center; padding: 22px 28px; }
+    .arriba img { height: 30px; width: auto; }
+    .idioma { display: inline-flex; padding: 2px; border: 1.5px solid rgba(255, 255, 255, .3); border-radius: 999px; }
+    .idioma button { padding: 5px 10px; border: 0; border-radius: 999px; background: none; color: #fff; font-family: inherit; font-size: 12px; font-weight: 800; line-height: 1; letter-spacing: .06em; cursor: pointer; }
+    .idioma button[aria-pressed="true"] { background: var(--turquesa); color: #000; }
+    main { flex: 1; display: grid; place-items: center; padding: 24px 24px 40px; text-align: center; }
+    .marco { position: relative; width: min(680px, 100%); padding: 56px 40px; }
+    .marco::before, .marco::after {
+      content: ''; position: absolute; width: 30%; height: 42%; border: 9px solid var(--turquesa);
+      animation: dibujar .9s cubic-bezier(.2, .8, .2, 1) both;
+    }
+    .marco::before { top: 0; left: 0; border-right: 0; border-bottom: 0; border-top-left-radius: 26px; }
+    .marco::after { right: 0; bottom: 0; border-top: 0; border-left: 0; border-bottom-right-radius: 26px; animation-delay: .15s; }
+    @keyframes dibujar { from { width: 0; height: 0; opacity: 0; } }
+    .icono-marca { width: 110px; height: auto; margin: 0 auto 26px; }
+    .ceja { margin: 0 0 12px; font-size: 12.5px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; color: var(--turquesa); }
+    h1 { margin: 0; font-size: clamp(30px, 4.6vw, 48px); font-weight: 800; line-height: 1.1; letter-spacing: -.02em; }
+    p.texto { max-width: 30em; margin: 16px auto 30px; font-size: 17px; line-height: 1.55; color: var(--gris); }
+    .contactos { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+    .boton {
+      display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px; border: 2px solid rgba(255, 255, 255, .35); border-radius: 999px;
+      background: none; color: #fff; font-family: inherit; font-size: 14.5px; font-weight: 700; line-height: 1.2; text-decoration: none; cursor: pointer;
+    }
+    .boton:hover { border-color: #fff; }
+    .boton--wa { border-color: #25d366; background: #25d366; color: #04210f; }
+    .icono { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+    .marcas { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; margin-top: 34px; font-size: 13.5px; color: var(--gris); }
+    .marcas a { color: #fff; font-weight: 700; text-decoration: none; border-bottom: 1px solid rgba(255, 255, 255, .3); }
+    footer { padding: 18px 24px 24px; text-align: center; font-size: 12.5px; color: rgba(255, 255, 255, .5); }
+    dialog { max-width: min(420px, calc(100% - 32px)); padding: 26px; border: 0; border-radius: 20px; color: #111; font-family: inherit; }
+    dialog::backdrop { background: rgba(0, 0, 0, .7); }
+    dialog h2 { margin: 0 0 10px; font-size: 19px; }
+    dialog p { margin: 0 0 16px; color: #555; font-size: 14.5px; line-height: 1.5; }
+    dialog button { padding: 11px 18px; border: 0; border-radius: 999px; background: #000; color: #fff; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+    @media (max-width: 560px) { .marco { padding: 44px 22px; } .arriba { padding: 16px; } }
+    @media (prefers-reduced-motion: reduce) { .marco::before, .marco::after { animation: none; } }
+  </style>
+</head>
+<body>
+  <header class="arriba">
+    <img src="marca-negro.png" alt="negrofarto group." width="89" height="30" />
+    <div class="idioma" role="group" aria-label="Language / Idioma">
+      <button type="button" data-idioma="en" aria-pressed="true">EN</button>
+      <button type="button" data-idioma="es" aria-pressed="false">ES</button>
+    </div>
+  </header>
+  <main>
+    <div class="marco">
+      <img class="icono-marca" src="nfg-negro.png" alt="" width="110" height="61" />
+      <p class="ceja" data-t="ceja"></p>
+      <h1 data-t="titulo"></h1>
+      <p class="texto" data-t="texto"></p>
+      <div class="contactos">
+        <button class="boton boton--wa" type="button" id="whatsapp">
+          <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2a9.8 9.8 0 0 0-8.4 14.8L2.3 21.8l4.9-1.3A9.8 9.8 0 1 0 12 2.2Z"/></svg>WhatsApp
+        </button>
+        <a class="boton" href="https://www.instagram.com/negrofartogroup/" target="_blank" rel="noopener">
+          <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/></svg>@negrofartogroup
+        </a>
+        <a class="boton" href="mailto:hola@negrofarto.com">
+          <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 6.5 8.5 6.5 8.5-6.5"/></svg>hola@negrofarto.com
+        </a>
+      </div>
+      <div class="marcas">
+        <span data-t="marcas"></span>
+        <a href="https://www.instagram.com/lafarteda/" target="_blank" rel="noopener">La Fartedá</a>
+        <a href="https://www.instagram.com/wuandacrafts/" target="_blank" rel="noopener">WuandaCrafts</a>
+      </div>
+    </div>
+  </main>
+  <footer>negrofarto.com · © 2026 Negrofarto Group LLC · Miami · Cartagena</footer>
+  <dialog id="aviso">
+    <h2 data-t="aviso_titulo"></h2>
+    <p data-t="aviso_texto"></p>
+    <button type="button" data-t="aviso_cerrar"></button>
+  </dialog>
+  <script>
+    (function () {
+      var T = {
+        en: {
+          ceja: 'Creative agency · Miami · Cartagena',
+          titulo: 'Our new website is on its way.',
+          texto: 'Branding, signage, vehicle wraps, print and custom production. While we finish it, write to us — we answer every message.',
+          marcas: 'Our brands:',
+          aviso_titulo: 'This would open WhatsApp',
+          aviso_texto: 'Prototype: on the real page this button opens a chat with Negrofarto Group. Nothing was sent.',
+          aviso_cerrar: 'Got it',
+        },
+        es: {
+          ceja: 'Agencia creativa · Miami · Cartagena',
+          titulo: 'Nuestra nueva web viene en camino.',
+          texto: 'Branding, letreros, rotulación de vehículos, impresos y producción a medida. Mientras la terminamos, escríbenos: respondemos cada mensaje.',
+          marcas: 'Nuestras marcas:',
+          aviso_titulo: 'Aquí se abriría WhatsApp',
+          aviso_texto: 'Prototipo: en la página real este botón abre un chat con Negrofarto Group. No se envió nada.',
+          aviso_cerrar: 'Entendido',
+        },
+      };
+      var idioma = 'en';
+      try { idioma = localStorage.getItem('nfg-idioma') || (/^es\b/i.test(navigator.language || '') ? 'es' : 'en'); } catch (e) { /* sin almacenamiento */ }
+      function aplicar(nuevo) {
+        idioma = T[nuevo] ? nuevo : 'en';
+        document.documentElement.lang = idioma;
+        document.querySelectorAll('[data-t]').forEach(function (el) { el.textContent = T[idioma][el.dataset.t]; });
+        document.querySelectorAll('[data-idioma]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.idioma === idioma)); });
+      }
+      document.addEventListener('click', function (e) {
+        var b = e.target.closest('[data-idioma]');
+        if (b) { aplicar(b.dataset.idioma); try { localStorage.setItem('nfg-idioma', idioma); } catch (err) { /* sin almacenamiento */ } }
+      });
+      var aviso = document.getElementById('aviso');
+      document.getElementById('whatsapp').addEventListener('click', function () { aviso.showModal(); });
+      aviso.querySelector('button').addEventListener('click', function () { aviso.close(); });
+      aplicar(idioma);
+    })();
+  </script>
+</body>
+</html>
