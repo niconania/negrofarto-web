@@ -47,10 +47,13 @@
     const cta = pagina === 'wuanda'
       ? '<a class="boton boton--acento boton--chico boton--cotizar" href="#pedido" data-t="wc.cta"></a>'
       : `<a class="boton boton--acento boton--chico boton--cotizar" href="${ancla('cotizar')}" data-t="nav.cotizar"></a>`;
+    // Cada puerta es el logo de su marca. Repetir el nombre al lado era redundante (Juan, 12 oct 2026) y
+    // empujaba la barra más allá de donde empieza el menú. Solo la "W" lleva nombre: sola no dice WuandaCrafts.
+    // El nombre completo va en aria-label para lectores de pantalla.
     const puertas = [
-      { id: 'agencia', href: inicio, img: 'img/marcas/nfg-negro.svg', nombre: 'Negrofarto Group', clave: 'puerta.nfg', ruta: 'negrofarto.com', clase: 'nfg' },
-      { id: 'merch', href: base + 'merch/index.html', img: 'img/marcas/lafarteda-icono.svg', nombre: 'La Fartedá', clave: 'puerta.lf', ruta: '/merch', clase: 'lf' },
-      { id: 'wuanda', href: base + 'wuandacrafts/index.html', img: 'img/marcas/wuandacrafts-avatar.svg', nombre: 'WuandaCrafts', clave: 'puerta.wc', ruta: '/wuandacrafts', clase: 'wc' },
+      { id: 'agencia', href: inicio, img: 'img/marcas/nfg-negro.svg', clave: 'puerta.nfg', clase: 'nfg' },
+      { id: 'merch', href: base + 'merch/index.html', img: 'img/marcas/lafarteda-icono.svg', clave: 'puerta.lf', clase: 'lf' },
+      { id: 'wuanda', href: base + 'wuandacrafts/index.html', img: 'img/marcas/wuandacrafts-w.svg', clave: 'puerta.wc', nombre: 'WuandaCrafts', clase: 'wc' },
     ];
 
     document.body.insertAdjacentHTML('afterbegin', window.NFG_ICONOS
@@ -69,8 +72,8 @@
       +   `<button class="menu-movil" type="button" aria-controls="menu" aria-expanded="false" data-t-aria="nav.abrir">${icono('i-menu')}</button>`
       + '</div></header>'
       + '<nav class="puertas" aria-label="Negrofarto Group"><div class="caja">'
-      + puertas.map((p) => `<a class="puerta puerta--${p.clase}" href="${p.href}"${p.id === pagina ? ' aria-current="page"' : ''}>`
-          + `<img src="${base}${p.img}" alt="" /><span><strong>${p.nombre}</strong><small><span data-t="${p.clave}"></span> · ${p.ruta}</small></span></a>`).join('')
+      + puertas.map((p) => `<a class="puerta puerta--${p.clase}" href="${p.href}" data-t-aria="${p.clave}"${p.id === pagina ? ' aria-current="page"' : ''}>`
+          + `<img src="${base}${p.img}" alt="" />${p.nombre ? `<strong>${p.nombre}</strong>` : ''}</a>`).join('')
       + '</div></nav>');
 
     document.body.insertAdjacentHTML('beforeend',
@@ -99,7 +102,8 @@
       + '</div>'
       + `<div class="pie-legal"><span data-t="pie.legal"></span>${selectorIdioma()}</div>`
       + '</div></footer>'
-      + `<button class="flotante" type="button" data-whatsapp="elegir" aria-label="WhatsApp">${icono('i-whatsapp')}</button>`
+      // En la agencia el WhatsApp va directo a Miami; en La Fartedá y WuandaCrafts se elige el país.
+      + `<button class="flotante" type="button" data-whatsapp="${pagina === 'agencia' ? 'miami' : 'elegir'}" aria-label="WhatsApp">${icono('i-whatsapp')}</button>`
       + '<dialog class="modal" id="modal-whatsapp"></dialog>');
   }
 
@@ -115,7 +119,7 @@
     alCambiarIdioma.forEach((f) => f());
   }
 
-  /* ── WhatsApp de demostración ── */
+  /* ── WhatsApp: abre el chat real con el mensaje listo; la persona decide si lo envía ── */
   const botonCerrar = () => `<button class="modal-cerrar" type="button" data-cerrar aria-label="${esc(t('car.cerrar'))}">${icono('i-cerrar')}</button>`;
   function abrirWhatsApp(destino, mensaje) {
     const modal = $('#modal-whatsapp');
@@ -123,15 +127,13 @@
       modal.innerHTML = botonCerrar() + `<div class="modal-cuerpo"><h3>${t('wa.elegir')}</h3><p>${t('wa.elegir_texto')}</p><div class="elegir-wa">`
         + ['miami', 'cartagena'].map((c) => `<button class="contacto-boton wa" type="button" data-whatsapp="${prefijoWa}${c}">${icono('i-whatsapp')}<span><strong>WhatsApp</strong><small>${t('wa.' + c)}</small></span></button>`).join('')
         + '</div></div>';
-    } else {
-      const nombre = t('destino.' + destino);
-      modal.innerHTML = botonCerrar() + `<div class="modal-cuerpo"><h3>${t('wa.titulo')}</h3>`
-        + `<p>${esc(t('wa.texto', { destino: nombre }))}</p>`
-        + `<div class="chat"><div class="chat-destino">${icono('i-whatsapp')} ${esc(nombre)}</div><div class="burbuja">${esc(mensaje)}</div></div>`
-        + `<p class="modal-nota">${t('wa.nota')}</p>`
-        + `<button class="boton boton--negro" type="button" data-cerrar>${t('wa.cerrar')}</button></div>`;
+      if (!modal.open) modal.showModal();
+      return;
     }
-    if (!modal.open) modal.showModal();
+    // miami, lf_miami y wc_miami van a Miami; cartagena, lf_cartagena y wc_cartagena, a Colombia.
+    const numero = D.contacto.whatsapp[destino.endsWith('cartagena') ? 'cartagena' : 'miami'];
+    window.open(`https://wa.me/${numero}?text=${encodeURIComponent(mensaje)}`, '_blank', 'noopener');
+    if (modal.open) modal.close();
   }
   const saludo = () => t('wa.saludo' + ({ merch: '_lf', wuanda: '_wc' }[pagina] || ''));
 
@@ -210,7 +212,7 @@
       const caja = $('#kit-resultado');
       const items = itemsKit();
       if (!items) {
-        caja.innerHTML = `<div class="kit-vacio"><div class="corchete"></div><p>${t('kit.vacio')}</p></div>`;
+        caja.innerHTML = `<div class="kit-vacio"><img class="kit-logo" src="${base}img/marcas/nfg-blanco.svg" alt="" width="116" height="60" /><p>${t('kit.vacio')}</p></div>`;
         return;
       }
       const negocio = D.negocios.find((n) => n.id === kit.negocio);
@@ -299,7 +301,7 @@
       const donde = form.elements.donde.value;
       const ruta = $('#cot-ruta');
       ruta.hidden = !donde;
-      if (donde) ruta.innerHTML = icono('i-whatsapp') + t(donde === 'cartagena' ? 'cot.ruta_cartagena' : 'cot.ruta_miami');
+      if (donde) ruta.innerHTML = icono('i-whatsapp') + t('cot.ruta_miami'); // las cotizaciones de la agencia van a Miami
     }
     $('#cot-servicios').addEventListener('click', (e) => {
       const b = e.target.closest('[data-servicio-cot]');
@@ -336,7 +338,7 @@
       lineas.push(`• ${t('cot.wa_cuando')}: ${t('cot.' + v('cuando'))}`);
       if (v('mensaje')) lineas.push(`• ${t('cot.wa_mensaje')}: ${v('mensaje')}`);
       lineas.push('', `${t('cot.wa_contacto')}: ${v('nombre')} · ${v('telefono')}${v('correo') ? ' · ' + v('correo') : ''}`);
-      abrirWhatsApp(v('donde') === 'cartagena' ? 'cartagena' : 'miami', lineas.join('\n'));
+      abrirWhatsApp('miami', lineas.join('\n'));
     });
 
     alCambiarIdioma.push(pintarCinta, pintarServicios, pintarKit, pintarTrabajos, pintarChipsCotizar, pintarRuta);

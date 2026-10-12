@@ -2,6 +2,10 @@
 // catálogo de La Fartedá (precios del catálogo 2026) y lo que hace WuandaCrafts.
 // Cada texto visible va en { en, es }.
 window.NFG_DATOS = {
+  // WhatsApp reales (confirmados el 9 oct 2026): número completo, solo dígitos.
+  // EE.UU. → Juan en Miami; Colombia → el WhatsApp Business de Cartagena.
+  contacto: { whatsapp: { miami: '17868373919', cartagena: '573017480634' } },
+
   servicios: [
     {
       id: 'branding', icono: 'i-branding',
@@ -19,15 +23,6 @@ window.NFG_DATOS = {
       incluye: {
         en: ['Storefront and entrance signs', 'Door, glass and wall vinyl', 'Measuring, design and installation'],
         es: ['Avisos de fachada y de entrada', 'Vinil en puertas, vidrios y paredes', 'Medición, diseño e instalación'],
-      },
-    },
-    {
-      id: 'vehiculos', icono: 'i-vehiculo',
-      titulo: { en: 'Vehicle wraps', es: 'Rotulación de vehículos' },
-      corto: { en: 'Full or partial wraps that turn your car or van into a moving billboard.', es: 'Forrado total o parcial para que tu carro o tu van sea una valla en movimiento.' },
-      incluye: {
-        en: ['Full or partial wrap', 'Logo, phone and QR on the doors', "Design on your vehicle's template"],
-        es: ['Forrado total o parcial', 'Logo, teléfono y QR en las puertas', 'Diseño sobre la plantilla de tu vehículo'],
       },
     },
     {
@@ -115,8 +110,8 @@ window.NFG_DATOS = {
       { servicio: 'branding', titulo: { en: 'Brand guidelines', es: 'Manual de marca' }, porque: { en: 'Every document looks like the same company.', es: 'Cada documento parece de la misma empresa.' } },
     ] },
     { id: 'contratista', titulo: { en: 'Contractor or home services', es: 'Contratista o servicios a domicilio' }, kit: [
-      { servicio: 'vehiculos', titulo: { en: 'Truck or van wrap', es: 'Rotulación de tu camioneta' }, porque: { en: 'Your vehicle advertises at every job site.', es: 'Tu vehículo anuncia en cada obra.' } },
       { servicio: 'merch', titulo: { en: 'Crew uniforms', es: 'Uniformes para tu equipo' }, porque: { en: "Clients know who's at their door.", es: 'El cliente sabe quién llega a su puerta.' } },
+      { servicio: 'impresos', titulo: { en: 'Business cards with QR', es: 'Tarjetas de presentación con QR' }, porque: { en: 'Leave your contact at every job.', es: 'Deja tu contacto en cada trabajo.' } },
       { servicio: 'impresos', titulo: { en: 'Yard signs and door hangers', es: 'Letreros de jardín y colgadores de puerta' }, porque: { en: 'Neighbors see your work and your number.', es: 'Los vecinos ven tu trabajo y tu número.' } },
     ] },
     { id: 'organizacion', titulo: { en: 'School, team or organization', es: 'Escuela, equipo u organización' }, kit: [
@@ -180,14 +175,14 @@ window.NFG_DATOS = {
   tipos: [
     { id: 'ropa', icono: 'i-camiseta', titulo: { en: 'Apparel', es: 'Ropa' }, texto: { en: 'Tees, hoodies and caps', es: 'Camisetas, hoodies y gorras' } },
     { id: 'termos', icono: 'i-termo', titulo: { en: 'Tumblers & mugs', es: 'Termos y tazas' }, texto: { en: 'With names, photos or art', es: 'Con nombres, fotos o arte' } },
-    { id: 'bolsas', icono: 'i-bolsa', titulo: { en: 'Tote bags', es: 'Tote bags' }, texto: { en: 'For gifts and events', es: 'Para regalos y eventos' } },
-    { id: 'eventos', icono: 'i-globo', titulo: { en: 'Parties & events', es: 'Fiestas y eventos' }, texto: { en: 'Balloons, banners and décor', es: 'Globos, pendones y decoración' } },
+    { id: 'bolsas', icono: 'i-bolsa', titulo: { en: 'Tote bags', es: 'Tote bags' }, texto: { en: 'For gifts and special dates', es: 'Para regalos y fechas especiales' } },
+    { id: 'calcomanias', icono: 'i-calcomania', titulo: { en: 'Custom decals', es: 'Calcomanías personalizadas' }, texto: { en: 'Vinyl with names or logos', es: 'Vinil con nombres o logos' } },
     { id: 'ilustracion', icono: 'i-pincel', titulo: { en: 'Illustrations', es: 'Ilustraciones' }, texto: { en: 'Portraits and custom art', es: 'Retratos y arte a medida' } },
     { id: 'corporativo', icono: 'i-regalo', titulo: { en: 'Team & corporate gifts', es: 'Regalos de equipo y empresa' }, texto: { en: 'With your logo, in volume', es: 'Con tu logo, en cantidad' } },
   ],
   ocasiones: [
     { id: 'cumple', titulo: { en: 'Birthday', es: 'Cumpleaños' } },
-    { id: 'fiesta', titulo: { en: 'Baby shower or party', es: 'Baby shower o fiesta' } },
+    { id: 'fecha', titulo: { en: 'Special date', es: 'Fecha especial' } },
     { id: 'equipo', titulo: { en: 'Team or company', es: 'Equipo o empresa' } },
     { id: 'boda', titulo: { en: 'Wedding', es: 'Boda' } },
     { id: 'porque', titulo: { en: 'Just because', es: 'Porque sí' } },
@@ -195,10 +190,9 @@ window.NFG_DATOS = {
   piezas: [
     { img: 'tote-joe-jonas.webp', tipo: 'bolsas', titulo: { en: 'Birthday tote for a Joe Jonas fan', es: 'Tote de cumpleaños para una fan de Joe Jonas' } },
     { img: 'termos.webp', tipo: 'termos', titulo: { en: 'Tumblers with custom art', es: 'Termos con arte a medida' } },
-    { img: 'baby-shower.webp', tipo: 'eventos', titulo: { en: 'Baby shower décor', es: 'Decoración de baby shower' } },
     { img: 'gorra.webp', tipo: 'ropa', titulo: { en: "Kids' cap with his name", es: 'Gorra infantil con su nombre' } },
     { img: 'ilustracion-gators.webp', tipo: 'ilustracion', titulo: { en: 'Custom illustration', es: 'Ilustración a medida' } },
-    { img: 'botella-nombre.webp', tipo: 'termos', titulo: { en: 'Bottle with a name', es: 'Botella con nombre' } },
+    { img: 'calcomania-cricut.webp', tipo: 'calcomanias', titulo: { en: 'Custom decals', es: 'Calcomanías personalizadas' } },
     { img: 'tote-foto.webp', tipo: 'bolsas', titulo: { en: 'Tote with a photo', es: 'Tote con foto' } },
     { img: 'camiseta-gym.webp', tipo: 'ropa', titulo: { en: 'Gym tee and cap', es: 'Camiseta y gorra para el gym' } },
   ],

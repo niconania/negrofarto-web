@@ -41,13 +41,15 @@
   --lf-crema-2: #e6d9c2;
   --lf-cafe: #6b5a44;
 }
+/* WuandaCrafts: colores de su logo oficial (el naranja anterior venía del avatar de Halloween). */
 .marca-wc {
-  --acento: #fb6e04;
-  --acento-oscuro: #c25300;
-  --sobre-acento: #000;
-  --wc-crema: #fff4ea;
-  --wc-linea: #f2e0cf;
-  --wc-cafe: #6e5240;
+  --acento: #463f6f;        /* morado del wordmark */
+  --acento-oscuro: #2f2a4d;
+  --sobre-acento: #fff;
+  --wc-rosa: #ec0c91;       /* magenta de la W, solo para textos grandes */
+  --wc-crema: #f8f6fb;
+  --wc-linea: #e6e0ef;
+  --wc-cafe: #5e5878;
 }
 
 html { scroll-behavior: smooth; scroll-padding-top: calc(var(--alto-cabecera) + 18px); }
@@ -98,7 +100,7 @@ p { margin: 0; }
 }
 
 /* ── Aviso, cabecera y las tres puertas ── */
-.aviso { background: var(--turquesa); color: #000; font-size: 12.5px; font-weight: 600; text-align: center; padding: 7px 16px; }
+.aviso { background: var(--turquesa); color: #000; font-size: 12.5px; font-weight: 600; text-align: center; text-wrap: balance; padding: 7px 16px; }
 .cabecera { position: sticky; top: 0; z-index: 50; background: var(--negro); color: #fff; }
 .cabecera .caja { display: flex; align-items: center; gap: 26px; height: var(--alto-cabecera); position: relative; }
 .logo img { height: 34px; width: auto; }
@@ -139,11 +141,9 @@ p { margin: 0; }
   color: rgba(255, 255, 255, .7); text-decoration: none; white-space: nowrap;
 }
 .puerta--lf { --color-puerta: #d0646d; }
-.puerta--wc { --color-puerta: #fb6e04; }
+.puerta--wc { --color-puerta: #ec0c91; }
 .puerta img { height: 26px; width: auto; border-radius: 6px; }
-.puerta--wc img { border-radius: 50%; }
 .puerta strong { display: block; font-size: 13.5px; font-weight: 800; color: #fff; line-height: 1.2; }
-.puerta small { display: block; font-size: 11.5px; }
 .puerta:hover { background: rgba(255, 255, 255, .05); }
 .puerta[aria-current="page"] { background: rgba(255, 255, 255, .08); border-bottom-color: var(--color-puerta); color: rgba(255, 255, 255, .9); }
 
@@ -152,7 +152,7 @@ p { margin: 0; }
 .seccion--suave { background: var(--suave); }
 .seccion--negra { background: var(--negro); color: #fff; }
 .ceja { margin-bottom: 14px; font-size: 12.5px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--acento-oscuro); }
-.hero .ceja, .seccion--negra .ceja, .seccion--kit .ceja { color: var(--turquesa); }
+.seccion--negra .ceja, .seccion--kit .ceja { color: var(--turquesa); }
 h2 { font-size: clamp(28px, 3.4vw, 42px); font-weight: 800; }
 h2 em { font-style: normal; color: var(--acento-oscuro); }
 .bajada { margin-top: 14px; font-size: 17px; color: var(--gris); }
@@ -180,25 +180,24 @@ h2 em { font-style: normal; color: var(--acento-oscuro); }
 .corchete::after { right: 0; bottom: 0; border-top: 0; border-left: 0; border-bottom-right-radius: 26px; }
 
 /* ── Agencia: portada ── */
-.hero { padding: 60px 0 0; background: var(--negro); color: #fff; overflow: hidden; }
-.hero-grilla { display: grid; grid-template-columns: 1.02fr .98fr; gap: 56px; align-items: center; }
-.hero h1 { font-size: clamp(38px, 5vw, 64px); font-weight: 800; }
-.hero h1 em { font-style: normal; color: var(--turquesa); }
-.hero-bajada { max-width: 34em; margin: 20px 0 30px; font-size: 18px; color: rgba(255, 255, 255, .78); }
-.acciones { display: flex; flex-wrap: wrap; gap: 12px; }
-.collage { display: grid; grid-template-columns: 1.15fr 1fr; grid-template-rows: repeat(2, minmax(0, 1fr)); gap: 12px; height: 450px; }
-.collage figure { position: relative; margin: 0; overflow: hidden; border-radius: 14px; background: #1c1c1c; }
-.collage figure:first-child { grid-row: span 2; }
-.collage img { width: 100%; height: 100%; object-fit: cover; }
-.collage figcaption {
-  position: absolute; left: 10px; bottom: 10px; padding: 5px 11px; border-radius: 999px;
-  background: rgba(0, 0, 0, .74); color: #fff; font-size: 11.5px; font-weight: 700;
+/* Clara y sin collage: Juan la sentía cargada y el negro pesado. El corchete del logo enmarca el mensaje. */
+.hero { padding: 64px 0 0; background: var(--fondo); color: var(--texto); overflow: hidden; }
+.hero-texto { position: relative; max-width: 860px; margin: 0 auto; padding: 52px 56px; text-align: center; }
+.hero-texto::before, .hero-texto::after {
+  content: ''; position: absolute; width: 150px; height: 110px; border: 10px solid var(--turquesa); pointer-events: none;
 }
-.cifras { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 56px; border-top: 1px solid #262626; }
+.hero-texto::before { top: 0; left: 0; border-right: 0; border-bottom: 0; border-top-left-radius: 28px; }
+.hero-texto::after { right: 0; bottom: 0; border-top: 0; border-left: 0; border-bottom-right-radius: 28px; }
+.hero h1 { font-size: clamp(38px, 5vw, 64px); font-weight: 800; text-wrap: balance; }
+.hero h1 em { font-style: normal; color: var(--turquesa-oscuro); }
+.hero-bajada { max-width: 34em; margin: 20px auto 30px; font-size: 18px; color: var(--gris); text-wrap: pretty; }
+.acciones { display: flex; flex-wrap: wrap; gap: 12px; }
+.hero .acciones { justify-content: center; }
+.cifras { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 48px; border-top: 1px solid var(--linea); }
 .cifras div { display: flex; flex-direction: column; gap: 4px; padding: 22px 24px 26px 0; }
-.cifras div + div { padding-left: 24px; border-left: 1px solid #262626; }
-.cifras strong { font-size: 22px; font-weight: 800; color: var(--turquesa); }
-.cifras span { font-size: 14px; color: rgba(255, 255, 255, .7); }
+.cifras div + div { padding-left: 24px; border-left: 1px solid var(--linea); }
+.cifras strong { font-size: 22px; font-weight: 800; color: var(--turquesa-oscuro); }
+.cifras span { font-size: 14px; color: var(--gris); }
 .cinta { overflow: hidden; background: var(--acento); color: var(--sobre-acento); white-space: nowrap; }
 .cinta-pista { display: inline-flex; padding: 13px 0; font-size: 14px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; animation: cinta 45s linear infinite; }
 .cinta-pista span { display: inline-flex; align-items: center; gap: 22px; padding-right: 22px; }
@@ -235,8 +234,7 @@ h2 em { font-style: normal; color: var(--acento-oscuro); }
   border-radius: 20px; background: #fff; color: var(--texto); box-shadow: 0 30px 60px rgba(0, 0, 0, .25);
 }
 .kit-vacio { display: grid; place-items: center; gap: 14px; min-height: 280px; text-align: center; color: var(--gris); }
-.kit-vacio .corchete { width: 120px; height: 90px; padding: 0; }
-.kit-vacio .corchete::before, .kit-vacio .corchete::after { border-width: 6px; width: 40%; height: 45%; }
+.kit-logo { width: 116px; height: auto; }
 .kit-para { margin-top: 4px; font-size: 14px; color: var(--gris); }
 .kit-items { display: grid; gap: 10px; margin: 18px 0 20px; padding: 0; list-style: none; }
 .kit-item { display: grid; grid-template-columns: 40px 1fr; gap: 12px; align-items: start; padding: 12px; border-radius: 12px; background: var(--suave); animation: aparecer .35s both; }
@@ -269,11 +267,9 @@ h2 em { font-style: normal; color: var(--acento-oscuro); }
 .marcas { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 .marca { display: flex; flex-direction: column; gap: 18px; padding: 34px; overflow: hidden; border-radius: 22px; }
 .marca--lf { background: #292929; color: #f4ecdd; }
-.marca--wc { background: #fb6e04; color: #000; }
+.marca--wc { background: #f8f6fb; color: #2c2840; box-shadow: inset 0 0 0 1.5px #e6e0ef; }
 .marca-logo { align-self: flex-start; height: 64px; width: auto; margin: 10px 0; }
-.marca-wc-cabeza { display: flex; align-items: center; gap: 14px; min-height: 84px; }
-.marca-avatar { width: 64px; height: 64px; border-radius: 50%; box-shadow: 0 0 0 3px #fff; }
-.marca-wc-cabeza strong { font-size: 30px; font-weight: 900; letter-spacing: -0.03em; }
+.marca-logo--wc { height: 84px; margin: 0; }
 .marca p { max-width: 30em; font-size: 17px; }
 .marca-fotos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
 .marca-fotos img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 12px; }
@@ -397,7 +393,7 @@ dialog::backdrop { background: rgba(0, 0, 0, .6); }
 .marca-lf { background: var(--lf-crema); }
 .lf-hero { padding: 56px 0 64px; overflow: hidden; background: var(--lf-oscuro); color: var(--lf-crema); }
 .lf-hero-grilla { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
-.lf-logo { height: 86px; width: auto; margin: 0 0 18px; }
+.lf-logo { height: 96px; width: auto; margin: 0 0 18px; }
 .lf-hero h1 { font-size: clamp(34px, 4.4vw, 56px); font-weight: 800; color: #fff; }
 .lf-hero p { max-width: 30em; margin: 16px 0 22px; font-size: 18px; color: rgba(244, 236, 221, .82); }
 .chips-texto { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 26px; padding: 0; list-style: none; }
@@ -494,25 +490,25 @@ dialog.cajon[open] { display: flex; flex-direction: column; animation: deslizar 
 .wc-hero { padding: 56px 0 64px; overflow: hidden; background: var(--wc-crema); }
 .wc-hero-grilla { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
 .wc-marca { display: grid; justify-items: start; gap: 12px; margin-bottom: 22px; }
-.wc-marca img { width: auto; height: 118px; }
+.wc-marca img { width: auto; height: 128px; }
 .wc-marca span { font-size: 13px; font-weight: 600; color: var(--wc-cafe); }
 .wc-hero h1 { font-size: clamp(36px, 4.6vw, 58px); font-weight: 800; }
-.wc-hero h1 em { font-style: normal; color: var(--acento-oscuro); }
+.wc-hero h1 em { font-style: normal; color: var(--wc-rosa); }
 .wc-hero p { max-width: 32em; margin: 18px 0 22px; font-size: 18px; color: var(--wc-cafe); }
 .wc-hero .chips-texto { color: var(--wc-cafe); }
 .wc-collage { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .wc-collage img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 16px; }
 .wc-collage img:nth-child(2n) { transform: translateY(28px); }
-.wc-uno { background: var(--acento); color: #000; }
-.wc-uno .ceja { color: #000; }
+.wc-uno { background: var(--acento); color: var(--sobre-acento); }
+.wc-uno .ceja { color: var(--sobre-acento); }
 .uno-grilla { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 34px; }
 .uno { padding: 24px; border-radius: 18px; background: rgba(255, 255, 255, .92); }
-.uno-num { display: block; margin-bottom: 10px; font-size: 32px; font-weight: 900; line-height: 1; color: var(--acento-oscuro); }
+.uno-num { display: block; margin-bottom: 10px; font-size: 32px; font-weight: 900; line-height: 1; color: var(--wc-rosa); }
 .uno h3 { margin-bottom: 6px; font-size: 18px; font-weight: 800; }
 .uno p { font-size: 15px; color: var(--wc-cafe); }
 .tipos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
 .tipo { display: flex; align-items: flex-start; gap: 14px; padding: 22px; border: 1.5px solid var(--wc-linea); border-radius: 18px; background: #fff; }
-.tipo-icono { display: grid; place-items: center; width: 48px; height: 48px; flex: none; border-radius: 14px; background: #ffeedd; color: var(--acento-oscuro); }
+.tipo-icono { display: grid; place-items: center; width: 48px; height: 48px; flex: none; border-radius: 14px; background: #f1ecf8; color: var(--acento); }
 .tipo-icono .icono { width: 26px; height: 26px; }
 .tipo h3 { font-size: 17px; font-weight: 800; }
 .tipo p { font-size: 14px; color: var(--wc-cafe); }
@@ -525,7 +521,7 @@ dialog.cajon[open] { display: flex; flex-direction: column; animation: deslizar 
   position: absolute; inset: auto 0 0 0; display: grid; gap: 8px; padding: 44px 14px 14px;
   background: linear-gradient(transparent, rgba(0, 0, 0, .82)); color: #fff; font-size: 13.5px; font-weight: 700;
 }
-.pieza button { justify-self: start; padding: 6px 12px; border: 0; border-radius: 999px; background: var(--acento); color: #000; font-size: 12.5px; font-weight: 800; cursor: pointer; }
+.pieza button { justify-self: start; padding: 6px 12px; border: 0; border-radius: 999px; background: var(--acento); color: var(--sobre-acento); font-size: 12.5px; font-weight: 800; cursor: pointer; }
 .pedido { display: grid; grid-template-columns: .8fr 1.2fr; gap: 56px; align-items: start; }
 .pedido-pasos { display: grid; gap: 14px; margin: 28px 0 0; padding: 0; list-style: none; }
 .pedido-pasos li { display: flex; align-items: flex-start; gap: 12px; font-size: 15px; color: var(--wc-cafe); }
@@ -554,7 +550,7 @@ dialog.cajon[open] { display: flex; flex-direction: column; animation: deslizar 
 }
 @media (max-width: 900px) {
   .seccion { padding: 64px 0; }
-  .hero-grilla, .kit-grilla, .nosotros, .cotizar, .lf-hero-grilla, .wc-hero-grilla, .pedido { grid-template-columns: 1fr; gap: 36px; }
+  .kit-grilla, .nosotros, .cotizar, .lf-hero-grilla, .wc-hero-grilla, .pedido { grid-template-columns: 1fr; gap: 36px; }
   .servicios, .trabajos, .tipos, .uno-grilla { grid-template-columns: 1fr 1fr; }
   .productos { grid-template-columns: repeat(3, 1fr); }
   .marcas { grid-template-columns: 1fr; }
@@ -562,7 +558,7 @@ dialog.cajon[open] { display: flex; flex-direction: column; animation: deslizar 
   .pie-grilla { grid-template-columns: 1fr 1fr; }
   .kit-resultado { position: static; }
   .nosotros-foto { max-width: 340px; }
-  .collage, .lf-fotos { height: 380px; }
+  .lf-fotos { height: 380px; }
   .ficha, .visor { grid-template-columns: 1fr; }
   .visor-img img, .ficha-img img { max-height: 46vh; }
 }
@@ -572,16 +568,18 @@ dialog.cajon[open] { display: flex; flex-direction: column; animation: deslizar 
   .logo img { height: 28px; }
   .cabecera .boton--cotizar { display: none; }
   .puertas .caja { gap: 0; padding-left: 8px; padding-right: 8px; }
-  .puerta { padding: 9px 10px 10px; }
-  .puerta img, .puerta small { display: none; }
+  .puerta { gap: 7px; padding: 9px 9px 10px; }
+  .puerta img { height: 20px; }
   .puerta strong { font-size: 12.5px; }
-  .hero { padding-top: 40px; }
+  .hero { padding-top: 32px; }
+  .hero-texto { padding: 40px 22px; }
+  .hero-texto::before, .hero-texto::after { width: 84px; height: 64px; border-width: 8px; }
   .hero h1 { font-size: 38px; }
   .hero-bajada, .lf-hero p, .wc-hero p { font-size: 16px; }
-  .collage, .lf-fotos { height: 320px; }
-  .cifras { grid-template-columns: 1fr; margin-top: 40px; }
+  .lf-fotos { height: 320px; }
+  .cifras { grid-template-columns: 1fr; margin-top: 32px; }
   .cifras div { padding: 16px 0; }
-  .cifras div + div { padding-left: 0; border-left: 0; border-top: 1px solid #262626; }
+  .cifras div + div { padding-left: 0; border-left: 0; border-top: 1px solid var(--linea); }
   .servicios, .tipos, .proceso, .uno-grilla, .fila-2, .fila-3, .opciones-radio, .elegir-wa, .pasos-lf { grid-template-columns: 1fr; }
   .productos, .look, .piezas, .trabajos { grid-template-columns: 1fr 1fr; gap: 12px; }
   .trabajo-info { padding: 34px 12px 12px; }

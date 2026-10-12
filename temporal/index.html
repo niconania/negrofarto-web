@@ -14,7 +14,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&amp;display=swap" rel="stylesheet" />
   <style>
     /* Página temporal de negrofarto.com: lo único que hace falta para imprimir
-       las tarjetas mientras se construye el sitio completo. */
+       las tarjetas mientras se construye el sitio completo. Esta es la fuente y
+       también la vista previa (con noindex). herramientas/empaquetar-temporal.mjs
+       genera de aquí la versión de producción en produccion/temporal/: le quita
+       el noindex y pone el título, la descripción y el número de contacto.json. */
     *, *::before, *::after { box-sizing: border-box; }
     :root { --turquesa: #1daa9f; --gris: rgba(255, 255, 255, .7); }
     html, body { height: 100%; }
@@ -47,7 +50,9 @@
     }
     .boton:hover { border-color: #fff; }
     .boton--wa { border-color: #25d366; background: #25d366; color: #04210f; }
+    .boton--wa:hover { border-color: #1fb85a; background: #1fb85a; }
     .icono { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+    :focus-visible { outline: 3px solid #62e4da; outline-offset: 3px; }
     .marcas { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; margin-top: 34px; font-size: 13.5px; color: var(--gris); }
     .marcas a { color: #fff; font-weight: 700; text-decoration: none; border-bottom: 1px solid rgba(255, 255, 255, .3); }
     footer { padding: 18px 24px 24px; text-align: center; font-size: 12.5px; color: rgba(255, 255, 255, .5); }
@@ -71,53 +76,47 @@
   <main>
     <div class="marco">
       <img class="icono-marca" src="nfg-negro.svg" alt="" width="110" height="57" />
-      <p class="ceja" data-t="ceja"></p>
-      <h1 data-t="titulo"></h1>
-      <p class="texto" data-t="texto"></p>
+      <p class="ceja" data-t="ceja">Creative agency · Miami, FL</p>
+      <h1 data-t="titulo">Our new website is on its way.</h1>
+      <p class="texto" data-t="texto">Branding, signage, print and custom production. While we finish it, write to us — we answer every message.</p>
       <div class="contactos">
-        <button class="boton boton--wa" type="button" id="whatsapp">
+        <!-- WhatsApp de Miami: la agencia se presenta desde Miami (Juan, 12 oct 2026). El mensaje prellenado lo
+             agrega el JavaScript según el idioma; el empaquetador confirma el número con produccion/contacto.json. -->
+        <a class="boton boton--wa" href="https://wa.me/17868373919" data-wa="miami" target="_blank" rel="noopener">
           <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2a9.8 9.8 0 0 0-8.4 14.8L2.3 21.8l4.9-1.3A9.8 9.8 0 1 0 12 2.2Z"/></svg>WhatsApp
-        </button>
+        </a>
         <a class="boton" href="https://www.instagram.com/negrofartogroup/" target="_blank" rel="noopener">
           <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/></svg>@negrofartogroup
         </a>
-        <a class="boton" href="mailto:hola@negrofarto.com">
+        <!-- Correo: el empaquetador lo quita mientras hola@negrofarto.com no reciba mensajes (contacto.json → "correo"). -->
+        <a class="boton" href="mailto:hola@negrofarto.com" data-correo>
           <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 6.5 8.5 6.5 8.5-6.5"/></svg>hola@negrofarto.com
         </a>
       </div>
       <div class="marcas">
-        <span data-t="marcas"></span>
+        <span data-t="marcas">Our brands:</span>
         <a href="https://www.instagram.com/lafarteda/" target="_blank" rel="noopener">La Fartedá</a>
         <a href="https://www.instagram.com/wuandacrafts/" target="_blank" rel="noopener">WuandaCrafts</a>
       </div>
     </div>
   </main>
-  <footer>negrofarto.com · © 2026 Negrofarto Group LLC · Miami · Cartagena</footer>
-  <dialog id="aviso">
-    <h2 data-t="aviso_titulo"></h2>
-    <p data-t="aviso_texto"></p>
-    <button type="button" data-t="aviso_cerrar"></button>
-  </dialog>
+  <footer>negrofarto.com · © 2026 Negrofarto Group LLC · Miami, FL</footer>
   <script>
     (function () {
       var T = {
         en: {
-          ceja: 'Creative agency · Miami · Cartagena',
+          ceja: 'Creative agency · Miami, FL',
           titulo: 'Our new website is on its way.',
-          texto: 'Branding, signage, vehicle wraps, print and custom production. While we finish it, write to us — we answer every message.',
+          texto: 'Branding, signage, print and custom production. While we finish it, write to us — we answer every message.',
           marcas: 'Our brands:',
-          aviso_titulo: 'This would open WhatsApp',
-          aviso_texto: 'Prototype: on the real page this button opens a chat with Negrofarto Group. Nothing was sent.',
-          aviso_cerrar: 'Got it',
+          saludo: 'Hi Negrofarto Group! I found you on negrofarto.com and I’d like more information.',
         },
         es: {
-          ceja: 'Agencia creativa · Miami · Cartagena',
+          ceja: 'Agencia creativa · Miami, FL',
           titulo: 'Nuestra nueva web viene en camino.',
-          texto: 'Branding, letreros, rotulación de vehículos, impresos y producción a medida. Mientras la terminamos, escríbenos: respondemos cada mensaje.',
+          texto: 'Branding, letreros, impresos y producción a medida. Mientras la terminamos, escríbenos: respondemos cada mensaje.',
           marcas: 'Nuestras marcas:',
-          aviso_titulo: 'Aquí se abriría WhatsApp',
-          aviso_texto: 'Prototipo: en la página real este botón abre un chat con Negrofarto Group. No se envió nada.',
-          aviso_cerrar: 'Entendido',
+          saludo: '¡Hola, Negrofarto Group! Los encontré en negrofarto.com y quiero más información.',
         },
       };
       var idioma = 'en';
@@ -127,14 +126,16 @@
         document.documentElement.lang = idioma;
         document.querySelectorAll('[data-t]').forEach(function (el) { el.textContent = T[idioma][el.dataset.t]; });
         document.querySelectorAll('[data-idioma]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.idioma === idioma)); });
+        // El mensaje que llega prellenado a WhatsApp va en el idioma de la página.
+        document.querySelectorAll('a[data-wa]').forEach(function (a) {
+          var base = a.getAttribute('href');
+          if (base.indexOf('https://wa.me/') === 0) a.setAttribute('href', base.split('?')[0] + '?text=' + encodeURIComponent(T[idioma].saludo));
+        });
       }
       document.addEventListener('click', function (e) {
         var b = e.target.closest('[data-idioma]');
         if (b) { aplicar(b.dataset.idioma); try { localStorage.setItem('nfg-idioma', idioma); } catch (err) { /* sin almacenamiento */ } }
       });
-      var aviso = document.getElementById('aviso');
-      document.getElementById('whatsapp').addEventListener('click', function () { aviso.showModal(); });
-      aviso.querySelector('button').addEventListener('click', function () { aviso.close(); });
       aplicar(idioma);
     })();
   </script>
