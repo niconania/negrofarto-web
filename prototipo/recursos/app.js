@@ -76,6 +76,9 @@
           + `<img src="${base}${p.img}" alt="" />${p.nombre ? `<strong>${p.nombre}</strong>` : ''}</a>`).join('')
       + '</div></nav>');
 
+    // La agencia se presenta desde Miami (comentarios de Juan, 10 oct 2026): su pie no menciona Cartagena.
+    // Cartagena queda en el pie de La Fartedá y WuandaCrafts, que sí trabajan en las dos ciudades.
+    const soloMiami = pagina === 'agencia';
     document.body.insertAdjacentHTML('beforeend',
       '<footer class="pie" id="contacto"><div class="caja"><div class="pie-grilla">'
       + `<div><a class="pie-logo" href="${inicio}"><img src="${base}img/marcas/marca-negro.svg" alt="negrofarto group." width="132" height="40" /></a>`
@@ -95,12 +98,12 @@
       + '</ul></div>'
       + '<div><h4 data-t="pie.contacto"></h4><ul>'
       +   `<li><button class="enlace" type="button" data-whatsapp="${prefijoWa}miami">${icono('i-whatsapp')} WhatsApp Miami · <span data-t="pie.usa"></span></button></li>`
-      +   `<li><button class="enlace" type="button" data-whatsapp="${prefijoWa}cartagena">${icono('i-whatsapp')} WhatsApp Cartagena · <span data-t="pie.col"></span></button></li>`
+      +   (soloMiami ? '' : `<li><button class="enlace" type="button" data-whatsapp="${prefijoWa}cartagena">${icono('i-whatsapp')} WhatsApp Cartagena · <span data-t="pie.col"></span></button></li>`)
       +   `<li><a href="mailto:hola@negrofarto.com">${icono('i-correo')} hola@negrofarto.com</a></li>`
-      +   `<li><span class="pie-lugar">${icono('i-lugar')} Miami, FL · Cartagena</span></li>`
+      +   `<li><span class="pie-lugar">${icono('i-lugar')} ${soloMiami ? 'Miami, FL' : 'Miami, FL · Cartagena'}</span></li>`
       + '</ul></div>'
       + '</div>'
-      + `<div class="pie-legal"><span data-t="pie.legal"></span>${selectorIdioma()}</div>`
+      + `<div class="pie-legal"><span data-t="${soloMiami ? 'pie.legal' : 'pie.legal_marcas'}"></span>${selectorIdioma()}</div>`
       + '</div></footer>'
       // En la agencia el WhatsApp va directo a Miami; en La Fartedá y WuandaCrafts se elige el país.
       + `<button class="flotante" type="button" data-whatsapp="${pagina === 'agencia' ? 'miami' : 'elegir'}" aria-label="WhatsApp">${icono('i-whatsapp')}</button>`
@@ -257,13 +260,19 @@
     });
 
     const filtros = ['todos', 'branding', 'letreros', 'productos'];
+    // Cada trabajo abre el visor; el ícono de Instagram lleva directo a su publicación (lo pidió Juan, 10 oct 2026).
+    // Van como hermanos y no uno dentro del otro: un enlace no puede ir dentro de un botón.
+    const enlaceInstagram = (p, clase, contenido, aria) => `<a class="${clase}" href="${esc(p.instagram)}" target="_blank" rel="noopener"${aria ? ` aria-label="${esc(aria)}" title="${esc(aria)}"` : ''}>${contenido}</a>`;
     function pintarTrabajos() {
       $('#filtros-trabajos').innerHTML = filtros.map((f) => `<button class="chip" type="button" data-filtro="${f}" aria-pressed="${filtro === f}">${t('trab.' + f)}</button>`).join('');
       $('#lista-trabajos').innerHTML = D.proyectos.map((p) => `
-        <button class="trabajo" type="button" data-proyecto="${p.id}"${filtro !== 'todos' && p.categoria !== filtro ? ' hidden' : ''}>
-          <img src="${base}img/proyectos/${p.img}" alt="${esc(L(p.titulo))}" loading="lazy" />
-          <span class="trabajo-info"><strong>${esc(L(p.titulo))}</strong><span>${esc(L(p.sector))}${p.anio ? ' · ' + p.anio : ''}</span></span>
-        </button>`).join('');
+        <div class="trabajo"${filtro !== 'todos' && p.categoria !== filtro ? ' hidden' : ''}>
+          <button class="trabajo-abrir" type="button" data-proyecto="${p.id}">
+            <img src="${base}img/proyectos/${p.img}" alt="${esc(L(p.titulo))}" loading="lazy" />
+            <span class="trabajo-info"><strong>${esc(L(p.titulo))}</strong><span>${esc(L(p.sector))}${p.anio ? ' · ' + p.anio : ''}</span></span>
+          </button>
+          ${p.instagram ? enlaceInstagram(p, 'trabajo-ig', icono('i-instagram'), t('trab.ver_ig_de', { proyecto: L(p.titulo) })) : ''}
+        </div>`).join('');
     }
     $('#trabajos').addEventListener('click', (e) => {
       const f = e.target.closest('[data-filtro]');
@@ -278,7 +287,9 @@
         + `<div class="visor-img"><img src="${base}img/proyectos/${p.img}" alt="${esc(L(p.titulo))}" /></div>`
         + `<div class="modal-cuerpo"><p class="ceja">${esc(L(s.titulo))}</p><h3>${esc(L(p.titulo))}</h3>`
         + `<p><strong>${esc(L(p.sector))}</strong>${p.anio ? ' · ' + p.anio : ''}</p><p>${esc(L(p.texto))}</p>`
-        + `<button class="boton boton--acento" type="button" data-similar="${p.id}">${t('trab.similar')}</button></div></div>`;
+        + `<button class="boton boton--acento" type="button" data-similar="${p.id}">${t('trab.similar')}</button>`
+        + (p.instagram ? enlaceInstagram(p, 'boton boton--borde', `${icono('i-instagram')}${esc(t('trab.ver_ig'))}`) : '')
+        + '</div></div>';
       visor.showModal();
     }
     visor.addEventListener('click', (e) => {

@@ -251,15 +251,25 @@ h2 em { font-style: normal; color: var(--acento-oscuro); }
 
 /* Trabajos */
 .trabajos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
-.trabajo {
-  position: relative; overflow: hidden; padding: 0; border: 0; border-radius: var(--radio);
-  background: #111; text-align: left; cursor: pointer; aspect-ratio: 1 / 1.08;
+.trabajo { position: relative; overflow: hidden; border-radius: var(--radio); background: #111; aspect-ratio: 1 / 1.08; }
+.trabajo-abrir {
+  position: absolute; inset: 0; display: block; width: 100%; height: 100%; padding: 0; border: 0;
+  background: none; color: inherit; font: inherit; text-align: left; cursor: pointer;
 }
+.trabajo-abrir:focus-visible { outline-offset: -5px; } /* la tarjeta recorta lo que sale de su borde */
 .trabajo img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s; }
 .trabajo:hover img { transform: scale(1.04); }
-.trabajo-info { position: absolute; inset: auto 0 0 0; padding: 44px 18px 16px; background: linear-gradient(transparent, rgba(0, 0, 0, .86)); color: #fff; }
+.trabajo-info { position: absolute; inset: auto 0 0 0; padding: 44px 66px 16px 18px; background: linear-gradient(transparent, rgba(0, 0, 0, .86)); color: #fff; }
 .trabajo-info strong { display: block; font-size: 17px; font-weight: 800; }
 .trabajo-info span { font-size: 13px; opacity: .85; }
+/* Instagram de cada trabajo: abajo a la derecha, sobre el degradado, sin tapar la imagen. */
+.trabajo-ig {
+  position: absolute; right: 14px; bottom: 14px; display: grid; place-items: center; width: 40px; height: 40px;
+  border: 1px solid rgba(255, 255, 255, .5); border-radius: 50%; color: #fff;
+  transition: background-color .15s, border-color .15s, color .15s;
+}
+.trabajo-ig:hover { border-color: var(--acento); background: var(--acento); color: var(--sobre-acento); }
+.trabajo-ig .icono { width: 20px; height: 20px; }
 .mas-instagram { margin-top: 28px; text-align: center; }
 .mas-instagram a { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; color: var(--turquesa-oscuro); text-decoration: none; }
 
@@ -583,6 +593,9 @@ dialog.cajon[open] { display: flex; flex-direction: column; animation: deslizar 
   .servicios, .tipos, .proceso, .uno-grilla, .fila-2, .fila-3, .opciones-radio, .elegir-wa, .pasos-lf { grid-template-columns: 1fr; }
   .productos, .look, .piezas, .trabajos { grid-template-columns: 1fr 1fr; gap: 12px; }
   .trabajo-info { padding: 34px 12px 12px; }
+  /* En celular el ícono sube a la esquina: abajo le quitaba al texto el ancho que no sobra. */
+  .trabajo-ig { top: 8px; right: 8px; bottom: auto; width: 34px; height: 34px; border-color: transparent; background: rgba(0, 0, 0, .55); }
+  .trabajo-ig .icono { width: 18px; height: 18px; }
   .trabajo-info strong { font-size: 14px; }
   .trabajo-info span { font-size: 12px; }
   .servicio p { min-height: 0; }

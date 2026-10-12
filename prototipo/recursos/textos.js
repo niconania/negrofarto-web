@@ -21,7 +21,8 @@ window.NFG_T = {
     'pie.agencia': 'Agency',
     'pie.marcas': 'Our brands',
     'pie.contacto': 'Contact',
-    'pie.legal': '© 2026 Negrofarto Group LLC · Miami, Florida · Cartagena, Colombia',
+    'pie.legal': '© 2026 Negrofarto Group LLC · Miami, Florida',
+    'pie.legal_marcas': '© 2026 Negrofarto Group LLC · Miami, Florida · Cartagena, Colombia',
     'pie.usa': 'USA',
     'pie.col': 'Colombia',
 
@@ -72,6 +73,8 @@ window.NFG_T = {
     'trab.productos': 'Custom products',
     'trab.instagram': 'More projects on Instagram — @negrofartogroup',
     'trab.similar': 'I want something similar',
+    'trab.ver_ig': 'See it on Instagram',
+    'trab.ver_ig_de': 'See {proyecto} on Instagram',
     'trab.cerrar': 'Close',
     'trab.mensaje': 'I saw the {proyecto} project and I’d like something similar.',
 
@@ -285,7 +288,8 @@ window.NFG_T = {
     'pie.agencia': 'Agencia',
     'pie.marcas': 'Nuestras marcas',
     'pie.contacto': 'Contacto',
-    'pie.legal': '© 2026 Negrofarto Group LLC · Miami, Florida · Cartagena, Colombia',
+    'pie.legal': '© 2026 Negrofarto Group LLC · Miami, Florida',
+    'pie.legal_marcas': '© 2026 Negrofarto Group LLC · Miami, Florida · Cartagena, Colombia',
     'pie.usa': 'EE.UU.',
     'pie.col': 'Colombia',
 
@@ -336,6 +340,8 @@ window.NFG_T = {
     'trab.productos': 'Productos personalizados',
     'trab.instagram': 'Más proyectos en Instagram — @negrofartogroup',
     'trab.similar': 'Quiero algo parecido',
+    'trab.ver_ig': 'Verlo en Instagram',
+    'trab.ver_ig_de': 'Ver {proyecto} en Instagram',
     'trab.cerrar': 'Cerrar',
     'trab.mensaje': 'Vi el proyecto de {proyecto} y quiero algo parecido.',
 
