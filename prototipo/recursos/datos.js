@@ -197,12 +197,13 @@ window.NFG_DATOS = {
     { id: 'boda', titulo: { en: 'Wedding', es: 'Boda' } },
     { id: 'porque', titulo: { en: 'Just because', es: 'Porque sí' } },
   ],
+  // Piezas del tendedero de fotos. «portada»: también cuelgan en la cortina del héroe (las cuatro del collage aprobado).
   piezas: [
-    { img: 'tote-joe-jonas.webp', tipo: 'bolsas', titulo: { en: 'Birthday tote for a Joe Jonas fan', es: 'Tote de cumpleaños para una fan de Joe Jonas' } },
-    { img: 'termos.webp', tipo: 'termos', titulo: { en: 'Tumblers with custom art', es: 'Termos con arte a medida' } },
-    { img: 'gorra.webp', tipo: 'ropa', titulo: { en: "Kids' cap with his name", es: 'Gorra infantil con su nombre' } },
+    { img: 'tote-joe-jonas.webp', portada: true, tipo: 'bolsas', titulo: { en: 'Birthday tote for a Joe Jonas fan', es: 'Tote de cumpleaños para una fan de Joe Jonas' } },
+    { img: 'termos.webp', portada: true, tipo: 'termos', titulo: { en: 'Tumblers with custom art', es: 'Termos con arte a medida' } },
+    { img: 'gorra.webp', portada: true, tipo: 'ropa', titulo: { en: "Kids' cap with his name", es: 'Gorra infantil con su nombre' } },
     { img: 'ilustracion-gators.webp', tipo: 'ilustracion', titulo: { en: 'Custom illustration', es: 'Ilustración a medida' } },
-    { img: 'calcomania-cricut.webp', tipo: 'calcomanias', titulo: { en: 'Custom decals', es: 'Calcomanías personalizadas' } },
+    { img: 'calcomania-cricut.webp', portada: true, tipo: 'calcomanias', titulo: { en: 'Custom decals', es: 'Calcomanías personalizadas' } },
     { img: 'tote-foto.webp', tipo: 'bolsas', titulo: { en: 'Tote with a photo', es: 'Tote con foto' } },
     { img: 'camiseta-gym.webp', tipo: 'ropa', titulo: { en: 'Gym tee and cap', es: 'Camiseta y gorra para el gym' } },
   ],

@@ -496,6 +496,60 @@ dialog.cajon[open] { display: flex; flex-direction: column; animation: deslizar 
 .look img { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; border-radius: 16px; }
 .marca-lf .seccion--suave { background: #efe4d1; }
 
+/* ── Tendedero de fotos (recursos/tendedero.js): carrusel horizontal y cortina vertical ──
+   Las medidas de .t-papel, .t-imagen y .t-nota también están en tendedero.js (altoFoto). */
+.tendedero, .cortina { --t-cuerda: #8a7f72; --t-gancho: #c9a67a; --t-tinta: #3b3833; }
+.marca-wc .tendedero, .marca-wc .cortina { --t-cuerda: var(--wc-cafe); --t-gancho: var(--wc-rosa); --t-tinta: var(--wc-cafe); }
+.tendedero { position: relative; padding-bottom: 10px; } /* aire para el anillo de foco bajo la barra */
+.tendedero:focus-visible { outline-offset: -3px; }
+.t-escena { position: relative; overflow: hidden; touch-action: pan-y; cursor: grab; user-select: none; -webkit-user-select: none; }
+.tendedero[data-arrastre] .t-escena { cursor: grabbing; }
+.t-cuerda { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.t-cuerda path { fill: none; stroke: var(--t-cuerda); stroke-width: 1.5; stroke-linecap: round; }
+.t-clavo { fill: var(--t-cuerda); }
+.t-foto { position: absolute; top: 0; left: 0; display: block; width: var(--t-ancho); transform-origin: 50% 0; will-change: transform; color: inherit; text-decoration: none; }
+.t-papel {
+  display: block; margin-top: 10px; padding: 9px 9px 0; border-radius: 2px; background: #fff;
+  box-shadow: 0 1px 2px rgba(20, 14, 40, .14), 0 18px 30px -16px rgba(20, 14, 40, .45);
+  transition: transform .5s cubic-bezier(.2, .7, .2, 1), filter .5s, box-shadow .2s;
+}
+.tendedero .t-foto[data-activa="0"] .t-papel { transform: scale(.9); filter: saturate(.75) brightness(.97); }
+.t-imagen { position: relative; display: block; aspect-ratio: 3 / 4; overflow: hidden; background: var(--wc-linea, #e9e5df); }
+.t-imagen img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 40%; pointer-events: none; -webkit-user-drag: none; }
+.t-nota {
+  display: flex; align-items: center; justify-content: center; height: 44px; padding: 0 6px; overflow: hidden; text-align: center; line-height: 1.15;
+  font-size: clamp(11px, calc(var(--t-ancho) * .058), 14px); font-style: italic; font-weight: 600; color: var(--t-tinta);
+}
+.t-gancho {
+  position: absolute; top: 0; left: 50%; width: 10px; height: 26px; margin-left: -5px; border-radius: 2px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--t-gancho) 78%, #000), color-mix(in srgb, var(--t-gancho) 72%, #fff) 45%, color-mix(in srgb, var(--t-gancho) 70%, #000));
+  box-shadow: 0 2px 3px rgba(0, 0, 0, .25);
+}
+.t-gancho::after { content: ''; position: absolute; top: 8px; left: 4px; width: 2px; height: 7px; border-radius: 1px; background: rgba(0, 0, 0, .3); }
+.t-barra { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; }
+.t-pie { flex: 1 1 260px; min-width: 0; }
+.t-pie.t-entra > * { animation: t-entra .5s cubic-bezier(.2, .8, .2, 1) both; }
+.t-titulo { display: block; font-family: var(--fuente-titulo); font-size: clamp(18px, 2vw, 22px); font-weight: 800; line-height: 1.2; color: var(--acento); }
+.t-texto { display: block; margin-top: 3px; font-size: 14px; color: var(--t-tinta); }
+.t-cuenta { font-size: 13px; font-weight: 600; letter-spacing: .12em; font-variant-numeric: tabular-nums; color: var(--t-tinta); }
+.t-cuenta b { font-weight: 800; color: var(--acento); }
+.t-flecha {
+  display: grid; place-items: center; width: 42px; height: 42px; padding: 0; border: 1.5px solid var(--wc-linea, #ddd); border-radius: 50%;
+  background: #fff; color: var(--acento); cursor: pointer; transition: background-color .15s, border-color .15s, color .15s;
+}
+.t-flecha:hover { border-color: var(--acento); background: var(--acento); color: var(--sobre-acento); }
+.t-flecha[aria-disabled="true"], .t-flecha[aria-disabled="true"]:hover { border-color: var(--wc-linea, #ddd); background: #fff; color: var(--acento); opacity: .35; cursor: default; }
+.t-flecha .icono { width: 16px; height: 16px; }
+.t-accion { margin-left: auto; }
+.t-anuncio { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.cortina { position: relative; }
+.cortina .t-foto { cursor: pointer; }
+.cortina .t-foto:hover .t-papel { box-shadow: 0 1px 2px rgba(20, 14, 40, .14), 0 26px 36px -16px rgba(20, 14, 40, .5); }
+.cortina .t-foto:focus-visible { outline: none; }
+.cortina .t-foto:focus-visible .t-papel { outline: 3px solid var(--turquesa-claro); outline-offset: 3px; }
+@keyframes t-entra { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .t-pie.t-entra > * { animation: none; } .t-papel { transition: none; } }
+
 /* ── WuandaCrafts (/wuandacrafts) ── */
 .wc-hero { padding: 56px 0 64px; overflow: hidden; background: var(--wc-crema); }
 .wc-hero-grilla { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
@@ -506,15 +560,13 @@ dialog.cajon[open] { display: flex; flex-direction: column; animation: deslizar 
 .wc-hero h1 em { font-style: normal; color: var(--wc-rosa); }
 .wc-hero p { max-width: 32em; margin: 18px 0 22px; font-size: 18px; color: var(--wc-cafe); }
 .wc-hero .chips-texto { color: var(--wc-cafe); }
-.wc-collage { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.wc-collage img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 16px; }
-.wc-collage img:nth-child(2n) { transform: translateY(28px); }
+.wc-hero .cortina { width: 100%; max-width: 600px; margin-inline: auto; } /* en tableta no se estira a todo el ancho */
 .wc-uno { background: var(--acento); color: var(--sobre-acento); }
 .wc-uno .ceja { color: var(--sobre-acento); }
 .uno-grilla { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 34px; }
 .uno { padding: 24px; border-radius: 18px; background: rgba(255, 255, 255, .92); }
 .uno-num { display: block; margin-bottom: 10px; font-size: 32px; font-weight: 900; line-height: 1; color: var(--wc-rosa); }
-.uno h3 { margin-bottom: 6px; font-size: 18px; font-weight: 800; }
+.uno h3 { margin-bottom: 6px; font-size: 18px; font-weight: 800; color: var(--acento); }
 .uno p { font-size: 15px; color: var(--wc-cafe); }
 .tipos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
 .tipo { display: flex; align-items: flex-start; gap: 14px; padding: 22px; border: 1.5px solid var(--wc-linea); border-radius: 18px; background: #fff; }
@@ -524,14 +576,6 @@ dialog.cajon[open] { display: flex; flex-direction: column; animation: deslizar 
 .tipo p { font-size: 14px; color: var(--wc-cafe); }
 .tipo .enlace-flecha { margin-top: 8px; }
 .marca-wc .seccion--suave { background: var(--wc-crema); }
-.piezas { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
-.pieza { position: relative; margin: 0; overflow: hidden; border-radius: 16px; background: #eee; }
-.pieza img { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; }
-.pieza figcaption {
-  position: absolute; inset: auto 0 0 0; display: grid; gap: 8px; padding: 44px 14px 14px;
-  background: linear-gradient(transparent, rgba(0, 0, 0, .82)); color: #fff; font-size: 13.5px; font-weight: 700;
-}
-.pieza button { justify-self: start; padding: 6px 12px; border: 0; border-radius: 999px; background: var(--acento); color: var(--sobre-acento); font-size: 12.5px; font-weight: 800; cursor: pointer; }
 .pedido { display: grid; grid-template-columns: .8fr 1.2fr; gap: 56px; align-items: start; }
 .pedido-pasos { display: grid; gap: 14px; margin: 28px 0 0; padding: 0; list-style: none; }
 .pedido-pasos li { display: flex; align-items: flex-start; gap: 12px; font-size: 15px; color: var(--wc-cafe); }
@@ -564,7 +608,7 @@ dialog.cajon[open] { display: flex; flex-direction: column; animation: deslizar 
   .servicios, .trabajos, .tipos, .uno-grilla { grid-template-columns: 1fr 1fr; }
   .productos { grid-template-columns: repeat(3, 1fr); }
   .marcas { grid-template-columns: 1fr; }
-  .proceso, .pasos-lf, .look, .piezas { grid-template-columns: 1fr 1fr; }
+  .proceso, .pasos-lf, .look { grid-template-columns: 1fr 1fr; }
   .pie-grilla { grid-template-columns: 1fr 1fr; }
   .kit-resultado { position: static; }
   .nosotros-foto { max-width: 340px; }
@@ -591,7 +635,7 @@ dialog.cajon[open] { display: flex; flex-direction: column; animation: deslizar 
   .cifras div { padding: 16px 0; }
   .cifras div + div { padding-left: 0; border-left: 0; border-top: 1px solid var(--linea); }
   .servicios, .tipos, .proceso, .uno-grilla, .fila-2, .fila-3, .opciones-radio, .elegir-wa, .pasos-lf { grid-template-columns: 1fr; }
-  .productos, .look, .piezas, .trabajos { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .productos, .look, .trabajos { grid-template-columns: 1fr 1fr; gap: 12px; }
   .trabajo-info { padding: 34px 12px 12px; }
   /* En celular el ícono sube a la esquina: abajo le quitaba al texto el ancho que no sobra. */
   .trabajo-ig { top: 8px; right: 8px; bottom: auto; width: 34px; height: 34px; border-color: transparent; background: rgba(0, 0, 0, .55); }

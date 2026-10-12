@@ -99,7 +99,7 @@
       + '<div><h4 data-t="pie.contacto"></h4><ul>'
       +   `<li><button class="enlace" type="button" data-whatsapp="${prefijoWa}miami">${icono('i-whatsapp')} WhatsApp Miami · <span data-t="pie.usa"></span></button></li>`
       +   (soloMiami ? '' : `<li><button class="enlace" type="button" data-whatsapp="${prefijoWa}cartagena">${icono('i-whatsapp')} WhatsApp Cartagena · <span data-t="pie.col"></span></button></li>`)
-      +   `<li><a href="mailto:hola@negrofarto.com">${icono('i-correo')} hola@negrofarto.com</a></li>`
+      +   `<li><a href="mailto:projects@negrofarto.com">${icono('i-correo')} projects@negrofarto.com</a></li>`
       +   `<li><span class="pie-lugar">${icono('i-lugar')} ${soloMiami ? 'Miami, FL' : 'Miami, FL · Cartagena'}</span></li>`
       + '</ul></div>'
       + '</div>'
@@ -571,10 +571,24 @@
           <button class="enlace-flecha" type="button" data-pedir="${x.id}">${t('wc.tipo_cta')} ${icono('i-flecha')}</button>
         </div></div>`).join('');
     }
+    // Tendedero de fotos (recursos/tendedero.js): las piezas cuelgan de una cuerda que se arrastra, y las de
+    // portada, de la cortina del héroe. «¿Quieres uno así?» va en la barra del tendedero con data-pieza.
+    const tipoDe = (id) => D.tipos.find((x) => x.id === id);
+    const fotoPieza = (p) => ({ img: `${base}img/wuanda/${p.img}`, encuadre: p.encuadre, alt: L(p.titulo), titulo: L(p.titulo), nota: L(tipoDe(p.tipo).titulo), texto: L(tipoDe(p.tipo).texto) });
+    const textosTendedero = () => ({
+      region: t('wc.piezas_ceja'), carrusel: t('tend.carrusel'), anterior: t('tend.anterior'), siguiente: t('tend.siguiente'),
+      accion: t('wc.quiero'), anuncio: (n, total, titulo) => t('tend.anuncio', { n, total, titulo }),
+    });
+    const textosCortina = () => ({ ver: (titulo) => t('tend.ver', { titulo }) });
+    const portada = D.piezas.filter((p) => p.portada);
+    const tendedero = window.NFG_TENDEDERO.carrusel($('#tendedero-piezas'), { items: D.piezas.map(fotoPieza), textos: textosTendedero(), accion: 'pieza' });
+    const cortina = window.NFG_TENDEDERO.cortina($('#cortina-heroe'), {
+      items: portada.map(fotoPieza), cuerdas: 3, enlace: '#piezas', textos: textosCortina(),
+      alElegir: (i) => { irA('piezas'); tendedero.ir(D.piezas.indexOf(portada[i])); },
+    });
     function pintarPiezas() {
-      $('#lista-piezas').innerHTML = D.piezas.map((p, i) => `
-        <figure class="pieza"><img src="${base}img/wuanda/${p.img}" alt="${esc(L(p.titulo))}" loading="lazy" />
-          <figcaption>${esc(L(p.titulo))}<button type="button" data-pieza="${i}">${t('wc.quiero')}</button></figcaption></figure>`).join('');
+      tendedero.actualizar(D.piezas.map(fotoPieza), textosTendedero());
+      cortina.actualizar(portada.map(fotoPieza), textosCortina());
     }
     function pintarChips() {
       $('#wc-tipos').innerHTML = D.tipos.map((x) => `<button class="chip" type="button" data-tipo="${x.id}" aria-pressed="${tipos.has(x.id)}">${icono(x.icono)}${esc(L(x.titulo))}</button>`).join('');
