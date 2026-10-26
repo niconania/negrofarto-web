@@ -5,6 +5,7 @@
 
 :root {
   --negro: #000;
+  --cabecera: var(--negro); /* el color de la cabecera y de la barra de las puertas; cada marca pone el suyo */
   --carbon: #141414;
   --texto: #101010;
   --gris: #5c6564;
@@ -103,7 +104,7 @@ p { margin: 0; }
 
 /* ── Aviso, cabecera y las tres puertas ── */
 .aviso { background: var(--turquesa); color: #000; font-size: 12.5px; font-weight: 600; text-align: center; text-wrap: balance; padding: 7px 16px; }
-.cabecera { position: sticky; top: 0; z-index: 50; background: var(--negro); color: #fff; }
+.cabecera { position: sticky; top: 0; z-index: 50; background: var(--cabecera); color: #fff; }
 .cabecera .caja { display: flex; align-items: center; gap: 26px; height: var(--alto-cabecera); position: relative; }
 .logo img { height: 34px; width: auto; }
 .menu { display: flex; gap: 26px; margin-left: auto; }
@@ -139,7 +140,6 @@ p { margin: 0; }
 .marca-lf, .marca-wc { --cabecera: var(--acento); }
 .marca-lf { --cabecera-claro: var(--lf-crema); }
 .marca-wc { --cabecera-claro: var(--wc-crema); }
-.marca-lf .cabecera, .marca-wc .cabecera { background: var(--cabecera); }
 .marca-lf .menu a, .marca-wc .menu a { color: #fff; }
 .marca-lf .menu a:hover, .marca-wc .menu a:hover { border-color: #fff; }
 .marca-lf .cabecera .idioma, .marca-wc .cabecera .idioma,
@@ -149,7 +149,9 @@ p { margin: 0; }
 .marca-lf .contador { background: #fff; color: var(--acento-oscuro); }
 .marca-lf .cabecera .boton--cotizar:hover, .marca-wc .cabecera .boton--cotizar:hover { background: var(--cabecera-claro); color: var(--acento-oscuro); }
 .marca-lf .menu-movil, .marca-wc .menu-movil { background: rgba(0, 0, 0, .22); }
-.puertas { background: #111; border-bottom: 1px solid #1f1f1f; }
+/* La barra de las tres puertas lleva el mismo color que la cabecera (negro con negro, rojo con rojo, morado con morado; Nicola,
+   26 oct 2026): son un solo bloque de color, y la raya fina las separa. */
+.puertas { background: var(--cabecera); border-top: 1px solid rgba(255, 255, 255, .14); }
 .puertas .caja { display: flex; gap: 4px; padding-top: 6px; overflow-x: auto; scrollbar-width: none; }
 .puertas .caja::-webkit-scrollbar { display: none; }
 .puerta {
@@ -164,6 +166,10 @@ p { margin: 0; }
 .puerta strong { display: block; font-size: 13.5px; font-weight: 800; color: #fff; line-height: 1.2; }
 .puerta:hover { background: rgba(255, 255, 255, .05); }
 .puerta[aria-current="page"] { background: rgba(255, 255, 255, .08); border-bottom-color: var(--color-puerta); color: rgba(255, 255, 255, .9); }
+/* Sobre el color de la marca, la puerta de la página donde estás se marca con una casilla más oscura y un subrayado blanco:
+   el rosa claro de su acento casi no se veía sobre el rojo. */
+.marca-lf .puerta:hover, .marca-wc .puerta:hover { background: rgba(255, 255, 255, .1); }
+.marca-lf .puerta[aria-current="page"], .marca-wc .puerta[aria-current="page"] { background: rgba(0, 0, 0, .16); border-bottom-color: #fff; color: #fff; }
 
 /* ── Secciones comunes ── */
 .seccion { padding: 88px 0; }

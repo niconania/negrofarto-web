@@ -40,10 +40,11 @@ window.NFG_DATOS = {
     {
       id: 'merch', icono: 'i-camiseta',
       titulo: { en: 'Corporate merch', es: 'Merch corporativo' },
-      corto: { en: 'Uniforms, tumblers, mugs, bags and tablecloths with your logo, made on our own machines.', es: 'Uniformes, termos, tazas, bolsas y manteles con tu logo, hechos con nuestras máquinas.' },
+      // Sin manteles: Juan es proveedor de otra empresa que los vende y no quiere competirle (reunión del 23 oct 2026).
+      corto: { en: 'Uniforms, tumblers, mugs and bags with your logo, made on our own machines.', es: 'Uniformes, termos, tazas y bolsas con tu logo, hechos con nuestras máquinas.' },
       incluye: {
-        en: ['Team uniforms and tees', 'Tumblers, mugs and bags', 'Printed tablecloths for events'],
-        es: ['Uniformes y camisetas de equipo', 'Termos, tazas y bolsas', 'Manteles impresos para eventos'],
+        en: ['Team uniforms and tees', 'Tumblers, mugs and bags'],
+        es: ['Uniformes y camisetas de equipo', 'Termos, tazas y bolsas'],
       },
     },
     {
