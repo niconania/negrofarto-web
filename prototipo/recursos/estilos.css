@@ -41,15 +41,17 @@
   --lf-crema-2: #e6d9c2;
   --lf-cafe: #6b5a44;
 }
-/* WuandaCrafts: colores de su logo oficial (el naranja anterior venía del avatar de Halloween). */
+/* WuandaCrafts: la paleta de su marca nueva (2024; lámina «Paleta de Color» del post de @negrofartogroup). Los cinco
+   colores son los oficiales. El morado lleva el botón y los pasos (blanco encima: 5,6:1); el rosa, solo textos grandes
+   (3,1:1) y adornos; el resto de tonos son derivados del morado. */
 .marca-wc {
-  --acento: #463f6f;        /* morado del wordmark */
-  --acento-oscuro: #2f2a4d;
+  --wc-morado: #7c599b; --wc-rosa: #e55d8e; --wc-azul: #32ace3; --wc-verde: #9fc75b; --wc-naranja: #f18a43;
+  --acento: var(--wc-morado);
+  --acento-oscuro: #6b4a8a;  /* para pasar el cursor y para texto de enlace (7:1 sobre blanco) */
   --sobre-acento: #fff;
-  --wc-rosa: #ec0c91;       /* magenta de la W, solo para textos grandes */
   --wc-crema: #f8f6fb;
   --wc-linea: #e6e0ef;
-  --wc-cafe: #5e5878;
+  --wc-cafe: #5b4b70;        /* texto secundario (7,3:1 sobre la crema) */
 }
 
 html { scroll-behavior: smooth; scroll-padding-top: calc(var(--alto-cabecera) + 18px); }
@@ -131,6 +133,22 @@ p { margin: 0; }
   display: none; place-items: center; width: 42px; height: 42px; flex: none;
   border: 0; border-radius: 10px; background: #1b1b1b; color: #fff; cursor: pointer;
 }
+/* En La Fartedá y WuandaCrafts la cabecera toma el color de la marca, para que se note en cuál estás: «aquí pensé que
+   todavía estaba en Negrofarto» (Juan, 23 oct 2026). Sobre el color todo va en blanco (5,3:1 en La Fartedá, 5,6:1 en
+   WuandaCrafts); los botones de la cabecera pasan a blanco para no desaparecer sobre su propio color. */
+.marca-lf, .marca-wc { --cabecera: var(--acento); }
+.marca-lf { --cabecera-claro: var(--lf-crema); }
+.marca-wc { --cabecera-claro: var(--wc-crema); }
+.marca-lf .cabecera, .marca-wc .cabecera { background: var(--cabecera); }
+.marca-lf .menu a, .marca-wc .menu a { color: #fff; }
+.marca-lf .menu a:hover, .marca-wc .menu a:hover { border-color: #fff; }
+.marca-lf .cabecera .idioma, .marca-wc .cabecera .idioma,
+.marca-lf .boton-carrito { border-color: rgba(255, 255, 255, .6); }
+.marca-lf .cabecera .idioma button[aria-pressed="true"], .marca-wc .cabecera .idioma button[aria-pressed="true"],
+.marca-lf .cabecera .boton--cotizar, .marca-wc .cabecera .boton--cotizar,
+.marca-lf .contador { background: #fff; color: var(--acento-oscuro); }
+.marca-lf .cabecera .boton--cotizar:hover, .marca-wc .cabecera .boton--cotizar:hover { background: var(--cabecera-claro); color: var(--acento-oscuro); }
+.marca-lf .menu-movil, .marca-wc .menu-movil { background: rgba(0, 0, 0, .22); }
 .puertas { background: #111; border-bottom: 1px solid #1f1f1f; }
 .puertas .caja { display: flex; gap: 4px; padding-top: 6px; overflow-x: auto; scrollbar-width: none; }
 .puertas .caja::-webkit-scrollbar { display: none; }
@@ -141,7 +159,7 @@ p { margin: 0; }
   color: rgba(255, 255, 255, .7); text-decoration: none; white-space: nowrap;
 }
 .puerta--lf { --color-puerta: #d0646d; }
-.puerta--wc { --color-puerta: #ec0c91; }
+.puerta--wc { --color-puerta: #e55d8e; }
 .puerta img { height: 26px; width: auto; border-radius: 6px; }
 .puerta strong { display: block; font-size: 13.5px; font-weight: 800; color: #fff; line-height: 1.2; }
 .puerta:hover { background: rgba(255, 255, 255, .05); }
@@ -180,14 +198,10 @@ h2 em { font-style: normal; color: var(--acento-oscuro); }
 .corchete::after { right: 0; bottom: 0; border-top: 0; border-left: 0; border-bottom-right-radius: 26px; }
 
 /* ── Agencia: portada ── */
-/* Clara y sin collage: Juan la sentía cargada y el negro pesado. El corchete del logo enmarca el mensaje. */
+/* Clara y sin collage: Juan la sentía cargada y el negro pesado. Tampoco lleva el corchete del logo alrededor del
+   mensaje: «me genera como que lo estás cerrando»; quiere el espacio en blanco limpio (reunión del 23 oct 2026). */
 .hero { padding: 64px 0 0; background: var(--fondo); color: var(--texto); overflow: hidden; }
 .hero-texto { position: relative; max-width: 860px; margin: 0 auto; padding: 52px 56px; text-align: center; }
-.hero-texto::before, .hero-texto::after {
-  content: ''; position: absolute; width: 150px; height: 110px; border: 10px solid var(--turquesa); pointer-events: none;
-}
-.hero-texto::before { top: 0; left: 0; border-right: 0; border-bottom: 0; border-top-left-radius: 28px; }
-.hero-texto::after { right: 0; bottom: 0; border-top: 0; border-left: 0; border-bottom-right-radius: 28px; }
 .hero h1 { font-size: clamp(38px, 5vw, 64px); font-weight: 800; text-wrap: balance; }
 .hero h1 em { font-style: normal; color: var(--turquesa-oscuro); }
 .hero-bajada { max-width: 34em; margin: 20px auto 30px; font-size: 18px; color: var(--gris); text-wrap: pretty; }
@@ -211,6 +225,8 @@ h2 em { font-style: normal; color: var(--acento-oscuro); }
   border: 1.5px solid var(--linea); border-radius: var(--radio); background: #fff; transition: border-color .2s, box-shadow .2s;
 }
 .servicio:hover, .servicio.abierto { border-color: var(--turquesa); box-shadow: var(--sombra); }
+.servicio { cursor: pointer; } /* toda la tarjeta abre «qué incluye»: Juan tocó la tarjeta y no pasó nada (23 oct 2026) */
+.servicio-detalle { cursor: auto; }
 .servicio-icono { display: grid; place-items: center; width: 48px; height: 48px; flex: none; border-radius: 14px; background: #e1f5f3; color: var(--turquesa-oscuro); }
 .servicio-icono .icono { width: 26px; height: 26px; }
 .servicio h3 { font-size: 19px; font-weight: 800; }
@@ -279,7 +295,7 @@ h2 em { font-style: normal; color: var(--acento-oscuro); }
 .marca--lf { background: #292929; color: #f4ecdd; }
 .marca--wc { background: #f8f6fb; color: #2c2840; box-shadow: inset 0 0 0 1.5px #e6e0ef; }
 .marca-logo { align-self: flex-start; height: 64px; width: auto; margin: 10px 0; }
-.marca-logo--wc { height: 84px; margin: 0; }
+.marca-logo--wc { height: 100px; margin: 0; }
 .marca p { max-width: 30em; font-size: 17px; }
 .marca-fotos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
 .marca-fotos img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 12px; }
@@ -499,7 +515,11 @@ dialog.cajon[open] { display: flex; flex-direction: column; animation: deslizar 
 /* ── Tendedero de fotos (recursos/tendedero.js): carrusel horizontal y cortina vertical ──
    Las medidas de .t-papel, .t-imagen y .t-nota también están en tendedero.js (altoFoto). */
 .tendedero, .cortina { --t-cuerda: #8a7f72; --t-gancho: #c9a67a; --t-tinta: #3b3833; }
-.marca-wc .tendedero, .marca-wc .cortina { --t-cuerda: var(--wc-cafe); --t-gancho: var(--wc-rosa); --t-tinta: var(--wc-cafe); }
+.marca-wc .tendedero, .marca-wc .cortina { --t-cuerda: var(--wc-cafe); --t-gancho: var(--wc-naranja); --t-tinta: var(--wc-cafe); }
+/* Los ganchos van en los cuatro colores de la W, en este orden: naranja, azul, rosa, verde. */
+.marca-wc .t-foto:nth-of-type(4n + 2) { --t-gancho: var(--wc-azul); }
+.marca-wc .t-foto:nth-of-type(4n + 3) { --t-gancho: var(--wc-rosa); }
+.marca-wc .t-foto:nth-of-type(4n + 4) { --t-gancho: var(--wc-verde); }
 .tendedero { position: relative; padding-bottom: 10px; } /* aire para el anillo de foco bajo la barra */
 .tendedero:focus-visible { outline-offset: -3px; }
 .t-escena { position: relative; overflow: hidden; touch-action: pan-y; cursor: grab; user-select: none; -webkit-user-select: none; }
@@ -540,6 +560,10 @@ dialog.cajon[open] { display: flex; flex-direction: column; animation: deslizar 
 .t-flecha:hover { border-color: var(--acento); background: var(--acento); color: var(--sobre-acento); }
 .t-flecha[aria-disabled="true"], .t-flecha[aria-disabled="true"]:hover { border-color: var(--wc-linea, #ddd); background: #fff; color: var(--acento); opacity: .35; cursor: default; }
 .t-flecha .icono { width: 16px; height: 16px; }
+.t-enlace { display: grid; place-items: center; width: 42px; height: 42px; flex: none; border: 1.5px solid var(--wc-linea, #ddd); border-radius: 50%;
+  background: #fff; color: var(--acento); transition: background-color .15s, border-color .15s, color .15s; }
+.t-enlace:hover { border-color: var(--acento); background: var(--acento); color: var(--sobre-acento); }
+.t-enlace .icono { width: 19px; height: 19px; }
 .t-accion { margin-left: auto; }
 .t-anuncio { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .cortina { position: relative; }
@@ -554,7 +578,7 @@ dialog.cajon[open] { display: flex; flex-direction: column; animation: deslizar 
 .wc-hero { padding: 56px 0 64px; overflow: hidden; background: var(--wc-crema); }
 .wc-hero-grilla { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
 .wc-marca { display: grid; justify-items: start; gap: 12px; margin-bottom: 22px; }
-.wc-marca img { width: auto; height: 128px; }
+.wc-marca img { width: auto; height: 168px; }
 .wc-marca span { font-size: 13px; font-weight: 600; color: var(--wc-cafe); }
 .wc-hero h1 { font-size: clamp(36px, 4.6vw, 58px); font-weight: 800; }
 .wc-hero h1 em { font-style: normal; color: var(--wc-rosa); }
@@ -598,6 +622,8 @@ dialog.cajon[open] { display: flex; flex-direction: column; animation: deslizar 
   }
   .menu.abierto { display: flex; }
   .menu a { padding: 13px 0; border-bottom: 1px solid #1d1d1d; }
+  .marca-lf .menu, .marca-wc .menu { border-top-color: rgba(255, 255, 255, .25); background: var(--cabecera); }
+  .marca-lf .menu a, .marca-wc .menu a { border-bottom-color: rgba(255, 255, 255, .22); }
   .menu-movil { display: grid; }
   .cabecera .caja { gap: 12px; }
   .cabecera .idioma { margin-left: auto; }
@@ -627,7 +653,6 @@ dialog.cajon[open] { display: flex; flex-direction: column; animation: deslizar 
   .puerta strong { font-size: 12.5px; }
   .hero { padding-top: 32px; }
   .hero-texto { padding: 40px 22px; }
-  .hero-texto::before, .hero-texto::after { width: 84px; height: 64px; border-width: 8px; }
   .hero h1 { font-size: 38px; }
   .hero-bajada, .lf-hero p, .wc-hero p { font-size: 16px; }
   .lf-fotos { height: 320px; }

@@ -55,8 +55,8 @@
   }
 
   /* ── Carrusel: cuerda horizontal ──
-     op.items: [{ img, encuadre, alt, nota, titulo, texto }]
-     op.textos: { region, carrusel, anterior, siguiente, accion, anuncio(n, total, titulo) }
+     op.items: [{ img, encuadre, alt, nota, titulo, texto, enlace }]   (enlace: publicación de Instagram, opcional)
+     op.textos: { region, carrusel, anterior, siguiente, accion, anuncio(n, total, titulo), enlace(titulo) }
      op.accion: nombre del atributo data-* del botón de la barra (lleva el índice de la foto activa). */
   function carrusel(raiz, op) {
     const n = op.items.length;
@@ -69,11 +69,12 @@
       + items.map((it, i) => `<div class="t-foto" data-i="${i}">${papel(it)}</div>`).join('') + '</div>'
       + '<div class="caja t-barra"><div class="t-pie"><strong class="t-titulo"></strong><span class="t-texto"></span></div>'
       + '<span class="t-cuenta" aria-hidden="true"></span>' + flecha(-1, 'M10 3 5 8l5 5') + flecha(1, 'm6 3 5 5-5 5')
+      + '<a class="t-enlace" target="_blank" rel="noopener" hidden><svg class="icono" aria-hidden="true"><use href="#i-instagram"/></svg></a>'
       + (op.accion ? `<button class="boton boton--acento boton--chico t-accion" type="button" data-${op.accion}="0"></button>` : '')
       + '</div><p class="t-anuncio" aria-live="polite"></p>';
 
     const $ = (s) => raiz.querySelector(s);
-    const escena = $('.t-escena'), cuerda = $('.t-cuerda path'), boton = $('.t-accion');
+    const escena = $('.t-escena'), cuerda = $('.t-cuerda path'), boton = $('.t-accion'), enlace = $('.t-enlace');
     const fotos = [...raiz.querySelectorAll('.t-foto')];
     const flechas = [...raiz.querySelectorAll('.t-flecha')];
     const S = { off: 0, vel: 0, objetivo: 0, a: items.map(() => 0), w: items.map(() => 0) };
@@ -144,6 +145,14 @@
       $('.t-texto').textContent = it.texto || '';
       $('.t-cuenta').innerHTML = `<b>${dos(activa + 1)}</b> / ${dos(n)}`;
       if (boton) { boton.setAttribute('data-' + op.accion, String(activa)); boton.textContent = textos.accion; }
+      // La publicación de Instagram de la foto activa (como en la galería de la agencia), si la tiene.
+      enlace.hidden = !it.enlace;
+      if (it.enlace) {
+        const etiqueta = textos.enlace ? textos.enlace(it.titulo || '') : 'Instagram';
+        enlace.href = it.enlace;
+        enlace.setAttribute('aria-label', etiqueta);
+        enlace.title = etiqueta;
+      }
       // Solo se anuncia cuando la persona mueve el carrusel, no al cargar la página.
       if (hablar) $('.t-anuncio').textContent = textos.anuncio(activa + 1, n, it.titulo || '');
       if (animar) { const pie = $('.t-pie'); pie.classList.remove('t-entra'); void pie.offsetWidth; pie.classList.add('t-entra'); }

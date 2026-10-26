@@ -44,15 +44,23 @@
   function montarEstructura() {
     const inicio = base + 'index.html';
     const ancla = (id) => (pagina === 'agencia' ? '' : inicio) + '#' + id;
+    // «Contacto» lleva a donde se escribe. Antes bajaba al pie y la página quedaba «mocha» (Juan, 23 oct 2026): en la
+    // agencia va al formulario de cotización, que también tiene el WhatsApp y el correo directos; en WuandaCrafts, a
+    // «Cuéntanos tu idea»; La Fartedá no tiene formulario, así que abre la elección de WhatsApp (Miami o Cartagena).
+    const contacto = {
+      agencia: '<a href="#cotizar" data-t="nav.contacto"></a>',
+      wuanda: '<a href="#pedido" data-t="nav.contacto"></a>',
+      merch: '<a href="#contacto" data-whatsapp="elegir" data-t="nav.contacto"></a>',
+    }[pagina];
     const cta = pagina === 'wuanda'
       ? '<a class="boton boton--acento boton--chico boton--cotizar" href="#pedido" data-t="wc.cta"></a>'
       : `<a class="boton boton--acento boton--chico boton--cotizar" href="${ancla('cotizar')}" data-t="nav.cotizar"></a>`;
     // Cada puerta es el logo de su marca. Repetir el nombre al lado era redundante (Juan, 12 oct 2026) y
     // empujaba la barra más allá de donde empieza el menú. Solo la "W" lleva nombre: sola no dice WuandaCrafts.
-    // El nombre completo va en aria-label para lectores de pantalla.
+    // El nombre completo va en aria-label para lectores de pantalla. La Fartedá va con su isotipo «LF» (23 oct 2026).
     const puertas = [
       { id: 'agencia', href: inicio, img: 'img/marcas/nfg-negro.svg', clave: 'puerta.nfg', clase: 'nfg' },
-      { id: 'merch', href: base + 'merch/index.html', img: 'img/marcas/lafarteda-icono.svg', clave: 'puerta.lf', clase: 'lf' },
+      { id: 'merch', href: base + 'merch/index.html', img: 'img/marcas/lafarteda-lf.svg', clave: 'puerta.lf', clase: 'lf' },
       { id: 'wuanda', href: base + 'wuandacrafts/index.html', img: 'img/marcas/wuandacrafts-w.svg', clave: 'puerta.wc', nombre: 'WuandaCrafts', clase: 'wc' },
     ];
 
@@ -64,7 +72,7 @@
       +     `<a href="${ancla('servicios')}" data-t="nav.servicios"></a>`
       +     `<a href="${ancla('trabajos')}" data-t="nav.trabajos"></a>`
       +     `<a href="${ancla('nosotros')}" data-t="nav.nosotros"></a>`
-      +     '<a href="#contacto" data-t="nav.contacto"></a>'
+      +     contacto
       +   '</nav>'
       +   selectorIdioma()
       +   (pagina === 'merch' ? `<button class="boton-carrito" type="button" id="abrir-carrito" data-t-aria="car.abrir">${icono('i-bolsa-compra')}<span class="contador" id="contador-carrito" hidden>0</span></button>` : '')
@@ -145,7 +153,10 @@
       const bIdioma = e.target.closest('[data-idioma]');
       if (bIdioma) { aplicarIdioma(bIdioma.dataset.idioma); guardar('nfg-idioma', idioma); }
       const bWa = e.target.closest('[data-whatsapp]');
-      if (bWa) abrirWhatsApp(bWa.dataset.whatsapp, saludo());
+      if (bWa) {
+        if (bWa.tagName === 'A') e.preventDefault(); // el «Contacto» de La Fartedá: abre WhatsApp sin saltar al pie
+        abrirWhatsApp(bWa.dataset.whatsapp, saludo());
+      }
       const cerrar = e.target.closest('[data-cerrar]');
       if (cerrar) cerrar.closest('dialog').close();
       if (e.target.tagName === 'DIALOG') e.target.close(); // toque en el fondo
@@ -200,13 +211,16 @@
           </div>
         </article>`).join('');
     }
+    // Toda la tarjeta abre y cierra «qué incluye»: Juan tocó la tarjeta y no pasó nada (23 oct 2026). Dentro del
+    // detalle (la lista y «Cotizar este servicio») el clic no la cierra. Con teclado sigue el botón «Ver qué incluye».
     $('#lista-servicios').addEventListener('click', (e) => {
-      const ver = e.target.closest('.servicio-ver');
-      if (ver) {
-        const id = ver.closest('.servicio').dataset.servicio;
-        abiertos.has(id) ? abiertos.delete(id) : abiertos.add(id);
-        pintarServicios();
-      }
+      const tarjeta = e.target.closest('.servicio');
+      if (!tarjeta || e.target.closest('.servicio-detalle')) return;
+      const id = tarjeta.dataset.servicio;
+      const conBoton = !!e.target.closest('.servicio-ver');
+      abiertos.has(id) ? abiertos.delete(id) : abiertos.add(id);
+      pintarServicios();
+      if (conBoton) $(`.servicio[data-servicio="${id}"] .servicio-ver`)?.focus(); // el foco no se pierde al repintar
     });
 
     function pintarKit() {
@@ -574,10 +588,14 @@
     // Tendedero de fotos (recursos/tendedero.js): las piezas cuelgan de una cuerda que se arrastra, y las de
     // portada, de la cortina del héroe. «¿Quieres uno así?» va en la barra del tendedero con data-pieza.
     const tipoDe = (id) => D.tipos.find((x) => x.id === id);
-    const fotoPieza = (p) => ({ img: `${base}img/wuanda/${p.img}`, encuadre: p.encuadre, alt: L(p.titulo), titulo: L(p.titulo), nota: L(tipoDe(p.tipo).titulo), texto: L(tipoDe(p.tipo).texto) });
+    const fotoPieza = (p) => ({
+      img: `${base}img/wuanda/${p.img}`, encuadre: p.encuadre, alt: L(p.titulo), titulo: L(p.titulo),
+      nota: L(p.nota || tipoDe(p.tipo).titulo), texto: L(tipoDe(p.tipo).texto), enlace: p.instagram,
+    });
     const textosTendedero = () => ({
       region: t('wc.piezas_ceja'), carrusel: t('tend.carrusel'), anterior: t('tend.anterior'), siguiente: t('tend.siguiente'),
       accion: t('wc.quiero'), anuncio: (n, total, titulo) => t('tend.anuncio', { n, total, titulo }),
+      enlace: (titulo) => t('trab.ver_ig_de', { proyecto: titulo }),
     });
     const textosCortina = () => ({ ver: (titulo) => t('tend.ver', { titulo }) });
     const portada = D.piezas.filter((p) => p.portada);

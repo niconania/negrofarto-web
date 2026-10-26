@@ -197,14 +197,25 @@ window.NFG_DATOS = {
     { id: 'boda', titulo: { en: 'Wedding', es: 'Boda' } },
     { id: 'porque', titulo: { en: 'Just because', es: 'Porque sí' } },
   ],
-  // Piezas del tendedero de fotos. «portada»: también cuelgan en la cortina del héroe (las cuatro del collage aprobado).
+  // Piezas del tendedero de fotos, cada una con su publicación de Instagram (comprobadas el 26 oct 2026 comparando imagen
+  // y texto). «portada»: también cuelgan en la cortina del héroe. Sin fotos de Juan: «la gente tiene que creer que somos
+  // un equipo» (reunión del 23 oct 2026); la calcomanía y la lámpara reemplazan las de la Cricut y el gimnasio.
+  // «nota»: lo que va escrito en la foto, si no es el nombre de su tipo.
   piezas: [
-    { img: 'tote-joe-jonas.webp', portada: true, tipo: 'bolsas', titulo: { en: 'Birthday tote for a Joe Jonas fan', es: 'Tote de cumpleaños para una fan de Joe Jonas' } },
-    { img: 'termos.webp', portada: true, tipo: 'termos', titulo: { en: 'Tumblers with custom art', es: 'Termos con arte a medida' } },
-    { img: 'gorra.webp', portada: true, tipo: 'ropa', titulo: { en: "Kids' cap with his name", es: 'Gorra infantil con su nombre' } },
-    { img: 'ilustracion-gators.webp', tipo: 'ilustracion', titulo: { en: 'Custom illustration', es: 'Ilustración a medida' } },
-    { img: 'calcomania-cricut.webp', portada: true, tipo: 'calcomanias', titulo: { en: 'Custom decals', es: 'Calcomanías personalizadas' } },
-    { img: 'tote-foto.webp', tipo: 'bolsas', titulo: { en: 'Tote with a photo', es: 'Tote con foto' } },
-    { img: 'camiseta-gym.webp', tipo: 'ropa', titulo: { en: 'Gym tee and cap', es: 'Camiseta y gorra para el gym' } },
+    { img: 'tote-joe-jonas.webp', portada: true, tipo: 'bolsas', instagram: 'https://www.instagram.com/reel/Dc3zsg1xKGs/',
+      titulo: { en: 'Birthday tote for a Joe Jonas fan', es: 'Tote de cumpleaños para una fan de Joe Jonas' } },
+    { img: 'termos.webp', portada: true, tipo: 'termos', instagram: 'https://www.instagram.com/reel/Cy4FXEigbS-/',
+      titulo: { en: 'Tumblers with custom art', es: 'Termos con arte a medida' } },
+    { img: 'lampara-foto.webp', portada: true, tipo: 'corporativo', nota: { en: 'Lamps', es: 'Lámparas' },
+      instagram: 'https://www.instagram.com/reel/DeY6XO0suIh/',
+      titulo: { en: 'Lamp with a custom illustration', es: 'Lámpara con ilustración a medida' } },
+    { img: 'ilustracion-gators.webp', portada: true, tipo: 'ilustracion', instagram: 'https://www.instagram.com/reel/DdgppVxxvfj/',
+      titulo: { en: 'Custom illustration', es: 'Ilustración a medida' } },
+    { img: 'calcomania-mascota.webp', tipo: 'calcomanias', instagram: 'https://www.instagram.com/reel/CnQhQQJJbfl/',
+      titulo: { en: "Decal with the pet's name", es: 'Calcomanía con el nombre de la mascota' } },
+    { img: 'tote-foto.webp', tipo: 'bolsas', instagram: 'https://www.instagram.com/p/DRMbJaajpSd/',
+      titulo: { en: 'Tote with a photo', es: 'Tote con foto' } },
+    { img: 'gorra.webp', tipo: 'ropa', instagram: 'https://www.instagram.com/p/DdeiHp0EZ2_/',
+      titulo: { en: "Kids' cap with his name", es: 'Gorra infantil con su nombre' } },
   ],
 };
