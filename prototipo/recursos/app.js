@@ -148,6 +148,22 @@
   }
   const saludo = () => t('wa.saludo' + ({ merch: '_lf', wuanda: '_wc' }[pagina] || ''));
 
+  /* ── Copia al correo (servidor/enviar.php) ── */
+  // Cada cotización y cada pedido se manda también a projects@negrofarto.com (decidido el 26 oct 2026). Solo desde negrofarto.com: la
+  // vista previa y las pruebas nunca envían, salvo una prueba que active window.NFG_ENVIO ({ activo, url }). Es una copia: si falla, no
+  // se nota (WhatsApp ya abrió), y va con sendBeacon para que salga aunque la persona cambie de pestaña enseguida.
+  const enProduccion = /^(www\.)?negrofarto\.com$/i.test(location.hostname);
+  function copiaAlCorreo(datos) {
+    const envio = window.NFG_ENVIO || {};
+    if (!enProduccion && !envio.activo) return;
+    try {
+      const fd = new FormData();
+      Object.entries({ idioma, pagina: location.pathname, ...datos }).forEach(([k, v]) => { if (v != null && v !== '') fd.append(k, v); });
+      const url = envio.url || base + 'enviar.php';
+      if (!(navigator.sendBeacon && navigator.sendBeacon(url, fd))) fetch(url, { method: 'POST', body: fd, keepalive: true }).catch(() => { /* solo es una copia */ });
+    } catch (e) { /* solo es una copia */ }
+  }
+
   function activarEstructura() {
     document.addEventListener('click', (e) => {
       const bIdioma = e.target.closest('[data-idioma]');
@@ -561,7 +577,9 @@
       lineas.push(`• ${t('cot.wa_cuando')}: ${t('cot.' + v('cuando'))}`);
       if (v('mensaje')) lineas.push(`• ${t('cot.wa_mensaje')}: ${v('mensaje')}`);
       lineas.push('', `${t('cot.wa_contacto')}: ${v('nombre')} · ${v('telefono')}${v('correo') ? ' · ' + v('correo') : ''}`);
-      abrirWhatsApp('miami', lineas.join('\n'));
+      const mensaje = lineas.join('\n');
+      copiaAlCorreo({ tipo: 'cotizacion', destino: 'miami', nombre: v('nombre'), telefono: v('telefono'), correo: v('correo'), mensaje });
+      abrirWhatsApp('miami', mensaje);
     });
 
     alCambiarIdioma.push(pintarCinta, pintarServicios, pintarKit, pintarTrabajos, pintarChipsCotizar, pintarRuta);
@@ -751,7 +769,9 @@
       f.elements.nombre.closest('.campo').classList.toggle('con-error', !nombre);
       f.elements.ciudad.closest('.campo').classList.toggle('con-error', !ciudad);
       if (!ok) return;
-      const numero = 'LF-' + (1000 + Math.floor(Math.random() * 9000));
+      // Con la fecha (mes, día y dos letras o cifras al azar) no se repite casi nunca: LF-1026-A7. Antes era LF-#### al azar.
+      const fecha = new Date(), dos = (n) => String(n).padStart(2, '0'), azar = () => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random() * 32)];
+      const numero = `LF-${dos(fecha.getMonth() + 1)}${dos(fecha.getDate())}-${azar()}${azar()}`;
       const lineas = [t('lf.wa_hola'), t('lf.wa_pedido', { numero, pais: t(pais === 'usa' ? 'lf.usa_nombre' : 'lf.col_nombre') }), ''];
       carrito.forEach((l) => {
         const p = productos.find((x) => x.id === l.producto);
@@ -761,7 +781,9 @@
       lineas.push(`${t('lf.wa_nombre')}: ${nombre} · ${t('lf.wa_ciudad')}: ${ciudad}`);
       const notas = f.elements.notas.value.trim();
       if (notas) lineas.push(`${t('lf.wa_notas')}: ${notas}`);
-      abrirWhatsApp(pais === 'col' ? 'lf_cartagena' : 'lf_miami', lineas.join('\n'));
+      const mensaje = lineas.join('\n');
+      copiaAlCorreo({ tipo: 'lafarteda', destino: pais === 'col' ? 'cartagena' : 'miami', ref: numero, moneda: pais === 'col' ? 'COP' : 'USD', nombre, ciudad, mensaje });
+      abrirWhatsApp(pais === 'col' ? 'lf_cartagena' : 'lf_miami', mensaje);
     });
     cajon.addEventListener('input', (e) => { if (e.target.name) e.target.closest('.campo')?.classList.remove('con-error'); });
     $('#abrir-carrito').addEventListener('click', () => { pintarCarrito(); cajon.showModal(); });
@@ -816,10 +838,9 @@
       ruta.hidden = !donde;
       if (donde) ruta.innerHTML = icono('i-whatsapp') + esc(t(donde === 'col' ? 'destino.wc_cartagena' : 'destino.wc_miami'));
     }
+    const diasHasta = (valor) => (valor ? (new Date(valor + 'T12:00:00') - new Date()) / 864e5 : Infinity);
     function revisarFecha() {
-      const valor = form.elements.fecha.value;
-      const dias = valor ? (new Date(valor + 'T12:00:00') - new Date()) / 864e5 : Infinity;
-      $('#wc-fecha-aviso').hidden = !(dias < 5);
+      $('#wc-fecha-aviso').hidden = !(diasHasta(form.elements.fecha.value) < 5);
     }
 
     document.addEventListener('click', (e) => {
@@ -880,7 +901,9 @@
       lineas.push(`• ${t('wc.wa_idea')}: ${v('idea')}`);
       if (foto) lineas.push(`• ${t('wc.wa_foto')}`);
       lineas.push('', `${t('wc.wa_contacto')}: ${v('nombre')} · ${v('telefono')}`);
-      abrirWhatsApp(v('donde') === 'col' ? 'wc_cartagena' : 'wc_miami', lineas.join('\n'));
+      const mensaje = lineas.join('\n');
+      copiaAlCorreo({ tipo: 'wuandacrafts', destino: v('donde') === 'col' ? 'cartagena' : 'miami', rush: diasHasta(v('fecha')) < 5 ? '1' : '', nombre: v('nombre'), telefono: v('telefono'), mensaje });
+      abrirWhatsApp(v('donde') === 'col' ? 'wc_cartagena' : 'wc_miami', mensaje);
     });
     const hoy = new Date();
     form.elements.fecha.min = new Date(hoy.getTime() - hoy.getTimezoneOffset() * 6e4).toISOString().slice(0, 10);
