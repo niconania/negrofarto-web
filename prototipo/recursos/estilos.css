@@ -653,7 +653,7 @@ dialog.cajon[open] { display: flex; flex-direction: column; animation: deslizar 
   .marcas { grid-template-columns: 1fr; }
   .proceso, .pasos-lf, .look { grid-template-columns: 1fr 1fr; }
   .pie-grilla { grid-template-columns: 1fr 1fr; }
-  .kit-resultado { position: relative; } /* sin sticky; relative para el lienzo del logo líquido */
+  .kit-resultado { position: relative; top: auto; } /* sin sticky; relative para el lienzo del logo líquido, sin el corrimiento del sticky */
   .nosotros-foto { max-width: 340px; }
   .lf-fotos { height: 380px; }
   .ficha, .visor { grid-template-columns: 1fr; }
