@@ -1,6 +1,9 @@
 // Contenido del prototipo de negrofarto.com: servicios, trabajos, kits, el
 // catálogo de La Fartedá (precios del catálogo 2026) y lo que hace WuandaCrafts.
 // Cada texto visible va en { en, es }.
+// Las láminas de un carrusel: <id>/01.webp … <id>/NN.webp, con su miniatura <id>/t-NN.webp (herramientas/preparar-trabajos.mjs).
+const laminas = (id, n) => Array.from({ length: n }, (_, k) => ({ img: `${id}/${String(k + 1).padStart(2, '0')}.webp` }));
+
 window.NFG_DATOS = {
   // WhatsApp reales (confirmados el 9 oct 2026): número completo, solo dígitos.
   // EE.UU. → Juan en Miami; Colombia → el WhatsApp Business de Cartagena.
@@ -56,22 +59,27 @@ window.NFG_DATOS = {
 
   // Trabajos reales publicados en Instagram (@negrofartogroup y @wuandacrafts), cada uno con el enlace a su
   // publicación (comprobados el 12 oct 2026 comparando imagen y texto; /reel/ en los que son video).
+  // «medios» (26 oct 2026): lo que se ve al pasar por la tarjeta y en el visor, en orden. Cada uno es una lámina
+  // { img } o un video { video, poster, dur }; las rutas son relativas a img/proyectos/. Sin «medios», el trabajo
+  // se ve como una sola imagen (su portada «img»). Las láminas son las del carrusel de la publicación; en Bom Paso,
+  // además del reel, van su lámina de presentación y el menú del paquete del Drive.
   proyectos: [
     { id: 'karin', img: 'karin-ramirez.webp', categoria: 'branding', servicio: 'branding', anio: '2024', titulo: 'Karin Ramirez',
-      instagram: 'https://www.instagram.com/p/DAnxl5YORh9/',
+      instagram: 'https://www.instagram.com/p/DAnxl5YORh9/', medios: laminas('karin', 9),
       sector: { en: 'Health services', es: 'Servicios de salud' },
       texto: { en: 'Brand identity for an emotional learning practice.', es: 'Identidad de marca para un espacio de aprendizaje emocional.' } },
     { id: 'bompaso', img: 'bom-paso.webp', categoria: 'branding', servicio: 'branding', anio: '2023', titulo: 'Bom Paso',
       instagram: 'https://www.instagram.com/reel/Cy-9veLA4bq/',
+      medios: [{ video: 'bompaso/video.mp4', poster: 'bompaso/poster.webp', dur: '0:31' }, ...laminas('bompaso', 4).slice(1)],
       sector: { en: 'Restaurant', es: 'Restaurante' },
       texto: { en: 'Brand management, from the logo to the takeout bag.', es: 'Manejo de marca, del logo a la bolsa para llevar.' } },
     { id: 'boda', img: 'boda.webp', categoria: 'branding', servicio: 'branding', anio: '2026',
       titulo: { en: 'A wedding identity', es: 'Identidad para una boda' },
-      instagram: 'https://www.instagram.com/p/DanF-tjEYOQ/',
+      instagram: 'https://www.instagram.com/p/DanF-tjEYOQ/', medios: laminas('boda', 13),
       sector: { en: 'Weddings', es: 'Bodas' },
       texto: { en: "Illustrated monogram and visual identity for a couple's celebration.", es: 'Monograma ilustrado e identidad visual para la celebración de una pareja.' } },
     { id: 'warro', img: 'warro.webp', categoria: 'branding', servicio: 'branding', anio: '2025', titulo: 'Warro',
-      instagram: 'https://www.instagram.com/p/DKxyAiLAcLE/',
+      instagram: 'https://www.instagram.com/p/DKxyAiLAcLE/', medios: laminas('warro', 7),
       sector: { en: 'Wellness', es: 'Bienestar' },
       texto: { en: 'Brand identity for a wellness brand.', es: 'Identidad para una marca de bienestar.' } },
     { id: 'gables', img: 'isayes.webp', categoria: 'letreros', servicio: 'letreros', titulo: 'Gables Tailor · Isayes',
@@ -81,18 +89,19 @@ window.NFG_DATOS = {
     { id: 'suite', img: 'letrero-oficina.webp', categoria: 'letreros', servicio: 'letreros',
       titulo: { en: 'Office suite sign', es: 'Letrero de oficina' },
       instagram: 'https://www.instagram.com/reel/Cn-4IHcgXTW/',
+      medios: [{ video: 'suite/video.mp4', poster: 'suite/poster.webp', dur: '0:09' }],
       sector: { en: 'Real estate', es: 'Bienes raíces' },
       texto: { en: 'Suite signage for a real estate office.', es: 'Letrero de suite para una oficina de bienes raíces.' } },
     { id: 'greenteam', img: 'green-team.webp', categoria: 'productos', servicio: 'merch', anio: '2026', titulo: 'Green Team FC',
-      instagram: 'https://www.instagram.com/p/DdmPSM5ET0x/',
+      instagram: 'https://www.instagram.com/p/DdmPSM5ET0x/', medios: laminas('greenteam', 5),
       sector: { en: 'Sports', es: 'Deportes' },
       texto: { en: 'Custom products for a football club, made at WuandaCrafts.', es: 'Productos personalizados para un club de fútbol, hechos en WuandaCrafts.' } },
     { id: 'infinity', img: 'infinity.webp', categoria: 'productos', servicio: 'merch', anio: '2026', titulo: 'Infinity Home Remodeling',
-      instagram: 'https://www.instagram.com/p/DdE2v-CEdEW/',
+      instagram: 'https://www.instagram.com/p/DdE2v-CEdEW/', medios: laminas('infinity', 5),
       sector: { en: 'Home remodeling', es: 'Remodelación' },
       texto: { en: 'Custom products for a remodeling company.', es: 'Productos personalizados para una empresa de remodelación.' } },
     { id: 'spillmug', img: 'spillmug.webp', categoria: 'productos', servicio: 'merch', anio: '2026', titulo: 'SpillMug Coffee',
-      instagram: 'https://www.instagram.com/p/Dd4J4OzEVKc/',
+      instagram: 'https://www.instagram.com/p/Dd4J4OzEVKc/', medios: laminas('spillmug', 5),
       sector: { en: 'Coffee shop', es: 'Cafetería' },
       texto: { en: 'Pieces for their first Coffee Party, in April 2025.', es: 'Piezas para su primer Coffee Party, en abril de 2025.' } },
   ],

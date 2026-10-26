@@ -333,39 +333,163 @@
     // Cada trabajo abre el visor; el ícono de Instagram lleva directo a su publicación (lo pidió Juan, 10 oct 2026).
     // Van como hermanos y no uno dentro del otro: un enlace no puede ir dentro de un botón.
     const enlaceInstagram = (p, clase, contenido, aria) => `<a class="${clase}" href="${esc(p.instagram)}" target="_blank" rel="noopener"${aria ? ` aria-label="${esc(aria)}" title="${esc(aria)}"` : ''}>${contenido}</a>`;
+
+    // Trabajos como el carrusel de Instagram (pedido de Juan en la reunión del 23 oct 2026; diseño B elegido el 26 oct):
+    // en la tarjeta, el mouse recorre las láminas o reproduce el video; el visor las pasa con flechas, teclado,
+    // miniaturas o deslizando. «medios» está en datos.js; sin él, el trabajo es una sola imagen (su portada).
+    const proyecto = (id) => D.proyectos.find((x) => x.id === id);
+    const rutaProy = (r) => `${base}img/proyectos/${r}`;
+    const miniatura = (m) => rutaProy(m.poster || m.img.replace(/(\d+)\.webp$/, 't-$1.webp'));
+    const mediosDe = (p) => p.medios || [{ img: p.img }];
+    const conVideo = (p) => !!(p.medios && p.medios[0].video);           // la tarjeta reproduce el video…
+    const conLaminas = (p) => !!(p.medios && !conVideo(p) && p.medios.length > 1); // …o recorre las láminas
+    const insignia = (p) => (conVideo(p)
+      ? `<span class="insignia">${icono('i-play')}${esc(p.medios[0].dur)}<span class="solo-lectores"> ${t('trab.video')}</span></span>`
+      : conLaminas(p) ? `<span class="insignia">${icono('i-laminas')}${p.medios.length}<span class="solo-lectores"> ${t('trab.laminas')}</span></span>` : '');
+
+    let tarjetaActiva = null;     // la tarjeta con el mouse encima
+    const laminaTarjeta = new Map(); // id del trabajo → lámina que se ve en la tarjeta (0 = la portada)
+    const precargados = new Set();
     function pintarTrabajos() {
+      tarjetaActiva = null;
       $('#filtros-trabajos').innerHTML = filtros.map((f) => `<button class="chip" type="button" data-filtro="${f}" aria-pressed="${filtro === f}">${t('trab.' + f)}</button>`).join('');
       $('#lista-trabajos').innerHTML = D.proyectos.map((p) => `
-        <div class="trabajo"${filtro !== 'todos' && p.categoria !== filtro ? ' hidden' : ''}>
+        <div class="trabajo${p.medios ? ' trabajo--medios' : ''}${conLaminas(p) ? ' trabajo--laminas' : ''}" data-id="${p.id}"${filtro !== 'todos' && p.categoria !== filtro ? ' hidden' : ''}>
           <button class="trabajo-abrir" type="button" data-proyecto="${p.id}">
-            <img src="${base}img/proyectos/${p.img}" alt="${esc(L(p.titulo))}" loading="lazy" />
+            <img class="trabajo-portada" src="${rutaProy(p.img)}" alt="${esc(L(p.titulo))}" loading="lazy" />
+            ${insignia(p)}${conLaminas(p) ? '<span class="trabajo-contador" aria-hidden="true"></span>' : ''}
             <span class="trabajo-info"><strong>${esc(L(p.titulo))}</strong><span>${esc(L(p.sector))}${p.anio ? ' · ' + p.anio : ''}</span></span>
           </button>
+          ${conLaminas(p) ? [-1, 1].map((paso) => `<button class="boton-circulo trabajo-flecha ${paso < 0 ? 'ant' : 'sig'}" type="button" tabindex="-1" data-paso="${paso}" aria-label="${esc(t(paso < 0 ? 'trab.ant' : 'trab.sig'))}">${icono(paso < 0 ? 'i-izq' : 'i-der')}</button>`).join('') : ''}
           ${p.instagram ? enlaceInstagram(p, 'trabajo-ig', icono('i-instagram'), t('trab.ver_ig_de', { proyecto: L(p.titulo) })) : ''}
         </div>`).join('');
     }
+
+    // Vista previa en la tarjeta: solo con mouse (en el celular se toca y se abre el visor). Las láminas se recorren con el
+    // mouse (el centro de la tarjeta) o con las flechas de los costados; el video suena (sin sonido) mientras el mouse
+    // está encima, salvo con «reducir movimiento».
+    function laminaDeTarjeta(card, i) {
+      const p = proyecto(card.dataset.id), n = p.medios.length;
+      i = Math.max(0, Math.min(n - 1, i));
+      laminaTarjeta.set(p.id, i);
+      $('.trabajo-portada', card).src = i === 0 ? rutaProy(p.img) : miniatura(p.medios[i]);
+      $('.trabajo-contador', card).textContent = `${i + 1} / ${n}`;
+    }
+    function entrarTarjeta(card) {
+      const p = proyecto(card.dataset.id);
+      card.classList.add('viendo');
+      if (conLaminas(p)) {
+        laminaDeTarjeta(card, 0);
+        if (!precargados.has(p.id)) { precargados.add(p.id); p.medios.forEach((m) => { new Image().src = miniatura(m); }); }
+      } else if (conVideo(p) && !reduceMov.matches) {
+        let v = $('.trabajo-video', card);
+        if (!v) {
+          v = document.createElement('video');
+          Object.assign(v, { className: 'trabajo-video', muted: true, loop: true, playsInline: true, preload: 'auto', tabIndex: -1, poster: rutaProy(p.medios[0].poster), src: rutaProy(p.medios[0].video) });
+          v.setAttribute('muted', ''); v.setAttribute('aria-hidden', 'true');
+          $('.trabajo-portada', card).after(v);
+        }
+        v.play().then(() => v.classList.add('suena'), () => { /* el navegador no dejó reproducir: queda la portada */ });
+      }
+    }
+    function salirTarjeta() {
+      const card = tarjetaActiva;
+      tarjetaActiva = null;
+      if (!card) return;
+      card.classList.remove('viendo');
+      const p = proyecto(card.dataset.id);
+      if (conLaminas(p)) { laminaTarjeta.delete(p.id); $('.trabajo-portada', card).src = rutaProy(p.img); }
+      const v = $('.trabajo-video', card);
+      if (v) { v.pause(); v.currentTime = 0; v.classList.remove('suena'); }
+    }
+    const lista = $('#lista-trabajos');
+    lista.addEventListener('pointerover', (e) => {
+      if (e.pointerType !== 'mouse') return;
+      const card = e.target.closest('.trabajo--medios');
+      if (card === tarjetaActiva) return;
+      salirTarjeta();
+      tarjetaActiva = card;
+      if (card) entrarTarjeta(card);
+    });
+    lista.addEventListener('pointerleave', salirTarjeta);
+    lista.addEventListener('pointermove', (e) => {
+      if (e.pointerType !== 'mouse' || !tarjetaActiva) return;
+      const p = proyecto(tarjetaActiva.dataset.id);
+      if (!conLaminas(p)) return;
+      const r = tarjetaActiva.getBoundingClientRect(), u = (e.clientX - r.left) / r.width;
+      if (u < 0.16 || u > 0.84) return; // en los costados están las flechas
+      laminaDeTarjeta(tarjetaActiva, Math.floor((u - 0.16) / 0.68 * p.medios.length));
+    });
+
     $('#trabajos').addEventListener('click', (e) => {
       const f = e.target.closest('[data-filtro]');
       if (f) { filtro = f.dataset.filtro; pintarTrabajos(); }
-      const p = e.target.closest('[data-proyecto]');
-      if (p) abrirProyecto(D.proyectos.find((x) => x.id === p.dataset.proyecto));
+      const flecha = e.target.closest('.trabajo-flecha');
+      if (flecha) {
+        const card = flecha.closest('.trabajo');
+        laminaDeTarjeta(card, (laminaTarjeta.get(card.dataset.id) || 0) + Number(flecha.dataset.paso));
+        return;
+      }
+      const b = e.target.closest('[data-proyecto]');
+      // Si se estaba viendo una lámina en la tarjeta, el visor se abre en esa.
+      if (b) abrirProyecto(proyecto(b.dataset.proyecto), laminaTarjeta.get(b.dataset.proyecto) || 0);
     });
+
+    // El visor: la lámina o el video, con flechas, contador, miniaturas (escritorio) o puntos (celular).
     const visor = $('#modal-proyecto');
-    function abrirProyecto(p) {
-      const s = servicio(p.servicio);
+    let abierto = null; // { p, medios, i }
+    function abrirProyecto(p, desde = 0) {
+      const s = servicio(p.servicio), medios = mediosDe(p), varias = medios.length > 1;
+      abierto = { p, medios, i: Math.max(0, Math.min(medios.length - 1, desde)) };
       visor.innerHTML = botonCerrar() + '<div class="visor">'
-        + `<div class="visor-img"><img src="${base}img/proyectos/${p.img}" alt="${esc(L(p.titulo))}" /></div>`
+        + `<div class="visor-medios${varias ? ' visor-medios--varias' : ''}"><div class="visor-escena">`
+        + `<div class="visor-lamina" id="visor-lamina"${varias ? ` role="group" aria-roledescription="${esc(t('trab.carrusel'))}" aria-label="${esc(L(p.titulo))}"` : ''}></div>`
+        + (varias
+          ? '<span class="visor-contador" id="visor-contador" aria-hidden="true"></span>'
+            + [-1, 1].map((paso) => `<button class="boton-circulo visor-flecha ${paso < 0 ? 'ant' : 'sig'}" type="button" data-lamina="${paso}" aria-label="${esc(t(paso < 0 ? 'trab.ant' : 'trab.sig'))}">${icono(paso < 0 ? 'i-izq' : 'i-der')}</button>`).join('')
+          : '')
+        + '</div>'
+        + (varias
+          ? '<div class="visor-tira">' + medios.map((m, k) => `<button class="visor-mini${m.video ? ' visor-mini--video' : ''}" type="button" data-ir="${k}" aria-label="${esc(t('trab.ir', { i: k + 1 }))}"><img src="${miniatura(m)}" alt="" loading="lazy" /></button>`).join('') + '</div>'
+            + '<div class="visor-puntos" aria-hidden="true">' + medios.map(() => '<i></i>').join('') + '</div>'
+            + '<p class="solo-lectores" id="visor-anuncio" aria-live="polite"></p>'
+          : '')
+        + '</div>'
         + `<div class="modal-cuerpo"><p class="ceja">${esc(L(s.titulo))}</p><h3>${esc(L(p.titulo))}</h3>`
         + `<p><strong>${esc(L(p.sector))}</strong>${p.anio ? ' · ' + p.anio : ''}</p><p>${esc(L(p.texto))}</p>`
         + `<button class="boton boton--acento" type="button" data-similar="${p.id}">${t('trab.similar')}</button>`
         + (p.instagram ? enlaceInstagram(p, 'boton boton--borde', `${icono('i-instagram')}${esc(t('trab.ver_ig'))}`) : '')
         + '</div></div>';
       visor.showModal();
+      pintarLamina(false);
+    }
+    function pintarLamina(avisar) {
+      const { p, medios, i } = abierto, m = medios[i], n = medios.length, marco = $('#visor-lamina');
+      marco.querySelectorAll('video').forEach((v) => v.pause());
+      marco.innerHTML = m.video
+        ? `<video class="visor-video" src="${rutaProy(m.video)}" poster="${rutaProy(m.poster)}" controls playsinline muted loop autoplay></video>`
+        : `<img src="${rutaProy(m.img)}" alt="${esc(L(p.titulo))}${n > 1 ? ' — ' + esc(t('trab.lamina_de', { i: i + 1, n })) : ''}" />`;
+      if (n < 2) return;
+      $('#visor-contador').textContent = `${i + 1} / ${n}`;
+      $$('.visor-mini', visor).forEach((b, k) => { b.setAttribute('aria-current', String(k === i)); if (k === i) b.scrollIntoView({ inline: 'center', block: 'nearest' }); });
+      $$('.visor-puntos i', visor).forEach((d, k) => d.classList.toggle('activo', k === i));
+      $$('.visor-flecha', visor).forEach((b) => { const sin = Number(b.dataset.lamina) < 0 ? i === 0 : i === n - 1; b.disabled = sin; });
+      if (avisar) $('#visor-anuncio').textContent = t('trab.lamina_de', { i: i + 1, n });
+      [i - 1, i + 1].forEach((k) => { if (medios[k] && medios[k].img) new Image().src = rutaProy(medios[k].img); });
+    }
+    function irALamina(k) {
+      if (!abierto || k < 0 || k > abierto.medios.length - 1 || k === abierto.i) return;
+      abierto.i = k;
+      pintarLamina(true);
     }
     visor.addEventListener('click', (e) => {
+      const paso = e.target.closest('[data-lamina]');
+      if (paso) { irALamina(abierto.i + Number(paso.dataset.lamina)); return; }
+      const mini = e.target.closest('[data-ir]');
+      if (mini) { irALamina(Number(mini.dataset.ir)); return; }
       const b = e.target.closest('[data-similar]');
       if (!b) return;
-      const p = D.proyectos.find((x) => x.id === b.dataset.similar);
+      const p = proyecto(b.dataset.similar);
       seleccion.add(p.servicio);
       form.elements.mensaje.value = t('trab.mensaje', { proyecto: L(p.titulo) });
       pintarChipsCotizar();
@@ -373,6 +497,24 @@
       visor.close();
       irA('cotizar');
     });
+    visor.addEventListener('keydown', (e) => {
+      // Con el foco en el video, las flechas son del reproductor (adelantar y retroceder).
+      if (!abierto || e.target.tagName === 'VIDEO' || (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight')) return;
+      e.preventDefault();
+      irALamina(abierto.i + (e.key === 'ArrowRight' ? 1 : -1));
+    });
+    // Deslizar con el dedo sobre la lámina: a la izquierda, la siguiente.
+    let toque = null;
+    visor.addEventListener('pointerdown', (e) => { toque = e.pointerType !== 'mouse' && e.target.closest('.visor-lamina') ? { x: e.clientX, y: e.clientY } : null; });
+    visor.addEventListener('pointerup', (e) => {
+      if (!toque || !abierto) return;
+      const dx = e.clientX - toque.x, dy = e.clientY - toque.y;
+      toque = null;
+      if (Math.abs(dx) > 48 && Math.abs(dx) > Math.abs(dy) * 1.4) irALamina(abierto.i + (dx < 0 ? 1 : -1));
+    });
+    visor.addEventListener('pointercancel', () => { toque = null; });
+    // Al cerrar, el video se detiene (un diálogo cerrado seguiría sonando) y el visor queda vacío.
+    visor.addEventListener('close', () => { visor.querySelectorAll('video').forEach((v) => v.pause()); abierto = null; visor.innerHTML = ''; });
 
     // Cotización
     function pintarChipsCotizar() {

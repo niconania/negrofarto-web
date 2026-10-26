@@ -29,6 +29,10 @@ window.NFG_ICONOS = '<svg xmlns="http://www.w3.org/2000/svg" style="display:none
   + '<symbol id="i-envio" viewBox="0 0 24 24"><path d="M2 6.5h11.5v9.5H2zM13.5 9.5h4l3.5 3.5v3h-7.5"/><circle cx="6" cy="17.5" r="2"/><circle cx="17" cy="17.5" r="2"/></symbol>'
   + '<symbol id="i-pagar" viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19M6.5 15h4"/></symbol>'
   + '<symbol id="i-pais" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></symbol>'
+  // Galería de trabajos: flechas, láminas de un carrusel
+  + '<symbol id="i-izq" viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></symbol>'
+  + '<symbol id="i-der" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>'
+  + '<symbol id="i-laminas" viewBox="0 0 24 24"><rect x="7" y="7" width="13" height="13" rx="3"/><path d="M4 16V6.5A2.5 2.5 0 0 1 6.5 4H16"/></symbol>'
   // Tipos de negocio y etapas del recomendador de kits
   + '<symbol id="i-cafe" viewBox="0 0 24 24"><path d="M4 9h12v4.5A5.5 5.5 0 0 1 10.5 19h-1A5.5 5.5 0 0 1 4 13.5V9Z"/><path d="M16 10.5h1.5a2.5 2.5 0 0 1 0 5h-1.9"/><path d="M8 3.5c-.7.9-.7 1.8 0 2.7M12 3.5c-.7.9-.7 1.8 0 2.7"/></symbol>'
   + '<symbol id="i-pesa" viewBox="0 0 24 24"><path d="M7 6.5v11M17 6.5v11M4 9v6M20 9v6M7 12h10"/></symbol>'
