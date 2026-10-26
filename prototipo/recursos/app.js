@@ -223,15 +223,29 @@
       if (conBoton) $(`.servicio[data-servicio="${id}"] .servicio-ver`)?.focus(); // el foco no se pierde al repintar
     });
 
+    // Mientras no hay kit, la caja muestra el logo líquido (recursos/liquido.js), que pidió Nicola el 26 oct 2026
+    // porque Juan la veía «flat». Si no hay WebGL2 o se pide reducir movimiento, queda el logo quieto.
+    let liquido = null;
     function pintarKit() {
       $('#kit-negocios').innerHTML = D.negocios.map((n) => `<button class="chip" type="button" data-negocio="${n.id}" aria-pressed="${kit.negocio === n.id}">${esc(L(n.titulo))}</button>`).join('');
       $('#kit-etapas').innerHTML = D.etapas.map((n) => `<button class="chip" type="button" data-etapa="${n.id}" aria-pressed="${kit.etapa === n.id}">${esc(L(n.titulo))}</button>`).join('');
       const caja = $('#kit-resultado');
       const items = itemsKit();
       if (!items) {
-        caja.innerHTML = `<div class="kit-vacio"><img class="kit-logo" src="${base}img/marcas/nfg-blanco.svg" alt="" width="116" height="60" /><p>${t('kit.vacio')}</p></div>`;
+        const pista = t(matchMedia('(hover: hover)').matches ? 'kit.pista' : 'kit.pista_toque');
+        const vacio = caja.querySelector('.kit-vacio');
+        if (vacio) { // ya está (se eligió solo el negocio, o cambió el idioma): cambian los textos y el logo sigue
+          vacio.querySelector('p').innerHTML = t('kit.vacio');
+          vacio.querySelector('.kit-pista').textContent = pista;
+          liquido?.medir();
+          return;
+        }
+        caja.innerHTML = `<div class="kit-vacio"><img class="kit-logo" src="${base}img/marcas/nfg-blanco.svg" alt="" width="259" height="135" /><p>${t('kit.vacio')}</p><span class="kit-pista" aria-hidden="true">${esc(pista)}</span></div>`;
+        liquido = window.NFG_LIQUIDO?.montar(caja, caja.querySelector('.kit-logo')) || null;
         return;
       }
+      liquido?.destruir();
+      liquido = null;
       const negocio = D.negocios.find((n) => n.id === kit.negocio);
       const etapa = D.etapas.find((n) => n.id === kit.etapa);
       caja.innerHTML = `<p class="ceja">${t('kit.resultado')}</p>`
