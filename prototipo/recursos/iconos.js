@@ -41,4 +41,12 @@ window.NFG_ICONOS = '<svg xmlns="http://www.w3.org/2000/svg" style="display:none
   + '<symbol id="i-grupo" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><circle cx="17" cy="9" r="2.4"/><path d="M15.8 14.1A4.6 4.6 0 0 1 21 18.6"/></symbol>'
   + '<symbol id="i-brote" viewBox="0 0 24 24"><path d="M12 20v-8"/><path d="M12 12c0-4 3-6.5 7.5-6.5 0 4.2-3 6.5-7.5 6.5Z"/><path d="M12 14.5c0-3.2-2.4-5.3-6.5-5.3 0 3.3 2.4 5.3 6.5 5.3Z"/></symbol>'
   + '<symbol id="i-crecer" viewBox="0 0 24 24"><path d="M3.5 17 9.5 11l4 4 7-7"/><path d="M15 8h5.5v5.5"/></symbol>'
+  // Catálogo de WuandaCrafts
+  + '<symbol id="i-hoodie" viewBox="0 0 24 24"><path d="M9 4 4.5 6 2.8 11.5l3.2 1V20h12v-7.5l3.2-1L19.5 6 15 4"/><path d="M9 4c.2 3.6 5.8 3.6 6 0"/><path d="M10.5 7.6V11M13.5 7.6V11M8.5 15.5h7"/></symbol>'
+  + '<symbol id="i-lampara" viewBox="0 0 24 24"><rect x="7" y="2.8" width="10" height="13.6" rx="1.8"/><path d="M5 21h14M7.8 16.4V21M16.2 16.4V21"/><path d="M12 7v4M10 9h4"/></symbol>'
+  + '<symbol id="i-vino" viewBox="0 0 24 24"><path d="M10 2.5h4v4.2c0 1.4 2.2 2.1 2.2 5V21H7.8v-9.3c0-2.9 2.2-3.6 2.2-5V2.5Z"/><path d="M7.8 14.5h8.4"/></symbol>'
+  + '<symbol id="i-flask" viewBox="0 0 24 24"><path d="M9.5 2.5h5M10.2 2.5v3M13.8 2.5v3"/><path d="M7.5 9a3.5 3.5 0 0 1 3.5-3.5h2A3.5 3.5 0 0 1 16.5 9v10a2.5 2.5 0 0 1-2.5 2.5h-4A2.5 2.5 0 0 1 7.5 19V9Z"/><path d="M7.5 12h9"/></symbol>'
+  + '<symbol id="i-mousepad" viewBox="0 0 24 24"><rect x="2.8" y="5.5" width="18.4" height="13" rx="3"/><rect x="13" y="9" width="4.6" height="6.6" rx="2.3"/><path d="M15.3 9v2.8"/></symbol>'
+  + '<symbol id="i-todo" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.8"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.8"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.8"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.8"/></symbol>'
+  + '<symbol id="i-pdf" viewBox="0 0 24 24"><path d="M6 3h8l5 5v12a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/><path d="M14 3v5h5M8.5 15.5h7M8.5 18h4"/></symbol>'
   + '</svg>';

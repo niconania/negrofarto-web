@@ -191,22 +191,101 @@ window.NFG_DATOS = {
       camiseta: { colores: ['blanco'] }, tote: { colores: ['crema'] } },
   ],
 
-  // WuandaCrafts: qué se hace, para qué ocasión y piezas reales de @wuandacrafts.
+  // WuandaCrafts · tendedero de fotos: cómo se rotula cada pieza y a qué categoría del catálogo lleva «¿Quieres uno así?».
+  // «categoria»: null si esa pieza ya no es una categoría del catálogo (las ilustraciones a medida son de la agencia, 23 oct 2026).
   tipos: [
-    { id: 'ropa', icono: 'i-camiseta', titulo: { en: 'Apparel', es: 'Ropa' }, texto: { en: 'Tees, hoodies and caps', es: 'Camisetas, hoodies y gorras' } },
-    { id: 'termos', icono: 'i-termo', titulo: { en: 'Tumblers & mugs', es: 'Termos y tazas' }, texto: { en: 'With names, photos or art', es: 'Con nombres, fotos o arte' } },
-    { id: 'bolsas', icono: 'i-bolsa', titulo: { en: 'Tote bags', es: 'Tote bags' }, texto: { en: 'For gifts and special dates', es: 'Para regalos y fechas especiales' } },
-    { id: 'calcomanias', icono: 'i-calcomania', titulo: { en: 'Custom decals', es: 'Calcomanías personalizadas' }, texto: { en: 'Vinyl with names or logos', es: 'Vinil con nombres o logos' } },
-    { id: 'ilustracion', icono: 'i-pincel', titulo: { en: 'Illustrations', es: 'Ilustraciones' }, texto: { en: 'Portraits and custom art', es: 'Retratos y arte a medida' } },
-    { id: 'corporativo', icono: 'i-regalo', titulo: { en: 'Team & corporate gifts', es: 'Regalos de equipo y empresa' }, texto: { en: 'With your logo, in volume', es: 'Con tu logo, en cantidad' } },
+    { id: 'ropa', categoria: null, titulo: { en: 'Apparel', es: 'Ropa' }, texto: { en: 'Tees, hoodies and caps', es: 'Camisetas, hoodies y gorras' } },
+    { id: 'termos', categoria: 'termos', titulo: { en: 'Tumblers & mugs', es: 'Termos y tazas' }, texto: { en: 'With names, photos or art', es: 'Con nombres, fotos o arte' } },
+    { id: 'bolsas', categoria: 'totes', titulo: { en: 'Tote bags', es: 'Tote bags' }, texto: { en: 'For gifts and special dates', es: 'Para regalos y fechas especiales' } },
+    { id: 'calcomanias', categoria: 'calcomanias', titulo: { en: 'Custom decals', es: 'Calcomanías personalizadas' }, texto: { en: 'Vinyl with names or logos', es: 'Vinil con nombres o logos' } },
+    { id: 'ilustracion', categoria: null, titulo: { en: 'Illustrations', es: 'Ilustraciones' }, texto: { en: 'Portraits and custom art', es: 'Retratos y arte a medida' } },
+    { id: 'corporativo', categoria: 'lamparas', titulo: { en: 'Team & corporate gifts', es: 'Regalos de equipo y empresa' }, texto: { en: 'With your logo, in volume', es: 'Con tu logo, en cantidad' } },
   ],
-  ocasiones: [
-    { id: 'cumple', titulo: { en: 'Birthday', es: 'Cumpleaños' } },
-    { id: 'fecha', titulo: { en: 'Special date', es: 'Fecha especial' } },
-    { id: 'equipo', titulo: { en: 'Team or company', es: 'Equipo o empresa' } },
-    { id: 'boda', titulo: { en: 'Wedding', es: 'Boda' } },
-    { id: 'porque', titulo: { en: 'Just because', es: 'Porque sí' } },
-  ],
+  // WuandaCrafts · catálogo (pase 4, estilo Etsy; maqueta A elegida el 26 oct 2026).
+  // Solo lo que dijo Juan el 23 oct (docs/09): termos con sus estilos, hoodies, camisetas, tote bags, calcomanías, lámparas y «otros»
+  // (wine bag, flask, mouse pad). Sin fundas de celular, manteles ni gorras. TODAVÍA NO hay precios, colores, medidas ni fuentes
+  // confirmados por Juan: lo marcado «ejemplo» sale de la maqueta, se muestra con su etiqueta y se quita al definirlo. De las
+  // escalas por cantidad, solo «de 10 a 24» lo dijo él. Las fotos son las reales de @wuandacrafts; sin foto, un mosaico con los
+  // colores de la «W». Los nombres en inglés de los estilos de termo (campero, huevo…) son traducción nuestra: confirmar con Juan.
+  wc: {
+    // Los mismos topes que enviar.php (servidor/enviar-config.ejemplo.php): por archivo, archivos por pedido y total.
+    topeMb: 5, maxArchivos: 5, totalMb: 15,
+    tamanosFiltro: ['20 oz'], // los tamaños de termo que nombró Juan («también por onzas, 20 oz»); las demás medidas, por definir
+    categorias: [
+      { id: 'termos', icono: 'i-termo', titulo: { en: 'Tumblers', es: 'Termos' },
+        texto: { en: 'Sublimated tumbler with your name, your art or your logo. Made one by one in Miami or Cartagena.', es: 'Termo sublimado con tu nombre, tu arte o tu logo. Lo hacemos uno a uno en Miami o en Cartagena.' } },
+      { id: 'hoodies', icono: 'i-hoodie', titulo: { en: 'Hoodies', es: 'Hoodies' },
+        texto: { en: 'Hoodie with your name, your art or your logo.', es: 'Hoodie con tu nombre, tu arte o tu logo.' } },
+      { id: 'camisetas', icono: 'i-camiseta', titulo: { en: 'T-shirts', es: 'Camisetas' },
+        texto: { en: 'T-shirt with your name, your art or your logo.', es: 'Camiseta con tu nombre, tu arte o tu logo.' } },
+      { id: 'totes', icono: 'i-bolsa', titulo: { en: 'Tote bags', es: 'Tote bags' },
+        texto: { en: 'Tote bag with your name, a photo or your art.', es: 'Tote bag con tu nombre, una foto o tu arte.' } },
+      { id: 'calcomanias', icono: 'i-calcomania', titulo: { en: 'Decals', es: 'Calcomanías' },
+        texto: { en: 'Cut vinyl with the name or logo you want. You see it on the sheet before you order.', es: 'Vinil cortado con el nombre o el logo que quieras. Lo ves en el pliego antes de pedir.' } },
+      { id: 'lamparas', icono: 'i-lampara', titulo: { en: 'Lamps', es: 'Lámparas' },
+        texto: { en: 'Lamp with a plate personalized with your illustration or your name.', es: 'Lámpara con placa personalizada con tu ilustración o tu nombre.' } },
+      { id: 'otros', icono: 'i-regalo', titulo: { en: 'Other', es: 'Otros' },
+        texto: { en: 'Personalized with your name or your logo.', es: 'Personalizado con tu nombre o tu logo.' } },
+    ],
+    estilos: [ // los estilos de termo que nombró Juan (la subcategoría)
+      { id: 'lata', titulo: { en: 'Can', es: 'Lata' } },
+      { id: 'campero', titulo: { en: 'Camper', es: 'Campero' } },
+      { id: 'botella', titulo: { en: 'Bottle', es: 'Botella' } },
+      { id: 'mug', titulo: { en: 'Ceramic mug', es: 'Mug de cerámica' } },
+      { id: 'kids', titulo: { en: 'Kids', es: 'Kids' } },
+      { id: 'bebe', titulo: { en: 'Baby', es: 'Bebés' } },
+      { id: 'skinny', titulo: { en: 'Skinny', es: 'Skinny' } },
+      { id: 'huevo', titulo: { en: 'Egg', es: 'Huevo' } },
+    ],
+    colores: {
+      blanco: { hex: '#ffffff', nombre: { en: 'White', es: 'Blanco' } },
+      negro: { hex: '#151515', nombre: { en: 'Black', es: 'Negro' } },
+      rosa: { hex: '#e55d8e', nombre: { en: 'Pink', es: 'Rosa' } },
+      azul: { hex: '#32ace3', nombre: { en: 'Blue', es: 'Azul' } },
+      verde: { hex: '#9fc75b', nombre: { en: 'Green', es: 'Verde' } },
+      morado: { hex: '#7c599b', nombre: { en: 'Purple', es: 'Morado' } },
+      natural: { hex: '#eadfc6', nombre: { en: 'Natural', es: 'Natural' } },
+    },
+    fuentes: [ // se muestran con el nombre que escribe la persona; Pacifico, Montserrat, Permanent Marker y Fredoka (Google Fonts)
+      { id: 'cursiva', css: "'Pacifico', cursive", peso: 400, nombre: { en: 'Script', es: 'Cursiva' } },
+      { id: 'clasica', css: "'Montserrat', sans-serif", peso: 800, nombre: { en: 'Classic', es: 'Clásica' } },
+      { id: 'marcador', css: "'Permanent Marker', cursive", peso: 400, nombre: { en: 'Marker', es: 'Marcador' } },
+      { id: 'redonda', css: "'Fredoka', sans-serif", peso: 600, nombre: { en: 'Rounded', es: 'Redonda' } },
+    ],
+    escalas: [{ desde: 1, hasta: 9 }, { desde: 10, hasta: 24 }, { desde: 25, hasta: null }], // ejemplo, salvo «de 10 a 24»
+    // El orden es el de «Todo»: arriba las piezas que ya tienen foto. El orden real lo decide Juan.
+    // «instagram»: la publicación de la foto (la misma del tendedero). «tamanos» y «colores» son ejemplos hasta que Juan los defina.
+    catalogo: [
+      { id: 'termo-lata', cat: 'termos', estilo: 'lata', icono: 'i-termo', tono: 'azul', titulo: { en: 'Can tumbler', es: 'Termo lata' },
+        foto: 'termos.webp', encuadre: '50% 50%', insignia: 'mas-vendido', instagram: 'https://www.instagram.com/reel/Cy4FXEigbS-/',
+        pie: { en: 'Tumblers with custom art', es: 'Termos con arte a medida' },
+        tamanos: ['20 oz', '30 oz'], colores: ['blanco', 'negro', 'rosa', 'azul', 'verde'] },
+      { id: 'tote', cat: 'totes', icono: 'i-bolsa', tono: 'verde', titulo: { en: 'Tote bag', es: 'Tote bag' },
+        foto: 'tote-foto.webp', encuadre: '50% 50%', instagram: 'https://www.instagram.com/p/DRMbJaajpSd/',
+        pie: { en: 'Tote with a photo', es: 'Tote con foto' }, colores: ['natural', 'negro'] },
+      { id: 'lampara', cat: 'lamparas', icono: 'i-lampara', tono: 'naranja', titulo: { en: 'Lamp with plate', es: 'Lámpara con placa' },
+        foto: 'lampara-foto.webp', encuadre: '50% 56%', insignia: 'nuevo', instagram: 'https://www.instagram.com/reel/DeY6XO0suIh/',
+        pie: { en: 'Lamp with a custom illustration', es: 'Lámpara con ilustración a medida' } },
+      { id: 'calcomania', cat: 'calcomanias', icono: 'i-calcomania', tono: 'rosa', titulo: { en: 'Custom decal', es: 'Calcomanía con tu nombre' }, unidad: 'pliego',
+        foto: 'calcomania-mascota.webp', encuadre: '50% 90%', instagram: 'https://www.instagram.com/reel/CnQhQQJJbfl/',
+        pie: { en: "Decal with the pet's name", es: 'Calcomanía con el nombre de la mascota' }, colores: ['morado', 'negro', 'blanco', 'rosa', 'azul'] },
+      { id: 'hoodie', cat: 'hoodies', icono: 'i-hoodie', tono: 'naranja', titulo: { en: 'Hoodie', es: 'Hoodie' },
+        tamanos: ['S', 'M', 'L', 'XL'], colores: ['negro', 'blanco', 'rosa', 'azul'] },
+      { id: 'camiseta', cat: 'camisetas', icono: 'i-camiseta', tono: 'rosa', titulo: { en: 'T-shirt', es: 'Camiseta' },
+        tamanos: ['S', 'M', 'L', 'XL'], colores: ['negro', 'blanco', 'rosa', 'azul'] },
+      { id: 'termo-campero', cat: 'termos', estilo: 'campero', icono: 'i-termo', tono: 'azul', titulo: { en: 'Camper tumbler', es: 'Termo campero' }, tamanos: ['20 oz', '30 oz'], colores: ['blanco', 'negro', 'rosa', 'azul', 'verde'] },
+      { id: 'termo-botella', cat: 'termos', estilo: 'botella', icono: 'i-termo', tono: 'verde', titulo: { en: 'Bottle tumbler', es: 'Termo botella' }, tamanos: ['20 oz', '30 oz'], colores: ['blanco', 'negro', 'rosa', 'azul', 'verde'] },
+      { id: 'mug', cat: 'termos', estilo: 'mug', icono: 'i-cafe', tono: 'naranja', titulo: { en: 'Ceramic mug', es: 'Mug de cerámica' }, colores: ['blanco', 'negro', 'rosa', 'azul', 'verde'] },
+      { id: 'termo-kids', cat: 'termos', estilo: 'kids', icono: 'i-termo', tono: 'rosa', titulo: { en: 'Kids tumbler', es: 'Termo kids' }, colores: ['blanco', 'negro', 'rosa', 'azul', 'verde'] },
+      { id: 'termo-bebe', cat: 'termos', estilo: 'bebe', icono: 'i-termo', tono: 'verde', titulo: { en: 'Baby tumbler', es: 'Termo bebé' }, colores: ['blanco', 'negro', 'rosa', 'azul', 'verde'] },
+      { id: 'termo-skinny', cat: 'termos', estilo: 'skinny', icono: 'i-termo', tono: 'morado', titulo: { en: 'Skinny tumbler', es: 'Termo skinny' }, tamanos: ['20 oz', '30 oz'], colores: ['blanco', 'negro', 'rosa', 'azul', 'verde'] },
+      { id: 'termo-huevo', cat: 'termos', estilo: 'huevo', icono: 'i-termo', tono: 'azul', titulo: { en: 'Egg tumbler', es: 'Termo huevo' }, colores: ['blanco', 'negro', 'rosa', 'azul', 'verde'] },
+      { id: 'wine-bag', cat: 'otros', icono: 'i-vino', tono: 'morado', titulo: { en: 'Wine bag', es: 'Wine bag' }, colores: ['natural', 'negro'] },
+      { id: 'flask', cat: 'otros', icono: 'i-flask', tono: 'azul', titulo: { en: 'Flask', es: 'Flask' }, colores: ['blanco', 'negro', 'rosa', 'azul', 'verde'] },
+      { id: 'mouse-pad', cat: 'otros', icono: 'i-mousepad', tono: 'rosa', titulo: { en: 'Mouse pad', es: 'Mouse pad' }, colores: ['negro', 'blanco'] },
+    ],
+  },
+
   // Piezas del tendedero de fotos, cada una con su publicación de Instagram (comprobadas el 26 oct 2026 comparando imagen
   // y texto). «portada»: también cuelgan en la cortina del héroe. Sin fotos de Juan: «la gente tiene que creer que somos
   // un equipo» (reunión del 23 oct 2026); la calcomanía y la lámpara reemplazan las de la Cricut y el gimnasio.
