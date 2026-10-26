@@ -239,36 +239,62 @@ h2 em { font-style: normal; color: var(--acento-oscuro); }
 .lista-check li { display: flex; align-items: flex-start; gap: 8px; }
 .lista-check .icono { margin-top: 2px; color: var(--turquesa); }
 
-/* ¿Qué necesita tu negocio? */
+/* ¿Qué necesita tu negocio? Un formulario de dos pasos dentro de la caja blanca (la caja es lo que se llena) y, al lado
+   sobre el fondo oscuro, el logo líquido (recursos/liquido.js), que «piensa» cuando se elige una opción. */
 .seccion--kit { background: var(--turquesa-tinta); color: #fff; }
-.kit-grilla { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; }
-.kit-paso { margin-top: 28px; }
-.kit-paso h3 { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; font-size: 15px; font-weight: 800; letter-spacing: 0; }
-.kit-paso h3 span:first-child { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--turquesa); color: #000; font-size: 13px; }
+.kit-grilla { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr); gap: 56px; align-items: start; }
 .kit-resultado {
-  position: sticky; top: calc(var(--alto-cabecera) + 20px); padding: 30px;
+  position: sticky; top: calc(var(--alto-cabecera) + 20px); padding: 34px;
   border-radius: 20px; background: #fff; color: var(--texto); box-shadow: 0 30px 60px rgba(0, 0, 0, .25);
 }
-.kit-vacio { display: grid; place-items: center; gap: 14px; min-height: 280px; text-align: center; color: var(--gris); }
-.kit-logo { width: min(64%, 330px); height: auto; transition: opacity .4s ease; }
-/* Logo líquido (recursos/liquido.js). El lienzo cubre la caja; el <img> marca dónde va el logo y queda de
-   respaldo (sin WebGL2, con «reducir movimiento» o hasta que el lienzo pinta su primer cuadro). */
-.liquido {
-  position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; border-radius: 20px; /* como .kit-resultado */
-  pointer-events: none; opacity: 0; transition: opacity .4s ease;
-}
-.kit-vacio p, .kit-pista { position: relative; z-index: 1; }
-.kit-vacio[data-liquido="on"] .liquido { opacity: 1; }
-.kit-vacio[data-liquido="on"] .kit-logo { opacity: 0; }
+/* El logo. La caja es más ancha que el logo para que el efecto tenga aire; el lienzo la cubre entera. El <img> marca
+   dónde va el logo y es el respaldo (sin WebGL2, con «reducir movimiento» o hasta que el lienzo pinta). */
+.kit-logo-caja { position: relative; margin: 20px -44px 0; padding: 40px 44px 18px; }
+.kit-logo { position: relative; display: block; width: min(100%, 340px); height: auto; transition: opacity .4s ease; }
+.liquido { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0; transition: opacity .4s ease; }
+.kit-logo-caja[data-liquido="on"] .liquido { opacity: 1; }
+.kit-logo-caja[data-liquido="on"] .kit-logo { opacity: 0; }
 .kit-pista {
-  display: none; align-items: center; gap: 9px; font-size: 11px; font-weight: 800; letter-spacing: .14em;
-  text-transform: uppercase; color: var(--turquesa-oscuro); transition: opacity .8s ease;
+  position: relative; display: none; align-items: center; gap: 9px; margin-top: 20px; font-size: 11px; font-weight: 800;
+  letter-spacing: .14em; text-transform: uppercase; color: var(--turquesa-claro); transition: opacity .8s ease;
 }
 .kit-pista::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: kit-pulso 2.4s ease-in-out 2; }
-.kit-vacio[data-liquido="on"] .kit-pista { display: inline-flex; }
-.kit-vacio[data-tocado] .kit-pista { opacity: 0; }
+.kit-logo-caja[data-liquido="on"] .kit-pista { display: inline-flex; }
+.kit-logo-caja[data-tocado] .kit-pista { opacity: 0; }
 @keyframes kit-pulso { 0%, 100% { transform: scale(.6); opacity: .45; } 50% { transform: scale(1); opacity: 1; } }
-.kit-para { margin-top: 4px; font-size: 14px; color: var(--gris); }
+
+/* El formulario: progreso, la pregunta (se escribe al cambiar de paso) y las opciones grandes con ícono. */
+.kit-progreso { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--gris); }
+.kit-progreso span { margin-right: 6px; white-space: nowrap; }
+.kit-progreso i { flex: 1; height: 6px; border-radius: 3px; background: var(--linea); transition: background-color .3s; }
+.kit-progreso i.lleno { background: var(--turquesa); }
+.kit-ceja { margin: 24px 0 0; font-size: 12.5px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--turquesa-oscuro); }
+.kit-pregunta { margin: 6px 0 20px; font-size: clamp(24px, 2.5vw, 30px); font-weight: 800; color: #000; outline: none; }
+/* Mientras se escribe, lo que falta queda transparente (ocupa su lugar, así las líneas no se corren) y el cursor parpadea. */
+.kit-resto { color: transparent; }
+.kit-resto::before { content: ""; display: inline-block; width: 3px; margin-right: -3px; height: .85em; vertical-align: -.06em; background: var(--turquesa); animation: kit-parpadeo 1s steps(1) infinite; }
+@keyframes kit-parpadeo { 50% { opacity: 0; } }
+.kit-opciones { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.kit-opciones--una { grid-template-columns: 1fr; }
+.kit-opcion {
+  display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1.5px solid var(--linea); border-radius: 14px;
+  background: #fff; color: var(--texto); font: 700 15px/1.25 var(--fuente-texto); text-align: left; cursor: pointer;
+  transition: border-color .15s, box-shadow .15s, transform .15s, background-color .15s;
+  animation: aparecer .35s backwards; animation-delay: calc(var(--i, 0) * 55ms + 120ms);
+}
+.kit-opciones--una .kit-opcion { padding: 14px 16px; }
+.kit-opcion:hover { border-color: var(--turquesa); box-shadow: 0 8px 22px rgba(12, 70, 65, .14); transform: translateY(-1px); }
+.kit-opcion[aria-pressed="true"] { border-color: var(--turquesa); background: #e1f5f3; }
+.kit-ico { display: grid; place-items: center; flex: none; width: 42px; height: 42px; border-radius: 11px; background: #e1f5f3; color: var(--turquesa-oscuro); }
+.kit-opcion[aria-pressed="true"] .kit-ico { background: #fff; }
+.kit-ico .icono { width: 23px; height: 23px; }
+.kit-despues { display: flex; align-items: center; gap: 8px; margin: 20px 0 0; font-size: 13.5px; color: var(--gris); }
+.kit-elegido { display: flex; align-items: center; gap: 10px; margin-top: 22px; padding: 10px 12px; border-radius: 12px; background: var(--suave); font-size: 14px; }
+.kit-elegido .icono { width: 18px; height: 18px; color: var(--turquesa-oscuro); }
+.kit-elegido strong { flex: 1; }
+.kit-elegido + .kit-pregunta { margin-top: 20px; }
+.kit-cambiar { padding: 4px 2px; border: 0; background: none; color: var(--turquesa-oscuro); font: 700 14px var(--fuente-texto); text-decoration: underline; cursor: pointer; }
+.kit-cambiar:hover { color: #000; }
 .kit-items { display: grid; gap: 10px; margin: 18px 0 20px; padding: 0; list-style: none; }
 .kit-item { display: grid; grid-template-columns: 40px 1fr; gap: 12px; align-items: start; padding: 12px; border-radius: 12px; background: var(--suave); animation: aparecer .35s both; }
 .kit-item:nth-child(2) { animation-delay: .06s; }
@@ -653,7 +679,10 @@ dialog.cajon[open] { display: flex; flex-direction: column; animation: deslizar 
   .marcas { grid-template-columns: 1fr; }
   .proceso, .pasos-lf, .look { grid-template-columns: 1fr 1fr; }
   .pie-grilla { grid-template-columns: 1fr 1fr; }
-  .kit-resultado { position: relative; top: auto; } /* sin sticky; relative para el lienzo del logo líquido, sin el corrimiento del sticky */
+  .kit-resultado { position: static; }
+  .kit-logo-caja { margin: 10px -16px 0; padding: 30px 16px 8px; text-align: center; }
+  .kit-logo { width: min(100%, 230px); margin-inline: auto; }
+  .kit-opciones:not(.kit-opciones--una) .kit-opcion { flex-direction: column; align-items: flex-start; gap: 10px; padding: 12px; font-size: 14px; }
   .nosotros-foto { max-width: 340px; }
   .lf-fotos { height: 380px; }
   .ficha, .visor { grid-template-columns: 1fr; }
@@ -688,6 +717,7 @@ dialog.cajon[open] { display: flex; flex-direction: column; animation: deslizar 
   .producto-info { padding: 12px; }
   .producto-nombre { font-size: 14px; }
   .formulario, .kit-resultado { padding: 22px; }
+  .kit-opciones { gap: 8px; }
   .marca { padding: 24px; }
   .pie-grilla { grid-template-columns: 1fr; }
   .lf-barra { position: static; }

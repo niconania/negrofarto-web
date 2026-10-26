@@ -1,14 +1,19 @@
 // Logo líquido: el isotipo «nfg.» armado con miles de partículas que se vuelven líquidas al pasar el cursor (o el
-// dedo) y vuelven solas a su sitio. Va en la caja blanca del recomendador de kits, que Juan veía «flat», como «un
-// pedazo blanco de cuadrado» (reunión del 23 oct 2026). Nicola trajo el efecto el 26 oct.
+// dedo) y vuelven solas a su sitio. Va sobre el fondo oscuro de «¿No sabes por dónde empezar?», junto al formulario
+// del recomendador de kits, y «piensa» (se revuelve solo, con pensar()) cuando se elige una opción. Antes ahí había
+// una caja blanca con el logo quieto, que Juan veía «flat», «un pedazo blanco de cuadrado» (reunión del 23 oct 2026).
+// Nicola trajo el efecto el 26 oct.
 // Adaptado de «Sculpture Hero — liquid particle hero» de guglielmogiannattasio.it (21st.dev). El motor de
 // partículas (WebGL2) es el suyo, pasado de TypeScript y React a JavaScript sin dependencias; conserva sus nombres
 // para que se pueda comparar con el original. Cambios para la marca:
 // - la estela toma el turquesa y el aguamarina de Negrofarto, en vez del brillo metálico;
-// - las partículas salen del logo (SVG pasado a píxeles) y su tamaño y lugar los pone el CSS con el <img> de respaldo;
+// - las partículas salen del logo (SVG pasado a píxeles sobre el color de fondo de la sección) y su tamaño y lugar
+//   los pone el CSS con el <img> de respaldo;
 // - la cantidad de partículas y el radio del cursor van según el ancho del logo, no de un héroe a pantalla completa;
 // - el armado inicial remolinea menos, para que no se salga de la caja;
-// - sin movimiento ambiental continuo (WCAG 2.2.2): solo el armado al aparecer (unos 3 s) y la reacción al cursor.
+// - pensar(): un cursor invisible lo revuelve en espiral y lo suelta;
+// - sin movimiento ambiental continuo (WCAG 2.2.2): solo el armado al aparecer (unos 3 s), la reacción al cursor
+//   y lo que dura pensar().
 // Sin WebGL2, con «reducir movimiento» o si algo falla, queda el logo quieto (el <img>).
 (function () {
   const reducir = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -657,6 +662,23 @@ void main(){
       this.wake();
     }
 
+    // NFG: el logo «piensa». Un cursor invisible lo revuelve en una espiral que se abre y se cierra, y lo suelta.
+    pensar(ms = 1500) {
+      if (!this.ready || this.lost || this.destroyed || !this.opts.interactive) return;
+      cancelAnimationFrame(this.pensandoRaf);
+      const r = this.rect, cx = r.x + r.w / 2, cy = r.y + r.h / 2, ini = performance.now();
+      const paso = (ahora) => {
+        if (this.destroyed || this.lost) return;
+        const k = clamp((ahora - ini) / ms, 0, 1);
+        const ang = -Math.PI / 2 + k * Math.PI * 2.6;
+        const rad = 0.06 + 0.3 * Math.sin(Math.PI * k);
+        this.pointer('move', cx + Math.cos(ang) * r.w * rad * 1.15, cy + Math.sin(ang) * r.w * rad * 0.62, false);
+        if (k < 1) this.pensandoRaf = requestAnimationFrame(paso);
+        else this.pointer('leave', 0, 0, false);
+      };
+      this.pensandoRaf = requestAnimationFrame(paso);
+    }
+
     wake() {
       if (!this.ready || this.running || !this.visible || this.destroyed || this.lost) {
         if (this.ready && !this.running) this.draw();
@@ -904,6 +926,7 @@ void main(){
     destroy() {
       this.destroyed = true;
       this.stop();
+      cancelAnimationFrame(this.pensandoRaf);
       this.canvas.removeEventListener('webglcontextlost', this.onLost);
       const gl = this.gl;
       if (!this.lost) {
@@ -919,26 +942,35 @@ void main(){
 
   /* ── El logo líquido en la página ── */
 
-  // Ajustes del efecto para el logo de la caja (los nombres son los del original).
+  // Ajustes del efecto para el logo (los nombres son los del original).
   const OPCIONES = {
     interactive: true, strength: 1, radius: 0.28, density: 1, dotSize: 1.25, spread: 1, turbulence: 1,
     returnSpeed: 1, streaks: true, restStyle: 'image', ambient: false, ambientIntensity: 0, speed: 1, intro: true,
     reducedMotion: false, liquid: 1,
-    // NFG: remolino del armado inicial (1,5 en el original, fijo en el shader). En esta caja, con 1,5 las partículas
-    // se salían de la caja y pasaban por encima del texto.
+    // NFG: remolino del armado inicial (1,5 en el original, fijo en el shader). Con 1,5 las partículas se salían del
+    // lienzo y quedaban cortadas.
     introTurb: 0.4,
-    // el logo se pasa a píxeles sobre el blanco de la caja: así sus orillas no se oscurecen
-    bg: [1, 1, 1], imgBg: [1, 1, 1],
-    estela: rgb('#1daa9f'), brillo: rgb('#2edccd'), // --turquesa y --turquesa-aqua
+    // bg e imgBg (el color de fondo de la sección) se ponen al montar: el logo se pasa a píxeles sobre ese color
+    estela: rgb('#1daa9f'), brillo: rgb('#62e4da'), // --turquesa y --turquesa-claro
   };
   // Aire alrededor del logo, en fracción de su ancho: el lente y las orillas del efecto no lo recortan.
   const MARGEN = 0.08;
 
-  // El logo en píxeles, sobre blanco y con su margen, del mismo tamaño relativo que el rectángulo. Se dibuja con los
+  // El color de fondo de verdad de un elemento: el del primer ancestro con fondo opaco, como [r, g, b] de 0 a 255.
+  function fondoDe(el) {
+    for (let e = el; e; e = e.parentElement) {
+      const m = getComputedStyle(e).backgroundColor.match(/[\d.]+/g);
+      if (m && (m.length < 4 || +m[3] > 0.99)) return m.slice(0, 3).map(Number);
+    }
+    return [255, 255, 255];
+  }
+
+  // El logo en píxeles, sobre «fondo» y con su margen, del mismo tamaño relativo que el rectángulo. Se dibuja con los
   // trazados del SVG (Path2D) y no pasando el <img> al lienzo: Safari puede marcar como «contaminado» un lienzo con un
   // SVG dibujado, y entonces no deja leer sus píxeles. El SVG tiene que ser solo <path> con fill, sin
-  // transformaciones (como los que hace herramientas/construir-logos.mjs).
-  async function rasterizar(src, ancho, alto) {
+  // transformaciones (como los que hace herramientas/construir-logos.mjs). Sobre el mismo color que la página, las
+  // orillas suavizadas del logo se ven bien: no se oscurecen.
+  async function rasterizar(src, ancho, alto, fondo) {
     const r = await fetch(src);
     if (!r.ok) throw new Error(`${src}: ${r.status}`);
     const svg = new DOMParser().parseFromString(await r.text(), 'image/svg+xml');
@@ -949,7 +981,7 @@ void main(){
     c.width = Math.round((ancho + 2 * m) * escala);
     c.height = Math.round((alto + 2 * m) * escala);
     const ctx = c.getContext('2d');
-    ctx.fillStyle = '#fff';
+    ctx.fillStyle = `rgb(${fondo.join(',')})`;
     ctx.fillRect(0, 0, c.width, c.height);
     ctx.translate(m * escala, m * escala);
     ctx.scale(ancho * escala / vw, ancho * escala / vw);
@@ -964,14 +996,17 @@ void main(){
   const cargada = (im) => (im.complete ? (im.naturalWidth ? Promise.resolve() : Promise.reject(new Error('logo')))
     : new Promise((ok, mal) => { im.addEventListener('load', ok, { once: true }); im.addEventListener('error', mal, { once: true }); }));
 
-  // Pone el logo líquido en «caja» (recibe el cursor y es el lienzo). «img» es el logo de respaldo: el CSS decide
-  // su tamaño y su lugar, y el motor dibuja el logo justo ahí. Lo que lo envuelve recibe data-liquido="on" cuando el
-  // lienzo ya pinta, y data-tocado cuando alguien pasa el cursor. El motor arranca cuando la caja se ve (así el
-  // armado inicial no pasa sin que nadie lo vea) y se detiene fuera de pantalla.
-  // Devuelve { medir, destruir }, o null si no hay WebGL2 o se pidió reducir movimiento: queda el <img>.
+  // Pone el logo líquido en «caja» (recibe el cursor y es el lienzo, que la cubre entera: conviene que sea más ancha
+  // que el logo para que el efecto tenga aire). «img» es el logo de respaldo, hijo de «caja»: el CSS decide su tamaño
+  // y su lugar, y el motor dibuja el logo justo ahí. «caja» recibe data-liquido="on" cuando el lienzo ya pinta, y
+  // data-tocado cuando alguien pasa el cursor. El motor arranca cuando la caja se ve (así el armado inicial no pasa
+  // sin que nadie lo vea) y se detiene fuera de pantalla.
+  // Devuelve { medir, pensar, destruir }, o null si no hay WebGL2 o se pidió reducir movimiento: queda el <img>.
   function montar(caja, img) {
     if (reducir.matches || !window.WebGL2RenderingContext) return null;
-    const capa = img.parentElement;
+    const capa = caja;
+    const fondo = fondoDe(caja);
+    const opciones = { ...OPCIONES, bg: fondo.map((v) => v / 255), imgBg: fondo.map((v) => v / 255) };
     const lienzo = document.createElement('canvas');
     lienzo.className = 'liquido';
     lienzo.setAttribute('aria-hidden', 'true');
@@ -995,9 +1030,9 @@ void main(){
       try {
         await cargada(img);
         const m = medidas();
-        const fuente = await rasterizar(img.currentSrc || img.src, m.logo.width, m.logo.height);
+        const fuente = await rasterizar(img.currentSrc || img.src, m.logo.width, m.logo.height, fondo);
         if (!vivo) return;
-        motor = new LiquidEngine(lienzo, OPCIONES, destruir);
+        motor = new LiquidEngine(lienzo, opciones, destruir);
         motor.onFirstFrame = () => { if (vivo) capa.dataset.liquido = 'on'; };
         motor.resize(m.ancho, m.alto, m.rect);
         motor.setImage(fuente);
@@ -1039,7 +1074,13 @@ void main(){
       delete capa.dataset.liquido;
       delete capa.dataset.tocado;
     }
-    return { medir, destruir };
+    // Lo revuelve solo, como si pensara (al elegir una opción del recomendador).
+    function pensar(ms) {
+      if (!motor) return;
+      capa.dataset.tocado = '';
+      motor.pensar(ms);
+    }
+    return { medir, pensar, destruir };
   }
 
   window.NFG_LIQUIDO = { montar };

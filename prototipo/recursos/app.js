@@ -190,7 +190,7 @@
     const seleccion = new Set();
     let abiertos = new Set();
     let filtro = 'todos';
-    const kit = { negocio: null, etapa: null };
+    const kit = { negocio: null, etapa: null, paso: 1 }; // paso: 1 negocio · 2 etapa · 3 el kit
     const form = $('#form-cotizar');
 
     function pintarCinta() {
@@ -223,55 +223,97 @@
       if (conBoton) $(`.servicio[data-servicio="${id}"] .servicio-ver`)?.focus(); // el foco no se pierde al repintar
     });
 
-    // Mientras no hay kit, la caja muestra el logo líquido (recursos/liquido.js), que pidió Nicola el 26 oct 2026
-    // porque Juan la veía «flat». Si no hay WebGL2 o se pide reducir movimiento, queda el logo quieto.
-    let liquido = null;
-    function pintarKit() {
-      $('#kit-negocios').innerHTML = D.negocios.map((n) => `<button class="chip" type="button" data-negocio="${n.id}" aria-pressed="${kit.negocio === n.id}">${esc(L(n.titulo))}</button>`).join('');
-      $('#kit-etapas').innerHTML = D.etapas.map((n) => `<button class="chip" type="button" data-etapa="${n.id}" aria-pressed="${kit.etapa === n.id}">${esc(L(n.titulo))}</button>`).join('');
-      const caja = $('#kit-resultado');
-      const items = itemsKit();
-      if (!items) {
-        const pista = t(matchMedia('(hover: hover)').matches ? 'kit.pista' : 'kit.pista_toque');
-        const vacio = caja.querySelector('.kit-vacio');
-        if (vacio) { // ya está (se eligió solo el negocio, o cambió el idioma): cambian los textos y el logo sigue
-          vacio.querySelector('p').innerHTML = t('kit.vacio');
-          vacio.querySelector('.kit-pista').textContent = pista;
-          liquido?.medir();
-          return;
-        }
-        caja.innerHTML = `<div class="kit-vacio"><img class="kit-logo" src="${base}img/marcas/nfg-blanco.svg" alt="" width="259" height="135" /><p>${t('kit.vacio')}</p><span class="kit-pista" aria-hidden="true">${esc(pista)}</span></div>`;
-        liquido = window.NFG_LIQUIDO?.montar(caja, caja.querySelector('.kit-logo')) || null;
-        return;
-      }
-      liquido?.destruir();
-      liquido = null;
+    // Recomendador de kits (reunión del 23 oct 2026; diseño elegido por Nicola el 26 oct): la caja blanca es el
+    // formulario, de dos pasos (tipo de negocio, etapa) y el kit; la pregunta se escribe al cambiar de paso. Al lado,
+    // sobre el fondo oscuro, el logo líquido (recursos/liquido.js) «piensa» cada vez que se elige. Sin WebGL2 o con
+    // «reducir movimiento», queda el logo quieto y la pregunta aparece completa.
+    const reduceMov = matchMedia('(prefers-reduced-motion: reduce)');
+    const logoKit = $('#kit-logo-caja');
+    const liquido = window.NFG_LIQUIDO?.montar(logoKit, $('.kit-logo', logoKit)) || null;
+    let escribiendo = 0; // temporizador de la pregunta que se escribe
+
+    // Escribe la pregunta letra por letra. El texto de verdad no cambia (lo que falta va en un <span> transparente):
+    // los lectores de pantalla lo leen completo y las líneas no se corren a mitad de palabra.
+    function escribir(h) {
+      const el = $('.kit-texto', h), texto = el.textContent;
+      let i = 0;
+      const poner = () => { el.innerHTML = `${esc(texto.slice(0, i))}<span class="kit-resto">${esc(texto.slice(i))}</span>`; };
+      const letra = () => {
+        i++;
+        if (i >= texto.length) { el.textContent = texto; return; }
+        poner();
+        escribiendo = setTimeout(letra, 24 + Math.random() * 22);
+      };
+      poner();
+      escribiendo = setTimeout(letra, 140);
+    }
+
+    function pintarKit({ animar = false } = {}) {
+      clearTimeout(escribiendo);
+      $('.kit-pista', logoKit).textContent = t(matchMedia('(hover: hover)').matches ? 'kit.pista' : 'kit.pista_toque');
       const negocio = D.negocios.find((n) => n.id === kit.negocio);
       const etapa = D.etapas.find((n) => n.id === kit.etapa);
-      caja.innerHTML = `<p class="ceja">${t('kit.resultado')}</p>`
-        + `<h3>${esc(L(negocio.titulo))}</h3><p class="kit-para">${esc(L(etapa.titulo))}</p>`
-        + '<ol class="kit-items">' + items.map((it) => {
-          const s = servicio(it.servicio);
-          return `<li class="kit-item"><div class="servicio-icono">${icono(s.icono)}</div><div><strong>${esc(L(it.titulo))}</strong><span>${esc(L(it.porque))}</span><br /><small>${esc(L(s.titulo))}</small></div></li>`;
-        }).join('') + '</ol>'
-        + (etapa.nota ? `<p class="kit-nota">${esc(L(etapa.nota))}</p>` : '')
-        + `<button class="boton boton--acento boton--ancho" type="button" id="pedir-kit">${t('kit.pedir')} ${icono('i-flecha')}</button>`;
+      const progreso = (n, texto) => `<div class="kit-progreso"><span>${esc(texto)}</span><i class="lleno"></i><i${n > 1 ? ' class="lleno"' : ''}></i></div>`;
+      const opcion = (dato, clave, elegida, i) => `<button class="kit-opcion" type="button" data-${clave}="${dato.id}" aria-pressed="${elegida}" style="--i:${i}"><span class="kit-ico">${icono(dato.icono)}</span><span>${esc(L(dato.titulo))}</span></button>`;
+      const elegido = (texto) => `<div class="kit-elegido">${icono('i-check')}<strong>${esc(texto)}</strong><button class="kit-cambiar" type="button" data-volver aria-label="${esc(t('kit.cambiar_aria'))}">${t('kit.cambiar')}</button></div>`;
+      const titulo = (clave) => `<h3 class="kit-pregunta" id="kit-pregunta" tabindex="-1"><span class="kit-texto">${t(clave)}</span></h3>`;
+      let html;
+      if (kit.paso === 1) {
+        html = progreso(1, t('kit.progreso', { n: 1 })) + `<p class="kit-ceja">${t('kit.usame')}</p>` + titulo('kit.p1')
+          + `<div class="kit-opciones" role="group" aria-labelledby="kit-pregunta">${D.negocios.map((n, i) => opcion(n, 'negocio', kit.negocio === n.id, i)).join('')}</div>`
+          + `<p class="kit-despues">${t('kit.despues1')}</p>`;
+      } else if (kit.paso === 2) {
+        html = progreso(2, t('kit.progreso', { n: 2 })) + elegido(L(negocio.titulo)) + `<p class="kit-ceja">${t('kit.ya_casi')}</p>` + titulo('kit.p2')
+          + `<div class="kit-opciones kit-opciones--una" role="group" aria-labelledby="kit-pregunta">${D.etapas.map((n, i) => opcion(n, 'etapa', kit.etapa === n.id, i)).join('')}</div>`
+          + `<p class="kit-despues">${t('kit.despues2')}</p>`;
+      } else {
+        html = progreso(2, t('kit.listo')) + elegido(`${L(negocio.titulo)} · ${L(etapa.titulo)}`) + titulo('kit.resultado')
+          + '<ol class="kit-items">' + itemsKit().map((it) => {
+            const s = servicio(it.servicio);
+            return `<li class="kit-item"><div class="servicio-icono">${icono(s.icono)}</div><div><strong>${esc(L(it.titulo))}</strong><span>${esc(L(it.porque))}</span><br /><small>${esc(L(s.titulo))}</small></div></li>`;
+          }).join('') + '</ol>'
+          + (etapa.nota ? `<p class="kit-nota">${esc(L(etapa.nota))}</p>` : '')
+          + `<button class="boton boton--acento boton--ancho" type="button" id="pedir-kit">${t('kit.pedir')} ${icono('i-flecha')}</button>`;
+      }
+      $('#kit-resultado').innerHTML = html;
+      if (animar) {
+        // El foco pasa a la pregunta: con teclado no se pierde al cambiar de paso y los lectores de pantalla la leen.
+        $('#kit-pregunta').focus({ preventScroll: true });
+        if (kit.paso < 3 && !reduceMov.matches) escribir($('#kit-pregunta'));
+      }
     }
     function itemsKit() {
-      if (!kit.negocio || !kit.etapa) return null;
       const negocio = D.negocios.find((n) => n.id === kit.negocio);
       const etapa = D.etapas.find((n) => n.id === kit.etapa);
       return (etapa.extra ? [etapa.extra] : []).concat(negocio.kit);
     }
+    // Al cambiar de paso, lo nuevo queda a la vista: la página solo se desplaza si la caja quedó bajo la cabecera o si la
+    // pregunta nueva quedó fuera de pantalla; con el kit ya listo, se lleva la caja arriba para verlo entero. Así, en el
+    // celular, el logo sigue a la vista mientras «piensa» (fuera de pantalla el motor se detiene).
+    function verCaja() {
+      const caja = $('#kit-resultado'), arriba = caja.getBoundingClientRect().top, pregunta = $('#kit-pregunta').getBoundingClientRect().bottom;
+      if (arriba < 84 || pregunta > innerHeight - 24 || (kit.paso === 3 && arriba > innerHeight * 0.35)) caja.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    // La primera vez, la pregunta se escribe justo antes de que la caja entre en pantalla (así no se ve parpadear).
+    if (!reduceMov.matches && 'IntersectionObserver' in window) {
+      const io = new IntersectionObserver(([e]) => {
+        if (!e.isIntersecting) return;
+        io.disconnect();
+        if (kit.paso === 1 && !kit.negocio) escribir($('#kit-pregunta'));
+      }, { rootMargin: '0px 0px 30% 0px' });
+      io.observe($('#kit-resultado'));
+    }
     $('#kit').addEventListener('click', (e) => {
       const n = e.target.closest('[data-negocio]');
       const s = e.target.closest('[data-etapa]');
-      if (n) kit.negocio = n.dataset.negocio;
-      if (s) kit.etapa = s.dataset.etapa;
-      if (n || s) {
-        pintarKit();
-        // En el celular el kit queda debajo de las opciones: se lleva a la vista.
-        if (kit.negocio && kit.etapa && innerWidth < 900) $('#kit-resultado').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const volver = e.target.closest('[data-volver]');
+      if (n) { kit.negocio = n.dataset.negocio; kit.paso = 2; }
+      if (s) { kit.etapa = s.dataset.etapa; kit.paso = 3; }
+      if (volver) kit.paso = 1;
+      if (n || s || volver) {
+        if (n || s) liquido?.pensar(s ? 1900 : 1400); // el logo «piensa» un poco más cuando ya sale el kit
+        pintarKit({ animar: true });
+        verCaja();
       }
       if (e.target.closest('#pedir-kit')) {
         const items = itemsKit();

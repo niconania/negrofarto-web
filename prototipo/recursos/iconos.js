@@ -29,4 +29,12 @@ window.NFG_ICONOS = '<svg xmlns="http://www.w3.org/2000/svg" style="display:none
   + '<symbol id="i-envio" viewBox="0 0 24 24"><path d="M2 6.5h11.5v9.5H2zM13.5 9.5h4l3.5 3.5v3h-7.5"/><circle cx="6" cy="17.5" r="2"/><circle cx="17" cy="17.5" r="2"/></symbol>'
   + '<symbol id="i-pagar" viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19M6.5 15h4"/></symbol>'
   + '<symbol id="i-pais" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></symbol>'
+  // Tipos de negocio y etapas del recomendador de kits
+  + '<symbol id="i-cafe" viewBox="0 0 24 24"><path d="M4 9h12v4.5A5.5 5.5 0 0 1 10.5 19h-1A5.5 5.5 0 0 1 4 13.5V9Z"/><path d="M16 10.5h1.5a2.5 2.5 0 0 1 0 5h-1.9"/><path d="M8 3.5c-.7.9-.7 1.8 0 2.7M12 3.5c-.7.9-.7 1.8 0 2.7"/></symbol>'
+  + '<symbol id="i-pesa" viewBox="0 0 24 24"><path d="M7 6.5v11M17 6.5v11M4 9v6M20 9v6M7 12h10"/></symbol>'
+  + '<symbol id="i-maletin" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2.2"/><path d="M9 7V5.6A1.6 1.6 0 0 1 10.6 4h2.8A1.6 1.6 0 0 1 15 5.6V7M3 12.5h18"/></symbol>'
+  + '<symbol id="i-casa" viewBox="0 0 24 24"><path d="M3.5 11 12 4l8.5 7"/><path d="M5.5 9.5V20h13V9.5"/><path d="M10 20v-5h4v5"/></symbol>'
+  + '<symbol id="i-grupo" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><circle cx="17" cy="9" r="2.4"/><path d="M15.8 14.1A4.6 4.6 0 0 1 21 18.6"/></symbol>'
+  + '<symbol id="i-brote" viewBox="0 0 24 24"><path d="M12 20v-8"/><path d="M12 12c0-4 3-6.5 7.5-6.5 0 4.2-3 6.5-7.5 6.5Z"/><path d="M12 14.5c0-3.2-2.4-5.3-6.5-5.3 0 3.3 2.4 5.3 6.5 5.3Z"/></symbol>'
+  + '<symbol id="i-crecer" viewBox="0 0 24 24"><path d="M3.5 17 9.5 11l4 4 7-7"/><path d="M15 8h5.5v5.5"/></symbol>'
   + '</svg>';
