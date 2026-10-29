@@ -55,13 +55,14 @@
     const cta = pagina === 'wuanda'
       ? '<a class="boton boton--acento boton--chico boton--cotizar" href="#catalogo" data-t="wc.cta"></a>'
       : `<a class="boton boton--acento boton--chico boton--cotizar" href="${ancla('cotizar')}" data-t="nav.cotizar"></a>`;
-    // Cada puerta es el logo de su marca. Repetir el nombre al lado era redundante (Juan, 12 oct 2026) y
-    // empujaba la barra más allá de donde empieza el menú. Solo la "W" lleva nombre: sola no dice WuandaCrafts.
-    // El nombre completo va en aria-label para lectores de pantalla. La Fartedá va con su isotipo «LF» (23 oct 2026).
+    // Cada puerta es solo el logo de su marca: sin nombres (Juan, 12 oct y 29 oct 2026: «solo el imagotipo como en LF»). El nombre
+    // va en el aria-label y en el title. La Fartedá va con su isotipo «LF» (23 oct 2026). La barra es negra en la agencia, blanca en
+    // La Fartedá y morada en WuandaCrafts (29 oct 2026): sobre la blanca van los logos oscuros.
+    const sobreBlanco = pagina === 'merch';
     const puertas = [
-      { id: 'agencia', href: inicio, img: 'img/marcas/nfg-negro.svg', clave: 'puerta.nfg', clase: 'nfg' },
-      { id: 'merch', href: base + 'merch/index.html', img: 'img/marcas/lafarteda-lf.svg', clave: 'puerta.lf', clase: 'lf' },
-      { id: 'wuanda', href: base + 'wuandacrafts/index.html', img: 'img/marcas/wuandacrafts-w.svg', clave: 'puerta.wc', nombre: 'WuandaCrafts', clase: 'wc' },
+      { id: 'agencia', href: inicio, img: sobreBlanco ? 'img/marcas/nfg-blanco.svg' : 'img/marcas/nfg-negro.svg', clave: 'puerta.nfg', clase: 'nfg' },
+      { id: 'merch', href: base + 'merch/index.html', img: sobreBlanco ? 'img/marcas/lafarteda-lf-oscuro.svg' : 'img/marcas/lafarteda-lf.svg', clave: 'puerta.lf', clase: 'lf' },
+      { id: 'wuanda', href: base + 'wuandacrafts/index.html', img: 'img/marcas/wuandacrafts-w.svg', clave: 'puerta.wc', clase: 'wc' },
     ];
 
     document.body.insertAdjacentHTML('afterbegin', window.NFG_ICONOS
@@ -80,8 +81,8 @@
       +   `<button class="menu-movil" type="button" aria-controls="menu" aria-expanded="false" data-t-aria="nav.abrir">${icono('i-menu')}</button>`
       + '</div></header>'
       + '<nav class="puertas" aria-label="Negrofarto Group"><div class="caja">'
-      + puertas.map((p) => `<a class="puerta puerta--${p.clase}" href="${p.href}" data-t-aria="${p.clave}"${p.id === pagina ? ' aria-current="page"' : ''}>`
-          + `<img src="${base}${p.img}" alt="" />${p.nombre ? `<strong>${p.nombre}</strong>` : ''}</a>`).join('')
+      + puertas.map((p) => `<a class="puerta puerta--${p.clase}" href="${p.href}" data-t-aria="${p.clave}" data-t-title="${p.clave}"${p.id === pagina ? ' aria-current="page"' : ''}>`
+          + `<img src="${base}${p.img}" alt="" /></a>`).join('')
       + '</div></nav>');
 
     // La agencia se presenta desde Miami (comentarios de Juan, 10 oct 2026): su pie no menciona Cartagena.
@@ -115,7 +116,8 @@
       + '</div></footer>'
       // En la agencia el WhatsApp va directo a Miami; en La Fartedá y WuandaCrafts se elige el país.
       + `<button class="flotante" type="button" data-whatsapp="${pagina === 'agencia' ? 'miami' : 'elegir'}" aria-label="WhatsApp">${icono('i-whatsapp')}</button>`
-      + '<dialog class="modal" id="modal-whatsapp"></dialog>');
+      + '<dialog class="modal" id="modal-whatsapp"></dialog>'
+      + '<div class="aviso-copiado" id="aviso-copiado" role="status" aria-live="polite"></div>');
   }
 
   function aplicarIdioma(nuevo) {
@@ -126,6 +128,7 @@
     $$('[data-t-html]').forEach((el) => { el.innerHTML = t(el.dataset.tHtml); });
     $$('[data-t-ph]').forEach((el) => { el.placeholder = t(el.dataset.tPh); });
     $$('[data-t-aria]').forEach((el) => { el.setAttribute('aria-label', t(el.dataset.tAria)); });
+    $$('[data-t-title]').forEach((el) => { el.title = t(el.dataset.tTitle); });
     $$('[data-idioma]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.idioma === idioma)));
     alCambiarIdioma.forEach((f) => f());
   }
@@ -176,8 +179,36 @@
     } catch (e) { return Promise.resolve(false); /* solo es una copia */ }
   }
 
+  /* ── Correo: un enlace «mailto:» no hace nada si la computadora no tiene una app de correo configurada (Juan, 29 oct 2026: «el
+     botón de correo aún no sirve», en la página temporal). Al tocar cualquier enlace de correo se copia la dirección y se avisa
+     en pantalla; el enlace sigue abriendo el correo si hay con qué. ── */
+  let relojCopiado = 0;
+  function copiarCorreo(direccion) {
+    const avisar = (copiado) => {
+      const aviso = $('#aviso-copiado');
+      aviso.textContent = t(copiado ? 'correo.copiado' : 'correo.escribe', { correo: direccion });
+      aviso.classList.add('visible');
+      clearTimeout(relojCopiado);
+      relojCopiado = setTimeout(() => aviso.classList.remove('visible'), 6000);
+    };
+    // Se copia y se avisa en el acto, dentro del clic: sin esperar permisos ni foco (la API del portapapeles puede tardar o no contestar).
+    const campo = document.createElement('textarea');
+    campo.value = direccion; campo.setAttribute('readonly', ''); campo.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+    document.body.appendChild(campo); campo.select(); campo.setSelectionRange(0, direccion.length);
+    let copiado = false;
+    try { copiado = document.execCommand('copy'); } catch (e) { /* sin permiso */ }
+    campo.remove();
+    avisar(copiado);
+    // Si ese camino no sirvió, se prueba con la API moderna y el aviso se corrige solo si por fin se copió.
+    if (!copiado && navigator.clipboard && navigator.clipboard.writeText) {
+      Promise.race([navigator.clipboard.writeText(direccion).then(() => true, () => false), new Promise((ok) => setTimeout(() => ok(false), 1500))]).then((ok) => { if (ok) avisar(true); });
+    }
+  }
+
   function activarEstructura() {
     document.addEventListener('click', (e) => {
+      const correo = e.target.closest('a[href^="mailto:"]');
+      if (correo) copiarCorreo(correo.getAttribute('href').slice(7).split('?')[0]);
       const bIdioma = e.target.closest('[data-idioma]');
       if (bIdioma) { aplicarIdioma(bIdioma.dataset.idioma); guardar('nfg-idioma', idioma); }
       const bWa = e.target.closest('[data-whatsapp]');

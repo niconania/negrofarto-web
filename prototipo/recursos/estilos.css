@@ -5,7 +5,8 @@
 
 :root {
   --negro: #000;
-  --cabecera: var(--negro); /* el color de la cabecera y de la barra de las puertas; cada marca pone el suyo */
+  --cabecera: var(--negro); /* la cabecera es negra en las tres páginas */
+  --puertas: var(--negro); /* el color de la barra de las tres puertas: es lo que cambia con la marca */
   --carbon: #141414;
   --texto: #101010;
   --gris: #5c6564;
@@ -134,24 +135,22 @@ p { margin: 0; }
   display: none; place-items: center; width: 42px; height: 42px; flex: none;
   border: 0; border-radius: 10px; background: #1b1b1b; color: #fff; cursor: pointer;
 }
-/* En La Fartedá y WuandaCrafts la cabecera toma el color de la marca, para que se note en cuál estás: «aquí pensé que
-   todavía estaba en Negrofarto» (Juan, 23 oct 2026). Sobre el color todo va en blanco (5,3:1 en La Fartedá, 5,6:1 en
-   WuandaCrafts); los botones de la cabecera pasan a blanco para no desaparecer sobre su propio color. */
-.marca-lf, .marca-wc { --cabecera: var(--acento); }
-.marca-lf { --cabecera-claro: var(--lf-crema); }
-.marca-wc { --cabecera-claro: var(--wc-crema); }
+/* La cabecera es la misma en las tres páginas: negra, con el logo de Negrofarto Group. Lo único que cambia con la marca es la
+   barra de las tres puertas de abajo (Juan, 29 oct 2026: «en lugar de las 2 barras de color, 1 sola cambie»): negra en la
+   agencia, blanca en La Fartedá y morada en WuandaCrafts. Antes (23-26 oct) también la cabecera tomaba el color de la marca.
+   En La Fartedá y WuandaCrafts los botones de la cabecera van en blanco, como los dibujó Juan en su captura. */
+.marca-lf { --puertas: #fff; --cabecera-claro: var(--lf-crema); }
+.marca-wc { --puertas: var(--acento); --cabecera-claro: var(--wc-crema); }
 .marca-lf .menu a, .marca-wc .menu a { color: #fff; }
 .marca-lf .menu a:hover, .marca-wc .menu a:hover { border-color: #fff; }
 .marca-lf .cabecera .idioma, .marca-wc .cabecera .idioma,
-.marca-lf .boton-carrito { border-color: rgba(255, 255, 255, .6); }
+.marca-lf .boton-carrito, .marca-wc .boton-carrito { border-color: rgba(255, 255, 255, .6); }
 .marca-lf .cabecera .idioma button[aria-pressed="true"], .marca-wc .cabecera .idioma button[aria-pressed="true"],
 .marca-lf .cabecera .boton--cotizar, .marca-wc .cabecera .boton--cotizar,
-.marca-lf .contador { background: #fff; color: var(--acento-oscuro); }
+.marca-lf .contador, .marca-wc .contador { background: #fff; color: var(--acento-oscuro); }
 .marca-lf .cabecera .boton--cotizar:hover, .marca-wc .cabecera .boton--cotizar:hover { background: var(--cabecera-claro); color: var(--acento-oscuro); }
-.marca-lf .menu-movil, .marca-wc .menu-movil { background: rgba(0, 0, 0, .22); }
-/* La barra de las tres puertas lleva el mismo color que la cabecera (negro con negro, rojo con rojo, morado con morado; Nicola,
-   26 oct 2026): son un solo bloque de color, y la raya fina las separa. */
-.puertas { background: var(--cabecera); border-top: 1px solid rgba(255, 255, 255, .14); }
+/* La barra de las tres puertas: un logo por marca, sin textos (el nombre va en el aria-label y en el title). */
+.puertas { background: var(--puertas); border-top: 1px solid rgba(255, 255, 255, .14); }
 .puertas .caja { display: flex; gap: 4px; padding-top: 6px; overflow-x: auto; scrollbar-width: none; }
 .puertas .caja::-webkit-scrollbar { display: none; }
 .puerta {
@@ -163,13 +162,23 @@ p { margin: 0; }
 .puerta--lf { --color-puerta: #d0646d; }
 .puerta--wc { --color-puerta: #e55d8e; }
 .puerta img { height: 26px; width: auto; border-radius: 6px; }
-.puerta strong { display: block; font-size: 13.5px; font-weight: 800; color: #fff; line-height: 1.2; }
 .puerta:hover { background: rgba(255, 255, 255, .05); }
 .puerta[aria-current="page"] { background: rgba(255, 255, 255, .08); border-bottom-color: var(--color-puerta); color: rgba(255, 255, 255, .9); }
-/* Sobre el color de la marca, la puerta de la página donde estás se marca con una casilla más oscura y un subrayado blanco:
-   el rosa claro de su acento casi no se veía sobre el rojo. */
-.marca-lf .puerta:hover, .marca-wc .puerta:hover { background: rgba(255, 255, 255, .1); }
-.marca-lf .puerta[aria-current="page"], .marca-wc .puerta[aria-current="page"] { background: rgba(0, 0, 0, .16); border-bottom-color: #fff; color: #fff; }
+/* Sobre el morado, la puerta de la página donde estás se marca con una casilla más oscura y un subrayado blanco: el rosa claro de
+   su acento casi no se veía. Sobre el blanco de La Fartedá (con los logos oscuros), una casilla gris y un subrayado negro. */
+.marca-wc .puerta:hover { background: rgba(255, 255, 255, .1); }
+.marca-wc .puerta[aria-current="page"] { background: rgba(0, 0, 0, .16); border-bottom-color: #fff; color: #fff; }
+.marca-lf .puertas { border-top-color: rgba(0, 0, 0, .1); }
+.marca-lf .puerta:hover { background: rgba(0, 0, 0, .05); }
+.marca-lf .puerta[aria-current="page"] { background: rgba(0, 0, 0, .06); border-bottom-color: #000; }
+
+/* Aviso breve al copiar el correo (un enlace «mailto:» no hace nada si la computadora no tiene una app de correo). */
+.aviso-copiado {
+  position: fixed; left: 50%; bottom: 22px; z-index: 90; width: max-content; max-width: min(520px, calc(100% - 32px)); padding: 12px 18px;
+  border-radius: 14px; background: #111; color: #fff; box-shadow: 0 10px 30px rgba(0, 0, 0, .3); font-size: 14px; font-weight: 600; line-height: 1.4;
+  text-align: center; transform: translate(-50%, 12px); opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s;
+}
+.aviso-copiado.visible { transform: translate(-50%, 0); opacity: 1; }
 
 /* ── Secciones comunes ── */
 .seccion { padding: 88px 0; }
@@ -629,6 +638,7 @@ dialog.cajon[open] { display: flex; flex-direction: column; animation: deslizar 
   box-shadow: 0 1px 2px rgba(20, 14, 40, .14), 0 18px 30px -16px rgba(20, 14, 40, .45);
   transition: transform .5s cubic-bezier(.2, .7, .2, 1), filter .5s, box-shadow .2s;
 }
+.tendedero a.t-foto[data-activa="1"] { cursor: pointer; } /* la del centro abre su publicación */
 .tendedero .t-foto[data-activa="0"] .t-papel { transform: scale(.9); filter: saturate(.75) brightness(.97); }
 .t-imagen { position: relative; display: block; aspect-ratio: 3 / 4; overflow: hidden; background: var(--wc-linea, #e9e5df); }
 .t-imagen img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 40%; pointer-events: none; -webkit-user-drag: none; }
@@ -931,6 +941,7 @@ dialog.cajon[open] { display: flex; flex-direction: column; animation: deslizar 
   .barra-pedido, .pieza-barra { display: flex; }
   body.con-barra { padding-bottom: 76px; }
   body.con-barra .flotante { bottom: 92px; }
+  body.con-barra .aviso-copiado { bottom: 96px; }
   .pieza { padding: 14px 0 120px; }
   .galeria-marco { margin: 0 -16px; border-radius: 0; box-shadow: none; }
   .galeria-ig { flex-wrap: wrap; }
@@ -956,8 +967,6 @@ dialog.cajon[open] { display: flex; flex-direction: column; animation: deslizar 
   }
   .menu.abierto { display: flex; }
   .menu a { padding: 13px 0; border-bottom: 1px solid #1d1d1d; }
-  .marca-lf .menu, .marca-wc .menu { border-top-color: rgba(255, 255, 255, .25); background: var(--cabecera); }
-  .marca-lf .menu a, .marca-wc .menu a { border-bottom-color: rgba(255, 255, 255, .22); }
   .menu-movil { display: grid; }
   .cabecera .caja { gap: 12px; }
   .cabecera .idioma { margin-left: auto; }
@@ -995,7 +1004,6 @@ dialog.cajon[open] { display: flex; flex-direction: column; animation: deslizar 
   .puertas .caja { gap: 0; padding-left: 8px; padding-right: 8px; }
   .puerta { gap: 7px; padding: 9px 9px 10px; }
   .puerta img { height: 20px; }
-  .puerta strong { font-size: 12.5px; }
   .hero { padding-top: 32px; }
   .hero-texto { padding: 40px 22px; }
   .hero h1 { font-size: 38px; }

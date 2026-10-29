@@ -1,9 +1,11 @@
 // Tendedero de fotos: fotos instantáneas prendidas con ganchos a una cuerda, que se mecen con el movimiento.
 // Dos formas con la misma física:
 // - carrusel: una cuerda horizontal con comba. Se arrastra, o se mueve con las flechas y el teclado; la foto del
-//   centro es la activa y la barra de abajo dice cuál es. Para galerías (las piezas de WuandaCrafts).
+//   centro es la activa y la barra de abajo dice cuál es. Para galerías (las piezas de WuandaCrafts). Si una foto trae
+//   «enlace», es un enlace de verdad: tocar la del centro abre su publicación (Juan, 29 oct 2026: «cuando le doy clic a las
+//   polaroids no me lleva a Instagram»); tocar otra solo la trae al centro, y arrastrar no abre nada.
 // - cortina: cuerdas verticales con fotos que se mecen cuando el puntero pasa por encima. Para columnas
-//   angostas o un héroe; cada foto es un enlace.
+//   angostas o un héroe; cada foto es un enlace (a su «enlace», si lo tiene).
 // Idea adaptada de «Polaroid Line Carousel» (21st.dev), reescrita en JavaScript sin dependencias; los colores
 // salen de las variables CSS de la marca. No hay reproducción automática, la brisa se apaga sola a los 5 s
 // (WCAG 2.2.2) y con «reducir movimiento» las fotos quedan quietas.
@@ -65,8 +67,12 @@
     raiz.setAttribute('role', 'region');
     raiz.tabIndex = 0;
     const flecha = (paso, d) => `<button class="t-flecha" type="button" data-paso="${paso}"><svg class="icono" viewBox="0 0 16 16" aria-hidden="true"><path d="${d}"/></svg></button>`;
+    // Una foto con enlace es un <a> (se puede abrir con clic, con Enter o en otra pestaña); solo la activa se alcanza con el teclado.
+    const foto = (it, i) => (it.enlace
+      ? `<a class="t-foto" data-i="${i}" href="${esc(it.enlace)}" target="_blank" rel="noopener" draggable="false" tabindex="-1">${papel(it)}</a>`
+      : `<div class="t-foto" data-i="${i}">${papel(it)}</div>`);
     raiz.innerHTML = '<div class="t-escena"><svg class="t-cuerda" aria-hidden="true"><path /></svg>'
-      + items.map((it, i) => `<div class="t-foto" data-i="${i}">${papel(it)}</div>`).join('') + '</div>'
+      + items.map(foto).join('') + '</div>'
       + '<div class="caja t-barra"><div class="t-pie"><strong class="t-titulo"></strong><span class="t-texto"></span></div>'
       + '<span class="t-cuenta" aria-hidden="true"></span>' + flecha(-1, 'M10 3 5 8l5 5') + flecha(1, 'm6 3 5 5-5 5')
       + '<a class="t-enlace" target="_blank" rel="noopener" hidden><svg class="icono" aria-hidden="true"><use href="#i-instagram"/></svg></a>'
@@ -80,6 +86,7 @@
     const S = { off: 0, vel: 0, objetivo: 0, a: items.map(() => 0), w: items.map(() => 0) };
     let m = { w: 0, cw: 0, sep: 1, y0: 30, comba: 0 };
     let activa = -1, arrastre = null, brisaHasta = 0, hablar = false;
+    let toque = null; // el último toque: { sigue } dice si el clic que viene después puede seguir el enlace de la foto
 
     function medir() {
       const w = escena.clientWidth;
@@ -134,7 +141,11 @@
 
     function marcar(i) {
       activa = i;
-      fotos.forEach((el, j) => { el.dataset.activa = j === i ? '1' : '0'; el.setAttribute('aria-hidden', String(j !== i)); });
+      fotos.forEach((el, j) => {
+        el.dataset.activa = j === i ? '1' : '0';
+        el.setAttribute('aria-hidden', String(j !== i));
+        if (el.tagName === 'A') el.tabIndex = j === i ? 0 : -1;
+      });
       flechas[0].setAttribute('aria-disabled', String(i === 0));
       flechas[1].setAttribute('aria-disabled', String(i === n - 1));
       pintarBarra(true);
@@ -198,12 +209,18 @@
       arrastre = null;
       if (d.movido) {
         delete raiz.dataset.arrastre;
+        toque = { sigue: false }; // arrastrar no abre nada
         S.vel = -d.v * 1000;
         ir(Math.round((S.off - d.v * 180) / m.sep)); // el impulso decide hasta dónde llega
       } else if (e.type === 'pointerup') {
         const f = e.target.closest('.t-foto');
-        if (f) ir(Number(f.dataset.i));
+        if (f) {
+          const i = Number(f.dataset.i);
+          toque = { sigue: i === activa }; // la del centro abre su publicación; otra solo se trae al centro
+          if (i !== activa) ir(i);
+        }
       }
+      setTimeout(() => { toque = null; }, 400); // si no llega un clic (se soltó fuera, o tras arrastrar), el toque no queda colgado
     };
     escena.addEventListener('pointerup', soltar);
     escena.addEventListener('pointercancel', soltar);
@@ -216,6 +233,12 @@
     raiz.addEventListener('click', (e) => {
       const b = e.target.closest('.t-flecha');
       if (b && b.getAttribute('aria-disabled') !== 'true') ir(destino() + Number(b.dataset.paso));
+      const f = e.target.closest('a.t-foto');
+      if (f) {
+        // Sin toque anterior (Enter en la foto activa) el enlace sigue; tras un arrastre, o en una foto que no era la activa, no.
+        if (toque && !toque.sigue) e.preventDefault();
+        toque = null;
+      }
     });
 
     // Cambio de idioma: textos nuevos sin mover la cuerda.
@@ -229,6 +252,7 @@
       fotos.forEach((el, i) => {
         el.querySelector('img').alt = items[i].alt || '';
         el.querySelector('.t-nota').textContent = items[i].nota || '';
+        if (el.tagName === 'A') el.setAttribute('aria-label', textos.enlace ? textos.enlace(items[i].titulo || '') : 'Instagram');
       });
       if (activa >= 0) pintarBarra(false);
     }
@@ -241,14 +265,16 @@
   }
 
   /* ── Cortina: cuerdas verticales ──
-     op.items: [{ img, encuadre, nota, titulo }] · op.cuerdas: número, o función del ancho que lo devuelve
-     op.textos: { ver(titulo) } · op.enlace: href de cada foto · op.alElegir(i): al hacer clic en una foto. */
+     op.items: [{ img, encuadre, nota, titulo, enlace }] · op.cuerdas: número, o función del ancho que lo devuelve
+     op.textos: { ver(titulo) } · op.enlace: href de las fotos sin «enlace» propio · op.alElegir(i): al hacer clic en una de esas. */
   function cortina(raiz, op) {
     const n = op.items.length;
     let items = op.items;
     raiz.classList.add('cortina');
     raiz.innerHTML = '<svg class="t-cuerda" aria-hidden="true"></svg>'
-      + items.map((it, i) => `<a class="t-foto" href="${esc(op.enlace || '#')}" data-i="${i}">${papel(it)}</a>`).join('');
+      + items.map((it, i) => (it.enlace
+        ? `<a class="t-foto" href="${esc(it.enlace)}" target="_blank" rel="noopener" draggable="false" data-i="${i}">${papel(it)}</a>`
+        : `<a class="t-foto" href="${esc(op.enlace || '#')}" draggable="false" data-i="${i}">${papel(it)}</a>`)).join('');
     const svg = raiz.querySelector('.t-cuerda');
     const fotos = [...raiz.querySelectorAll('.t-foto')];
     // Cada foto cuelga un poco torcida, como quedan al prenderlas a mano.
@@ -318,7 +344,7 @@
     raiz.addEventListener('pointerleave', () => { ultimo = null; });
     raiz.addEventListener('click', (e) => {
       const f = e.target.closest('.t-foto');
-      if (f && op.alElegir) { e.preventDefault(); op.alElegir(Number(f.dataset.i)); }
+      if (f && op.alElegir && !items[Number(f.dataset.i)].enlace) { e.preventDefault(); op.alElegir(Number(f.dataset.i)); }
     });
 
     function actualizar(nuevos, textos) {

@@ -56,6 +56,12 @@
     .marcas { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; margin-top: 34px; font-size: 13.5px; color: var(--gris); }
     .marcas a { color: #fff; font-weight: 700; text-decoration: none; border-bottom: 1px solid rgba(255, 255, 255, .3); }
     footer { padding: 18px 24px 24px; text-align: center; font-size: 12.5px; color: rgba(255, 255, 255, .5); }
+    .copiado {
+      position: fixed; left: 50%; bottom: 22px; z-index: 90; width: max-content; max-width: min(520px, calc(100% - 32px)); padding: 12px 18px;
+      border-radius: 14px; background: #fff; color: #111; box-shadow: 0 10px 30px rgba(0, 0, 0, .5); font-size: 14px; font-weight: 600; line-height: 1.4;
+      text-align: center; transform: translate(-50%, 12px); opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s;
+    }
+    .copiado.visible { transform: translate(-50%, 0); opacity: 1; }
     dialog { max-width: min(420px, calc(100% - 32px)); padding: 26px; border: 0; border-radius: 20px; color: #111; font-family: inherit; }
     dialog::backdrop { background: rgba(0, 0, 0, .7); }
     dialog h2 { margin: 0 0 10px; font-size: 19px; }
@@ -101,6 +107,7 @@
     </div>
   </main>
   <footer>negrofarto.com · © 2026 Negrofarto Group LLC · Miami, FL</footer>
+  <div class="copiado" id="copiado" role="status" aria-live="polite"></div>
   <script>
     (function () {
       var T = {
@@ -110,6 +117,8 @@
           texto: 'Branding, signage, print and custom production. While we finish it, write to us — we answer every message.',
           marcas: 'Our brands:',
           saludo: 'Hi Negrofarto Group! I found you on negrofarto.com and I’d like more information.',
+          copiado: 'We copied {correo}. If your email app didn’t open, paste it into a new message.',
+          escribe: 'Write to us at {correo}.',
         },
         es: {
           ceja: 'Agencia creativa · Miami, FL',
@@ -117,6 +126,8 @@
           texto: 'Branding, letreros, impresos y producción a medida. Mientras la terminamos, escríbenos: respondemos cada mensaje.',
           marcas: 'Nuestras marcas:',
           saludo: '¡Hola, Negrofarto Group! Los encontré en negrofarto.com y quiero más información.',
+          copiado: 'Copiamos {correo}. Si no se abrió tu correo, pégalo en un mensaje nuevo.',
+          escribe: 'Escríbenos a {correo}.',
         },
       };
       var idioma = 'en';
@@ -132,7 +143,34 @@
           if (base.indexOf('https://wa.me/') === 0) a.setAttribute('href', base.split('?')[0] + '?text=' + encodeURIComponent(T[idioma].saludo));
         });
       }
+      // Un enlace «mailto:» no hace nada si la computadora no tiene una app de correo configurada (Juan, 29 oct 2026: «el botón de
+      // correo aún no sirve»): al tocarlo se copia la dirección y se avisa; el enlace sigue abriendo el correo si hay con qué.
+      var reloj = 0;
+      function avisarCorreo(direccion, copiado) {
+        var aviso = document.getElementById('copiado');
+        aviso.textContent = T[idioma][copiado ? 'copiado' : 'escribe'].replace('{correo}', direccion);
+        aviso.classList.add('visible');
+        clearTimeout(reloj);
+        reloj = setTimeout(function () { aviso.classList.remove('visible'); }, 6000);
+      }
+      function copiarCorreo(direccion) {
+        // Se copia y se avisa en el acto, dentro del clic: sin esperar permisos ni foco (la API del portapapeles puede tardar o no contestar).
+        var campo = document.createElement('textarea');
+        campo.value = direccion; campo.setAttribute('readonly', ''); campo.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+        document.body.appendChild(campo); campo.select(); campo.setSelectionRange(0, direccion.length);
+        var copiado = false;
+        try { copiado = document.execCommand('copy'); } catch (err) { /* sin permiso */ }
+        document.body.removeChild(campo);
+        avisarCorreo(direccion, copiado);
+        // Si ese camino no sirvió, se prueba con la API moderna y el aviso se corrige solo si por fin se copió.
+        if (!copiado && navigator.clipboard && navigator.clipboard.writeText) {
+          Promise.race([navigator.clipboard.writeText(direccion).then(function () { return true; }, function () { return false; }),
+            new Promise(function (ok) { setTimeout(function () { ok(false); }, 1500); })]).then(function (ok) { if (ok) avisarCorreo(direccion, true); });
+        }
+      }
       document.addEventListener('click', function (e) {
+        var correo = e.target.closest('a[href^="mailto:"]');
+        if (correo) copiarCorreo(correo.getAttribute('href').slice(7).split('?')[0]);
         var b = e.target.closest('[data-idioma]');
         if (b) { aplicar(b.dataset.idioma); try { localStorage.setItem('nfg-idioma', idioma); } catch (err) { /* sin almacenamiento */ } }
       });
