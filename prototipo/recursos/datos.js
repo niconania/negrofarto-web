@@ -107,34 +107,37 @@ window.NFG_DATOS = {
       texto: { en: 'Pieces for their first Coffee Party, in April 2025.', es: 'Piezas para su primer Coffee Party, en abril de 2025.' } },
   ],
 
-  // «¿Qué necesita tu negocio?»: kit base por tipo de negocio, ajustado por etapa.
+  // «¿Qué necesita tu negocio?»: kit base por tipo de negocio, ajustado por etapa. «logo» es al que se transforma el «nfg.» del
+  // recomendador al elegirlo (la metamorfosis que propuso Juan el 29 oct 2026): el de un trabajo de ese tipo («proyecto»,
+  // el id de arriba) o el de La Fartedá («enlace»). Los de los clientes están sacados de las portadas de sus trabajos
+  // (herramientas/construir-logos-clientes.sh) hasta que Juan mande los originales.
   negocios: [
-    { id: 'cafe', icono: 'i-cafe', titulo: { en: 'Café or restaurant', es: 'Café o restaurante' }, kit: [
+    { id: 'cafe', icono: 'i-cafe', logo: 'img/marcas/clientes/spillmug.webp', proyecto: 'spillmug', titulo: { en: 'Café or restaurant', es: 'Café o restaurante' }, kit: [
       { servicio: 'impresos', titulo: { en: 'Table QR to your Instagram', es: 'QR en las mesas hacia tu Instagram' }, porque: { en: 'People follow you while they wait — more useful than a business card.', es: 'Te siguen mientras esperan: más útil que una tarjeta.' } },
       { servicio: 'letreros', titulo: { en: 'Window vinyl with logo and hours', es: 'Vinil en la vidriera con logo y horario' }, porque: { en: 'Your door works as a sign around the clock.', es: 'Tu puerta trabaja como aviso las 24 horas.' } },
       { servicio: 'merch', titulo: { en: 'Aprons, cups or mugs with your logo', es: 'Delantales, vasos o tazas con tu logo' }, porque: { en: 'Every photo your customers take shows your brand.', es: 'Cada foto que toman tus clientes muestra tu marca.' } },
     ] },
-    { id: 'tienda', icono: 'i-bolsa-compra', titulo: { en: 'Store or boutique', es: 'Tienda o boutique' }, kit: [
+    { id: 'tienda', icono: 'i-bolsa-compra', logo: 'img/marcas/lafarteda-logo.svg', enlace: 'merch/', titulo: { en: 'Store or boutique', es: 'Tienda o boutique' }, kit: [
       { servicio: 'letreros', titulo: { en: 'Storefront sign', es: 'Aviso de fachada' }, porque: { en: 'The first thing people see from the street.', es: 'Lo primero que se ve desde la calle.' } },
       { servicio: 'impresos', titulo: { en: 'Labels, stickers and business cards', es: 'Etiquetas, stickers y tarjetas' }, porque: { en: 'Every bag that leaves carries your name.', es: 'Cada bolsa que sale lleva tu nombre.' } },
       { servicio: 'merch', titulo: { en: 'Branded tote bags', es: 'Tote bags con tu marca' }, porque: { en: 'Your customers walk your brand around town.', es: 'Tus clientes pasean tu marca por la ciudad.' } },
     ] },
-    { id: 'estudio', icono: 'i-pesa', titulo: { en: 'Gym, studio or salon', es: 'Gimnasio, estudio o salón' }, kit: [
+    { id: 'estudio', icono: 'i-pesa', logo: 'img/marcas/clientes/warro.webp', proyecto: 'warro', titulo: { en: 'Gym, studio or salon', es: 'Gimnasio, estudio o salón' }, kit: [
       { servicio: 'letreros', titulo: { en: 'Door and glass vinyl', es: 'Vinil en puertas y vidrios' }, porque: { en: 'Your space explains itself from the sidewalk.', es: 'Tu espacio se explica solo desde la acera.' } },
       { servicio: 'merch', titulo: { en: 'Team tees and uniforms', es: 'Camisetas y uniformes del equipo' }, porque: { en: 'Your instructors become your brand.', es: 'Tus instructores se vuelven tu marca.' } },
       { servicio: 'impresos', titulo: { en: 'QR to your class schedule', es: 'QR a tu horario de clases' }, porque: { en: 'Booking starts at the front desk.', es: 'La reserva empieza en la recepción.' } },
     ] },
-    { id: 'oficina', icono: 'i-maletin', titulo: { en: 'Office or professional services', es: 'Oficina o servicios profesionales' }, kit: [
+    { id: 'oficina', icono: 'i-maletin', logo: 'img/marcas/clientes/karin-ramirez.webp', proyecto: 'karin', titulo: { en: 'Office or professional services', es: 'Oficina o servicios profesionales' }, kit: [
       { servicio: 'impresos', titulo: { en: 'Business cards with QR', es: 'Tarjetas de presentación con QR' }, porque: { en: 'Your contact and your website in one scan.', es: 'Tu contacto y tu web en un escaneo.' } },
       { servicio: 'letreros', titulo: { en: 'Office or suite sign', es: 'Letrero de oficina o suite' }, porque: { en: 'Clients find you without calling.', es: 'Los clientes te encuentran sin llamar.' } },
       { servicio: 'branding', titulo: { en: 'Brand guidelines', es: 'Manual de marca' }, porque: { en: 'Every document looks like the same company.', es: 'Cada documento parece de la misma empresa.' } },
     ] },
-    { id: 'contratista', icono: 'i-casa', titulo: { en: 'Contractor or home services', es: 'Contratista o servicios a domicilio' }, kit: [
+    { id: 'contratista', icono: 'i-casa', logo: 'img/marcas/clientes/infinity.webp', proyecto: 'infinity', titulo: { en: 'Contractor or home services', es: 'Contratista o servicios a domicilio' }, kit: [
       { servicio: 'merch', titulo: { en: 'Crew uniforms', es: 'Uniformes para tu equipo' }, porque: { en: "Clients know who's at their door.", es: 'El cliente sabe quién llega a su puerta.' } },
       { servicio: 'impresos', titulo: { en: 'Business cards with QR', es: 'Tarjetas de presentación con QR' }, porque: { en: 'Leave your contact at every job.', es: 'Deja tu contacto en cada trabajo.' } },
       { servicio: 'impresos', titulo: { en: 'Yard signs and door hangers', es: 'Letreros de jardín y colgadores de puerta' }, porque: { en: 'Neighbors see your work and your number.', es: 'Los vecinos ven tu trabajo y tu número.' } },
     ] },
-    { id: 'organizacion', icono: 'i-grupo', titulo: { en: 'School, team or organization', es: 'Escuela, equipo u organización' }, kit: [
+    { id: 'organizacion', icono: 'i-grupo', logo: 'img/marcas/clientes/green-team.webp', proyecto: 'greenteam', titulo: { en: 'School, team or organization', es: 'Escuela, equipo u organización' }, kit: [
       { servicio: 'merch', titulo: { en: 'Team uniforms and merch', es: 'Uniformes y merch del equipo' }, porque: { en: 'Like Green Team FC: everyone in the same colors.', es: 'Como Green Team FC: todos con los mismos colores.' } },
       { servicio: 'letreros', titulo: { en: 'Banners and event signage', es: 'Pendones y señalización para eventos' }, porque: { en: 'Your event looks organized from the entrance.', es: 'Tu evento se ve organizado desde la entrada.' } },
       { servicio: 'impresos', titulo: { en: 'Flyers and QR for sign-ups', es: 'Flyers y QR para inscripciones' }, porque: { en: 'From the flyer to the sign-up form in one scan.', es: 'Del flyer a la inscripción en un escaneo.' } },

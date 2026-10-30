@@ -264,18 +264,33 @@ h2 em { font-style: normal; color: var(--acento-oscuro); }
 }
 /* El logo. La caja es más ancha que el logo para que el efecto tenga aire; el lienzo la cubre entera. El <img> marca
    dónde va el logo y es el respaldo (sin WebGL2, con «reducir movimiento» o hasta que el lienzo pinta). */
-.kit-logo-caja { position: relative; margin: 20px -44px 0; padding: 40px 44px 18px; }
+.kit-logo-caja { position: relative; margin: 20px -44px 0; padding: 15px 44px 18px; }
 .kit-logo { position: relative; display: block; width: min(100%, 340px); height: auto; transition: opacity .4s ease; }
-.liquido { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0; transition: opacity .4s ease; }
+/* El lienzo del logo líquido sale 40 px de la caja por arriba y por la izquierda: el material que se dispersa en la
+   metamorfosis tiene lugar (y unas paredes blandas en liquido.js lo frenan antes de que se corte en el borde). */
+/* La metamorfosis: el logo que se ve cambia con el negocio elegido (nfg → SpillMug…). El lugar del logo tiene una proporción
+   fija y el logo se acomoda adentro, entero y a la izquierda (centrado en el celular; el lienzo lee este object-position para
+   dibujarlo igual que el respaldo): el cambio no mueve nada de la página. */
+.kit-logo { aspect-ratio: 3 / 2; object-fit: contain; object-position: left center; }
+.liquido { position: absolute; left: -40px; top: -40px; width: calc(100% + 40px); height: calc(100% + 40px); pointer-events: none; opacity: 0; transition: opacity .4s ease; }
 .kit-logo-caja[data-liquido="on"] .liquido { opacity: 1; }
 .kit-logo-caja[data-liquido="on"] .kit-logo { opacity: 0; }
+.kit-pie { position: relative; min-height: 22px; margin-top: 20px; }
 .kit-pista {
-  position: relative; display: none; align-items: center; gap: 9px; margin-top: 20px; font-size: 11px; font-weight: 800;
+  position: relative; display: none; align-items: center; gap: 9px; font-size: 11px; font-weight: 800;
   letter-spacing: .14em; text-transform: uppercase; color: var(--turquesa-claro); transition: opacity .8s ease;
 }
 .kit-pista::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: kit-pulso 2.4s ease-in-out 2; }
 .kit-logo-caja[data-liquido="on"] .kit-pista { display: inline-flex; }
 .kit-logo-caja[data-tocado] .kit-pista { opacity: 0; }
+/* Con el logo de un trabajo, la línea de quién es ocupa el lugar de la pista (ya no hace falta enseñar a tocar el logo). */
+.kit-cliente { position: relative; display: none; font-size: 14px; line-height: 1.5; color: rgba(255, 255, 255, .78); animation: kit-cliente-entra .6s ease .2s both; }
+.kit-logo-caja[data-liquido="on"] .kit-cliente { animation-delay: 2.1s; } /* con la metamorfosis, cuando el logo nuevo ya se asienta */
+.kit-logo-caja[data-cliente] .kit-cliente { display: block; }
+.kit-logo-caja[data-cliente] .kit-pista { display: none; }
+.kit-cliente-enlace { display: inline-flex; align-items: center; gap: 6px; padding: 0; border: 0; background: none; font: inherit; font-weight: 800; color: var(--turquesa-claro); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.kit-cliente-enlace .icono { width: 14px; height: 14px; }
+@keyframes kit-cliente-entra { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 @keyframes kit-pulso { 0%, 100% { transform: scale(.6); opacity: .45; } 50% { transform: scale(1); opacity: 1; } }
 
 /* El formulario: progreso, la pregunta (se escribe al cambiar de paso) y las opciones grandes con ícono. */
@@ -980,8 +995,9 @@ dialog.cajon[open] { display: flex; flex-direction: column; animation: deslizar 
   .proceso, .pasos-lf, .look { grid-template-columns: 1fr 1fr; }
   .pie-grilla { grid-template-columns: 1fr 1fr; }
   .kit-resultado { position: static; }
-  .kit-logo-caja { margin: 10px -16px 0; padding: 30px 16px 8px; text-align: center; }
-  .kit-logo { width: min(100%, 230px); margin-inline: auto; }
+  .kit-logo-caja { margin: 10px -16px 0; padding: 14px 16px 8px; text-align: center; }
+  .kit-pie { min-height: 44px; } /* dos líneas: la línea del cliente puede ocupar dos */
+  .kit-logo { width: min(100%, 230px); margin-inline: auto; object-position: center; }
   .kit-opciones:not(.kit-opciones--una) .kit-opcion { flex-direction: column; align-items: flex-start; gap: 10px; padding: 12px; font-size: 14px; }
   .nosotros-foto { max-width: 340px; }
   .lf-fotos { height: 380px; }

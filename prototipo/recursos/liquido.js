@@ -12,8 +12,11 @@
 // - la cantidad de partículas y el radio del cursor van según el ancho del logo, no de un héroe a pantalla completa;
 // - el armado inicial remolinea menos, para que no se salga de la caja;
 // - pensar(): un cursor invisible lo revuelve en espiral y lo suelta;
+// - cambiar(): la metamorfosis que propuso Juan el 29 oct 2026 (tipo Venom): al elegir el tipo de negocio, el logo se
+//   deshace en material líquido y ese mismo material se acomoda en el logo de un trabajo (cafetería → SpillMug). Cada
+//   partícula sigue donde estaba y solo cambia de casa y de color; el logo nuevo puede ser un SVG o una imagen;
 // - sin movimiento ambiental continuo (WCAG 2.2.2): solo el armado al aparecer (unos 3 s), la reacción al cursor
-//   y lo que dura pensar().
+//   y lo que dura pensar() o la metamorfosis.
 // Sin WebGL2, con «reducir movimiento» o si algo falla, queda el logo quieto (el <img>).
 (function () {
   const reducir = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -105,6 +108,8 @@ uniform float uTime;
 uniform float uDt;
 uniform float uIntro;
 uniform float uIntroTurb;
+uniform vec2 uWallMin;
+uniform vec2 uWallMax;
 ${NOISE}
 vec2 curl(vec2 p){
   const float e = 0.35;
@@ -142,6 +147,9 @@ void main(){
   acc += c*(e*1.2*uSpread + uIntro*uIntroTurb)*uTurb*light;
   float k = (0.006 + 0.02*uReturn)*(0.65+sd*0.7)*(1.0 - uIntro*0.75);
   acc -= off*k;
+  // NFG: paredes blandas en los bordes del lienzo (la metamorfosis dispersa el material más que el armado inicial): el
+  // material que llega se frena y vuelve, en vez de salirse y quedar cortado en seco
+  acc -= (p - clamp(p, uWallMin, uWallMax))*0.06;
 
   vel += acc*uDt;
   vel *= pow(mix(0.93, 0.955, e), uDt);
@@ -158,6 +166,7 @@ layout(location=0) in vec2 aCorner;
 uniform sampler2D uState;
 uniform sampler2D uHome;
 uniform sampler2D uCol;
+uniform sampler2D uColFrom;
 uniform sampler2D uFlow;
 uniform int uTexW;
 uniform vec4 uRect;
@@ -171,6 +180,7 @@ uniform float uAmbient;
 uniform float uStreak;
 uniform float uIntroVis;
 uniform float uRest;
+uniform float uColMix;
 uniform vec3 uTint;
 uniform vec3 uEstela;
 uniform vec3 uBrillo;
@@ -186,7 +196,8 @@ void main(){
   ivec2 ij = ivec2(id % uTexW, id / uTexW);
   vec4 hm = texelFetch(uHome, ij, 0);
   vec4 st = texelFetch(uState, ij, 0);
-  vec4 cl = texelFetch(uCol, ij, 0);
+  // NFG: en la metamorfosis, el color pasa del que tenía la partícula en el logo anterior al suyo en el nuevo
+  vec4 cl = mix(texelFetch(uColFrom, ij, 0), texelFetch(uCol, ij, 0), uColMix);
 
   float wakeE = texture(uFlow, hm.xy).b;
   float E = energyAt(hm.xy*uRect.zw, uMouse, uRadius, uPresence, wakeE);
@@ -326,6 +337,31 @@ void main(){
   const TEX_W = 1024;
   const SETTLE_FRAMES = 270;
 
+  // NFG, la metamorfosis: el material de un logo pasa a otro sin saltar. Cada partícula del logo nuevo toma el lugar y la
+  // velocidad de una del anterior (la i-ésima de las n nuevas, de la que le toca entre las m viejas, en el mismo orden) y
+  // su desplazamiento se corrige para que siga exactamente donde estaba aunque su casa ahora sea otra.
+  const REHOME_FS = `#version 300 es
+precision highp float;
+out vec4 o;
+uniform sampler2D uOldState;
+uniform sampler2D uOldHome;
+uniform sampler2D uNewHome;
+uniform vec2 uSize;
+uniform float uNOld;
+uniform float uNNew;
+void main(){
+  ivec2 ij = ivec2(gl_FragCoord.xy);
+  vec4 hn = texelFetch(uNewHome, ij, 0);
+  if(hn.w <= 0.0){ o = vec4(0.0); return; }
+  int i = ij.y*${TEX_W} + ij.x;
+  int s = min(int(floor((float(i) + 0.5)*uNOld/uNNew)), int(uNOld) - 1);
+  ivec2 sj = ivec2(s % ${TEX_W}, s / ${TEX_W});
+  vec4 st = texelFetch(uOldState, sj, 0);
+  vec4 ho = texelFetch(uOldHome, sj, 0);
+  o = vec4((ho.xy - hn.xy)*uSize + st.xy, st.zw);
+}
+`;
+
   class LiquidEngine {
     lastImage = null;
     // Se llama una vez, cuando el primer cuadro ya se dibujó.
@@ -353,6 +389,14 @@ void main(){
     imgBg = [0.918, 0.914, 0.906];
     flowing = 0;
     homeData = null;
+    colData = null;
+    // metamorfosis: el color de partida de cada partícula y cuánto lleva pasando al suyo (0 a 1)
+    colFromTex = null;
+    mezcla = 1;
+    derritiendo = false;
+    derritiendoDesde = 0;
+    // lo que tarda el armado, en ms: 3200 al aparecer el logo, menos en la metamorfosis
+    introMs = 3200;
 
     aspect = 2.5;
     rect = { x: 0, y: 0, w: 1, h: 1 };
@@ -417,6 +461,7 @@ void main(){
       this.pSim = compile(gl, QUAD_VS, SIM_FS);
       this.pPart = compile(gl, PART_VS, PART_FS);
       this.pImg = compile(gl, QUAD_VS, IMAGE_FS);
+      this.pRehome = compile(gl, QUAD_VS, REHOME_FS);
 
       this.vao = gl.createVertexArray();
       gl.bindVertexArray(this.vao);
@@ -474,6 +519,21 @@ void main(){
       this.stateDirty = false;
     }
 
+    // La imagen nítida del logo, como textura (con mipmaps, para que se vea bien al achicarla).
+    texturaImagen(img) {
+      const gl = this.gl;
+      const t = gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D, t);
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+      gl.generateMipmap(gl.TEXTURE_2D);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      return t;
+    }
+
     // NFG: acepta también un <canvas> (el logo pasado a píxeles), no solo un <img>.
     setImage(img) {
       if (this.destroyed || this.lost) return;
@@ -487,15 +547,7 @@ void main(){
       }
       this.clearFlow();
       if (this.imgTex) gl.deleteTexture(this.imgTex);
-      this.imgTex = gl.createTexture();
-      gl.bindTexture(gl.TEXTURE_2D, this.imgTex);
-      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
-      gl.generateMipmap(gl.TEXTURE_2D);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      this.imgTex = this.texturaImagen(img);
       this.buildParticles(img);
       this.ready = true;
       if (this.opts.intro && !this.opts.reducedMotion) this.startIntro();
@@ -504,7 +556,11 @@ void main(){
 
     // Una partícula por cada píxel con material de una grilla puesta sobre la imagen.
     buildParticles(img) {
-      const gl = this.gl;
+      this.subir(this.muestrear(img));
+    }
+
+    // NFG: lo que pasa en la CPU al armar las partículas (separado de subir() para la metamorfosis).
+    muestrear(img) {
       // NFG: la grilla va según el ancho del logo en pantalla (~1,2 partículas por px), no fija para un héroe
       // a pantalla completa como en el original (640 o 1000).
       const gw = Math.round(clamp(this.rect.w, 120, 900) * (this.lowPower ? 1 : 1.2) * Math.sqrt(clamp(this.opts.density, 0.15, 2)));
@@ -565,18 +621,26 @@ void main(){
         }
       }
       const n = home.length / 4;
+      return { home, col, n, texH: Math.max(1, Math.ceil(n / TEX_W)) };
+    }
+
+    // Sube las partículas a la GPU. Las texturas de las anteriores se borran, salvo con «conservar» (la metamorfosis las
+    // sigue necesitando): entonces se devuelven para borrarlas después con soltar().
+    subir({ home, col, n, texH }, conservar = false) {
+      const gl = this.gl;
       this.n = n;
-      this.texH = Math.max(1, Math.ceil(n / TEX_W));
+      this.texH = texH;
       const total = TEX_W * this.texH;
       const homeArr = new Float32Array(total * 4);
       homeArr.set(home);
       const colArr = new Uint8Array(total * 4);
       colArr.set(col);
 
-      for (const t of [this.homeTex, this.colTex, ...this.stateTex]) if (t) gl.deleteTexture(t);
-      for (const f of this.stateFb) gl.deleteFramebuffer(f);
+      const viejas = { tex: [this.homeTex, this.colTex, this.colFromTex, ...this.stateTex].filter(Boolean), fb: this.stateFb };
+      if (!conservar) this.soltar(viejas);
       this.stateTex = [];
       this.stateFb = [];
+      this.colFromTex = null;
       this.homeTex = this.makeTex(gl.RGBA32F, TEX_W, this.texH, gl.RGBA, gl.FLOAT, homeArr, gl.NEAREST);
       this.colTex = this.makeTex(gl.RGBA8, TEX_W, this.texH, gl.RGBA, gl.UNSIGNED_BYTE, colArr, gl.NEAREST);
       for (let i = 0; i < 2; i++) {
@@ -590,7 +654,15 @@ void main(){
       }
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
       this.homeData = homeArr;
+      this.colData = colArr;
       this.clearState();
+      return viejas;
+    }
+
+    soltar({ tex, fb }) {
+      const gl = this.gl;
+      for (const t of tex) gl.deleteTexture(t);
+      for (const f of fb) gl.deleteFramebuffer(f);
     }
 
     startIntro() {
@@ -679,6 +751,81 @@ void main(){
       this.pensandoRaf = requestAnimationFrame(paso);
     }
 
+    // NFG, metamorfosis, primera mitad: todo el logo pasa a ser material (partículas, que en reposo se ven igual que la
+    // imagen) y el remolino del armado inicial lo revuelve: se deshace sin que nadie lo toque. Sigue así hasta transformar().
+    derretir() {
+      if (!this.ready || this.lost || this.destroyed) return;
+      this.derritiendo = true;
+      this.derritiendoDesde = performance.now();
+      this.introT = 0;
+      this.introMs = 2200;
+      this.stateDirty = true;
+      this.wake();
+    }
+
+    // NFG, metamorfosis, segunda mitad: el mismo material se acomoda en otro logo. «img» es el logo nuevo, ya en píxeles y
+    // del mismo tamaño y proporción que el anterior. Cada partícula nueva toma el lugar de una de las anteriores (por la GPU,
+    // sin leer nada de vuelta) y de ahí vuelve sola a su nueva casa, con el remolino del armado cada vez más suave; el color
+    // pasa del de antes al suyo, y la imagen nítida entra cuando el material se asienta. Con «instantaneo» (fuera de pantalla,
+    // donde nadie la ve) el logo nuevo queda en su sitio de una vez. Devuelve false si no pudo.
+    transformar(img, instantaneo = false) {
+      if (this.destroyed || this.lost) return false;
+      // sin material todavía, o con otra proporción (el lugar del logo cambió de forma): se arma de cero, con el armado inicial
+      const proporcion = (img.naturalWidth || img.width) / (img.naturalHeight || img.height);
+      if (!this.ready || !this.n || Math.abs(proporcion - this.aspect) > 0.01) { this.setImage(img); return true; }
+      const gl = this.gl;
+      const d = this.muestrear(img);
+      if (!d.n) return false;
+      const antes = { n: this.n, home: this.homeTex, estado: this.stateTex[this.stateIdx], col: this.colData };
+      const viejas = this.subir(d, true);
+      // el color de partida: el de la partícula a la que sustituye
+      const desde = new Uint8Array(TEX_W * this.texH * 4);
+      for (let i = 0; i < d.n; i++) {
+        const s = Math.min(antes.n - 1, Math.floor((i + 0.5) * antes.n / d.n));
+        desde.set(antes.col.subarray(s * 4, s * 4 + 4), i * 4);
+      }
+      this.colFromTex = this.makeTex(gl.RGBA8, TEX_W, this.texH, gl.RGBA, gl.UNSIGNED_BYTE, desde, gl.NEAREST);
+      // el estado: la posición y la velocidad de la que sustituye, con el desplazamiento corregido por el cambio de casa
+      const P = this.pRehome;
+      gl.bindFramebuffer(gl.FRAMEBUFFER, this.stateFb[this.stateIdx]);
+      gl.viewport(0, 0, TEX_W, this.texH);
+      gl.disable(gl.BLEND);
+      gl.useProgram(P.p);
+      gl.bindVertexArray(this.vao);
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, antes.estado);
+      gl.uniform1i(P.u.uOldState, 0);
+      gl.activeTexture(gl.TEXTURE1);
+      gl.bindTexture(gl.TEXTURE_2D, antes.home);
+      gl.uniform1i(P.u.uOldHome, 1);
+      gl.activeTexture(gl.TEXTURE2);
+      gl.bindTexture(gl.TEXTURE_2D, this.homeTex);
+      gl.uniform1i(P.u.uNewHome, 2);
+      gl.uniform2f(P.u.uSize, this.rect.w, this.rect.h);
+      gl.uniform1f(P.u.uNOld, antes.n);
+      gl.uniform1f(P.u.uNNew, d.n);
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      this.soltar(viejas);
+      if (this.imgTex) gl.deleteTexture(this.imgTex);
+      this.imgTex = this.texturaImagen(img);
+      this.lastImage = img;
+      this.mezcla = 0;
+      this.derritiendo = false;
+      this.introT = 0;
+      this.introMs = 2200;
+      this.stateDirty = true;
+      if (instantaneo) {
+        this.mezcla = 1;
+        this.introT = 1;
+        this.clearState();
+        gl.deleteTexture(this.colFromTex);
+        this.colFromTex = null;
+      }
+      this.wake();
+      return true;
+    }
+
     wake() {
       if (!this.ready || this.running || !this.visible || this.destroyed || this.lost) {
         if (this.ready && !this.running) this.draw();
@@ -730,12 +877,18 @@ void main(){
       const fk = this.presenceTarget > this.flowing ? 0.05 : 0.018;
       this.flowing += (this.presenceTarget - this.flowing) * (1 - Math.pow(1 - fk, dt));
       if (this.flowing < 0.002 && this.presenceTarget === 0) this.flowing = 0;
-      if (this.introT < 1) this.introT = Math.min(1, this.introT + Math.min(rawMs, 100) / 3200);
+      // si el logo nuevo no llega (o no se pudo preparar), el material no se queda derretido: se arma otra vez
+      if (this.derritiendo && now - this.derritiendoDesde > 4000) this.derritiendo = false;
+      if (this.introT < 1 && !this.derritiendo) this.introT = Math.min(1, this.introT + Math.min(rawMs, 100) / this.introMs);
+      if (this.mezcla < 1) {
+        this.mezcla = Math.min(1, this.mezcla + Math.min(rawMs, 100) / 700);
+        if (this.mezcla >= 1 && this.colFromTex) { this.gl.deleteTexture(this.colFromTex); this.colFromTex = null; }
+      }
 
       const interacting = this.presence > 0.001 || this.burst > 0;
       // el reposo se cuenta en cuadros simulados, para que un equipo lento no salte a mitad del regreso
       this.settle = interacting ? 0 : this.settle + dt;
-      const active = interacting || this.settle < SETTLE_FRAMES || this.introT < 1;
+      const active = interacting || this.settle < SETTLE_FRAMES || this.introT < 1 || this.mezcla < 1;
 
       if (!active) {
         if (this.flowDirty) this.clearFlow();
@@ -831,6 +984,9 @@ void main(){
       gl.uniform1f(P.u.uDt, dt);
       gl.uniform1f(P.u.uIntro, intro);
       gl.uniform1f(P.u.uIntroTurb, o.introTurb);
+      // las paredes quedan 20 px adentro del lienzo (en px del rectángulo del logo): el material frena antes de llegar al borde
+      gl.uniform2f(P.u.uWallMin, 20 - r.x, 20 - r.y);
+      gl.uniform2f(P.u.uWallMax, this.cssW - 20 - r.x, this.cssH - 20 - r.y);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
       this.stateIdx = dst;
       this.stateDirty = true;
@@ -917,6 +1073,10 @@ void main(){
       gl.uniform1f(P.u.uDpr, dpr);
       if (this.alphaMode) gl.uniform3f(P.u.uTint, 1, 1, 1);
       else gl.uniform3f(P.u.uTint, br / Math.max(ir, 0.001), bg / Math.max(ig, 0.001), bb / Math.max(ib, 0.001));
+      gl.activeTexture(gl.TEXTURE4);
+      gl.bindTexture(gl.TEXTURE_2D, this.colFromTex || this.colTex);
+      gl.uniform1i(P.u.uColFrom, 4);
+      gl.uniform1f(P.u.uColMix, this.colFromTex ? this.mezcla * this.mezcla * (3 - 2 * this.mezcla) : 1);
       gl.uniform3f(P.u.uEstela, ...o.estela);
       gl.uniform3f(P.u.uBrillo, ...o.brillo);
       gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, this.n);
@@ -932,9 +1092,9 @@ void main(){
       if (!this.lost) {
         gl.deleteBuffer(this.quad);
         gl.deleteVertexArray(this.vao);
-        for (const t of [...this.flowTex, ...this.stateTex, this.imgTex, this.homeTex, this.colTex]) if (t) gl.deleteTexture(t);
+        for (const t of [...this.flowTex, ...this.stateTex, this.imgTex, this.homeTex, this.colTex, this.colFromTex]) if (t) gl.deleteTexture(t);
         for (const f of [...this.flowFb, ...this.stateFb]) gl.deleteFramebuffer(f);
-        for (const p of [this.pFlow, this.pSim, this.pPart, this.pImg]) if (p) gl.deleteProgram(p.p);
+        for (const p of [this.pFlow, this.pSim, this.pPart, this.pImg, this.pRehome]) if (p) gl.deleteProgram(p.p);
         gl.getExtension('WEBGL_lose_context')?.loseContext();
       }
     }
@@ -953,6 +1113,8 @@ void main(){
     // bg e imgBg (el color de fondo de la sección) se ponen al montar: el logo se pasa a píxeles sobre ese color
     estela: rgb('#1daa9f'), brillo: rgb('#62e4da'), // --turquesa y --turquesa-claro
   };
+  // Cuánto se deshace el logo (ms) antes de acomodarse en el nuevo, en la metamorfosis.
+  const DERRETIR_MS = 700;
   // Aire alrededor del logo, en fracción de su ancho: el lente y las orillas del efecto no lo recortan.
   const MARGEN = 0.08;
 
@@ -965,16 +1127,15 @@ void main(){
     return [255, 255, 255];
   }
 
-  // El logo en píxeles, sobre «fondo» y con su margen, del mismo tamaño relativo que el rectángulo. Se dibuja con los
-  // trazados del SVG (Path2D) y no pasando el <img> al lienzo: Safari puede marcar como «contaminado» un lienzo con un
-  // SVG dibujado, y entonces no deja leer sus píxeles. El SVG tiene que ser solo <path> con fill, sin
-  // transformaciones (como los que hace herramientas/construir-logos.mjs). Sobre el mismo color que la página, las
-  // orillas suavizadas del logo se ven bien: no se oscurecen.
-  async function rasterizar(src, ancho, alto, fondo) {
-    const r = await fetch(src);
-    if (!r.ok) throw new Error(`${src}: ${r.status}`);
-    const svg = new DOMParser().parseFromString(await r.text(), 'image/svg+xml');
-    const [vx, vy, vw] = svg.documentElement.getAttribute('viewBox').split(/[\s,]+/).map(Number);
+  // El logo en píxeles, sobre «fondo» y con su margen. «ancho» × «alto» es el lugar del logo en pantalla (el <img>): el logo
+  // se acomoda adentro, entero, sea cual sea su proporción (en la metamorfosis llegan logos cuadrados y alargados al
+  // mismo lugar), y queda donde diga «alinear» ([x, y] de 0 a 1: [0, .5] a la izquierda, [.5, .5] centrado; el object-position
+  // del <img>, para que el respaldo y el lienzo muestren lo mismo). Un SVG se dibuja con sus trazados (Path2D) y no pasando el <img> al lienzo: Safari puede
+  // marcar como «contaminado» un lienzo con un SVG dibujado, y entonces no deja leer sus píxeles. El SVG tiene que ser solo
+  // <path> (con fill, fill-opacity, fill-rule, stroke y transform: como los que hace herramientas/construir-logos.mjs o
+  // los que salen de un PDF). Una imagen (WebP o PNG, con fondo transparente) se dibuja directo: del mismo sitio no
+  // contamina el lienzo. Sobre el mismo color que la página, las orillas suavizadas del logo se ven bien: no se oscurecen.
+  async function rasterizar(src, ancho, alto, fondo, alinear) {
     const escala = Math.min(Math.min(window.devicePixelRatio || 1, 2) * 1.5, 1400 / (ancho * (1 + 2 * MARGEN)));
     const m = ancho * MARGEN;
     const c = document.createElement('canvas');
@@ -983,14 +1144,53 @@ void main(){
     const ctx = c.getContext('2d');
     ctx.fillStyle = `rgb(${fondo.join(',')})`;
     ctx.fillRect(0, 0, c.width, c.height);
-    ctx.translate(m * escala, m * escala);
-    ctx.scale(ancho * escala / vw, ancho * escala / vw);
-    ctx.translate(-vx, -vy);
-    for (const trazo of svg.querySelectorAll('path')) {
-      ctx.fillStyle = trazo.getAttribute('fill') || '#000';
-      ctx.fill(new Path2D(trazo.getAttribute('d')));
-    }
+    ctx.scale(escala, escala);
+    ctx.translate(m, m);
+    if (/\.svg(\?|#|$)/i.test(src)) await trazarSVG(ctx, src, ancho, alto, alinear);
+    else await dibujarImagen(ctx, src, ancho, alto, alinear);
     return c;
+  }
+  async function trazarSVG(ctx, src, ancho, alto, [ax, ay]) {
+    const r = await fetch(src);
+    if (!r.ok) throw new Error(`${src}: ${r.status}`);
+    const svg = new DOMParser().parseFromString(await r.text(), 'image/svg+xml');
+    const [vx, vy, vw, vh] = svg.documentElement.getAttribute('viewBox').split(/[\s,]+/).map(Number);
+    const k = Math.min(ancho / vw, alto / vh);
+    ctx.translate((ancho - vw * k) * ax, (alto - vh * k) * ay);
+    ctx.scale(k, k);
+    ctx.translate(-vx, -vy);
+    const num = (trazo, atributo, defecto) => (trazo.hasAttribute(atributo) ? Number(trazo.getAttribute(atributo)) : defecto);
+    for (const trazo of svg.querySelectorAll('path')) {
+      ctx.save();
+      if (trazo.hasAttribute('transform')) { const q = new DOMMatrix(trazo.getAttribute('transform')); ctx.transform(q.a, q.b, q.c, q.d, q.e, q.f); }
+      const forma = new Path2D(trazo.getAttribute('d'));
+      const relleno = trazo.getAttribute('fill');
+      if (relleno !== 'none') {
+        ctx.globalAlpha = num(trazo, 'fill-opacity', 1);
+        ctx.fillStyle = relleno || '#000';
+        ctx.fill(forma, trazo.getAttribute('fill-rule') === 'evenodd' ? 'evenodd' : 'nonzero');
+      }
+      const linea = trazo.getAttribute('stroke');
+      if (linea && linea !== 'none') {
+        ctx.globalAlpha = num(trazo, 'stroke-opacity', 1);
+        ctx.strokeStyle = linea;
+        ctx.lineWidth = num(trazo, 'stroke-width', 1);
+        ctx.lineCap = trazo.getAttribute('stroke-linecap') || 'butt';
+        ctx.lineJoin = trazo.getAttribute('stroke-linejoin') || 'miter';
+        ctx.miterLimit = num(trazo, 'stroke-miterlimit', 4);
+        ctx.stroke(forma);
+      }
+      ctx.restore();
+    }
+  }
+  async function dibujarImagen(ctx, src, ancho, alto, [ax, ay]) {
+    const im = new Image();
+    im.src = src;
+    await im.decode();
+    const k = Math.min(ancho / im.naturalWidth, alto / im.naturalHeight);
+    const w = im.naturalWidth * k, h = im.naturalHeight * k;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(im, (ancho - w) * ax, (alto - h) * ay, w, h);
   }
   // Espera a que el <img> de respaldo cargue: su tamaño en pantalla es el del logo.
   const cargada = (im) => (im.complete ? (im.naturalWidth ? Promise.resolve() : Promise.reject(new Error('logo')))
@@ -1001,7 +1201,9 @@ void main(){
   // y su lugar, y el motor dibuja el logo justo ahí. «caja» recibe data-liquido="on" cuando el lienzo ya pinta, y
   // data-tocado cuando alguien pasa el cursor. El motor arranca cuando la caja se ve (así el armado inicial no pasa
   // sin que nadie lo vea) y se detiene fuera de pantalla.
-  // Devuelve { medir, pensar, destruir }, o null si no hay WebGL2 o se pidió reducir movimiento: queda el <img>.
+  // Devuelve { medir, pensar, cambiar, destruir }, o null si no hay WebGL2 o se pidió reducir movimiento: queda el <img>.
+  // cambiar(src) es la metamorfosis: el logo se deshace y el material se acomoda en el de «src»; el <img> toma ese src de
+  // una vez, para que quede el logo nuevo si no hay lienzo o deja de haberlo.
   function montar(caja, img) {
     if (reducir.matches || !window.WebGL2RenderingContext) return null;
     const capa = caja;
@@ -1013,12 +1215,21 @@ void main(){
     capa.append(lienzo);
     caja.style.touchAction = 'pan-y'; // con el dedo, lo horizontal mueve el material y lo vertical sigue bajando la página
     let motor = null, vivo = true, visible = false, empezado = false;
+    let deseado = null, turno = 0; // el logo que se pidió con cambiar() y el número del último pedido
+    let vista = false, pendiente = null; // se ve al menos el 40 % del lugar del logo; un cambio que espera a que se vea
 
     function medidas() {
-      const c = caja.getBoundingClientRect(), i = img.getBoundingClientRect();
+      const c = lienzo.getBoundingClientRect(), i = img.getBoundingClientRect(); // el lienzo puede salirse de la caja (el CSS decide)
       const m = i.width * MARGEN;
-      return { ancho: caja.clientWidth, alto: caja.clientHeight, logo: i,
+      return { ancho: lienzo.clientWidth, alto: lienzo.clientHeight, logo: i,
         rect: { x: i.left - c.left - m, y: i.top - c.top - m, w: i.width + 2 * m, h: i.height + 2 * m } };
+    }
+    // Dónde queda el logo dentro de su lugar, según el CSS del <img> (object-position): a la izquierda en la computadora y
+    // centrado en el celular.
+    function alineacion() {
+      const eje = (v) => ({ left: 0, top: 0, center: 0.5, right: 1, bottom: 1 }[v] ?? parseFloat(v) / 100); // Safari puede dar palabras
+      const [x, y] = getComputedStyle(img).objectPosition.split(' ').map(eje);
+      return [Number.isFinite(x) ? x : 0.5, Number.isFinite(y) ? y : 0.5];
     }
     function medir() {
       if (!motor) return;
@@ -1030,19 +1241,21 @@ void main(){
       try {
         await cargada(img);
         const m = medidas();
-        const fuente = await rasterizar(img.currentSrc || img.src, m.logo.width, m.logo.height, fondo);
+        const origen = deseado || img.currentSrc || img.src;
+        const fuente = await rasterizar(origen, m.logo.width, m.logo.height, fondo, alineacion());
         if (!vivo) return;
         motor = new LiquidEngine(lienzo, opciones, destruir);
         motor.onFirstFrame = () => { if (vivo) capa.dataset.liquido = 'on'; };
         motor.resize(m.ancho, m.alto, m.rect);
         motor.setImage(fuente);
         motor.setVisible(visible);
+        if (deseado && deseado !== origen) cambiar(deseado); // pidieron otro logo mientras se preparaba este
       } catch {
         destruir(); // sin WebGL2 completo o sin poder leer el logo: queda el <img>
       }
     }
 
-    const punto = (e) => { const c = caja.getBoundingClientRect(); return [e.clientX - c.left, e.clientY - c.top]; };
+    const punto = (e) => { const c = lienzo.getBoundingClientRect(); return [e.clientX - c.left, e.clientY - c.top]; };
     const al = (tipo) => (e) => {
       if (!motor) return;
       if (tipo === 'move' || tipo === 'down') capa.dataset.tocado = '';
@@ -1056,14 +1269,40 @@ void main(){
     ro.observe(img);
     const io = new IntersectionObserver(([e]) => {
       visible = e.isIntersecting;
-      if (visible && !empezado && e.intersectionRatio >= 0.4) empezar();
+      vista = e.intersectionRatio >= 0.4;
+      if (visible && !empezado && vista) empezar();
       motor?.setVisible(visible);
+      if (vista && pendiente && motor) { const p = pendiente; pendiente = null; cambiar(p); } // el cambio espera a que se vea
     }, { threshold: [0, 0.4] });
     io.observe(caja);
+
+    // La metamorfosis. El material se deshace unos instantes (derretir) mientras se prepara el logo nuevo, y entonces se acomoda
+    // en él (transformar). Si piden otro antes de terminar, gana el último. Como el armado inicial, no pasa sin que nadie la
+    // vea: si el lugar del logo no se ve (en el celular, quien toca una opción suele tener el formulario a la vista y el logo
+    // arriba), el cambio espera a que se vea el 40 %; y si la persona se aleja a mitad, el logo nuevo queda puesto de una vez.
+    const pausa = (ms) => new Promise((ok) => setTimeout(ok, ms));
+    async function cambiar(src) {
+      deseado = src;
+      const mio = ++turno;
+      img.src = src;
+      if (!motor) return;
+      if (!vista) { pendiente = src; return; } // el cambio no pasa sin que nadie lo vea: espera a que el logo se vea
+      pendiente = null;
+      motor.derretir();
+      try {
+        const m = medidas();
+        const [fuente] = await Promise.all([rasterizar(src, m.logo.width, m.logo.height, fondo, alineacion()), pausa(DERRETIR_MS)]);
+        if (!vivo || mio !== turno) return;
+        if (!motor.transformar(fuente, !visible)) destruir(); // queda el <img> con el logo nuevo
+      } catch {
+        destruir(); // queda el <img> con el logo nuevo
+      }
+    }
 
     function destruir() {
       if (!vivo) return;
       vivo = false;
+      pendiente = null;
       io.disconnect();
       ro.disconnect();
       for (const [nombre, f] of Object.entries(eventos)) caja.removeEventListener(nombre, f);
@@ -1080,7 +1319,7 @@ void main(){
       capa.dataset.tocado = '';
       motor.pensar(ms);
     }
-    return { medir, pensar, destruir };
+    return { medir, pensar, cambiar, destruir };
   }
 
   window.NFG_LIQUIDO = { montar };

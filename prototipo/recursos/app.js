@@ -286,10 +286,40 @@
     // formulario, de dos pasos (tipo de negocio, etapa) y el kit; la pregunta se escribe al cambiar de paso. Al lado,
     // sobre el fondo oscuro, el logo líquido (recursos/liquido.js) «piensa» cada vez que se elige. Sin WebGL2 o con
     // «reducir movimiento», queda el logo quieto y la pregunta aparece completa.
+    // Metamorfosis (idea de Juan, 29 oct 2026): al elegir el tipo de negocio, el logo «nfg.» se deshace y el material se
+    // acomoda en el logo de un trabajo de ese tipo (cafetería → SpillMug; datos.js, «negocios»). Sin WebGL2 o con «reducir
+    // movimiento», el logo cambia de una vez.
     const reduceMov = matchMedia('(prefers-reduced-motion: reduce)');
     const logoKit = $('#kit-logo-caja');
-    const liquido = window.NFG_LIQUIDO?.montar(logoKit, $('.kit-logo', logoKit)) || null;
+    const imagenKit = $('.kit-logo', logoKit);
+    const logoInicial = imagenKit.getAttribute('src');
+    let logoPuesto = logoInicial;
+    const liquido = window.NFG_LIQUIDO?.montar(logoKit, imagenKit) || null;
     let escribiendo = 0; // temporizador de la pregunta que se escribe
+
+    // Pone el logo del negocio elegido (o el «nfg.» si no hay). Devuelve true si hubo cambio de logo.
+    function ponerLogo() {
+      const src = D.negocios.find((n) => n.id === kit.negocio)?.logo || logoInicial;
+      if (src === logoPuesto) return false;
+      logoPuesto = src;
+      if (liquido) liquido.cambiar(src); else imagenKit.src = src;
+      return true;
+    }
+    // Quién es el logo que se ve: una línea bajo el logo, con el enlace al trabajo (o a la tienda, si es La Fartedá).
+    let htmlCliente = ''; // lo último que se escribió: la línea es una zona viva y no se repinta (ni se vuelve a leer) si no cambió
+    function pintarCliente() {
+      const negocio = D.negocios.find((n) => n.id === kit.negocio), caja = $('#kit-cliente');
+      let html = '';
+      if (negocio?.logo) {
+        logoKit.dataset.cliente = negocio.id;
+        const p = negocio.proyecto && D.proyectos.find((x) => x.id === negocio.proyecto);
+        const flecha = icono('i-flecha');
+        html = p
+          ? `${esc(t('kit.cliente', { cliente: L(p.titulo) }))} <button class="kit-cliente-enlace" type="button" data-trabajo="${p.id}">${esc(t('kit.cliente_ver'))} ${flecha}</button>`
+          : `${esc(t('kit.cliente_lf'))} <a class="kit-cliente-enlace" href="${esc(negocio.enlace)}">${esc(t('kit.cliente_lf_ver'))} ${flecha}</a>`;
+      } else delete logoKit.dataset.cliente;
+      if (html !== htmlCliente) { htmlCliente = html; caja.innerHTML = html; }
+    }
 
     // Escribe la pregunta letra por letra. El texto de verdad no cambia (lo que falta va en un <span> transparente):
     // los lectores de pantalla lo leen completo y las líneas no se corren a mitad de palabra.
@@ -335,6 +365,7 @@
           + `<button class="boton boton--acento boton--ancho" type="button" id="pedir-kit">${t('kit.pedir')} ${icono('i-flecha')}</button>`;
       }
       $('#kit-resultado').innerHTML = html;
+      pintarCliente();
       if (animar) {
         // El foco pasa a la pregunta: con teclado no se pierde al cambiar de paso y los lectores de pantalla la leen.
         $('#kit-pregunta').focus({ preventScroll: true });
@@ -353,11 +384,19 @@
       const caja = $('#kit-resultado'), arriba = caja.getBoundingClientRect().top, pregunta = $('#kit-pregunta').getBoundingClientRect().bottom;
       if (arriba < 84 || pregunta > innerHeight - 24 || (kit.paso === 3 && arriba > innerHeight * 0.35)) caja.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
+    // Los logos de la metamorfosis (unos 200 KB) se bajan cuando la sección está por verse, para que el cambio no espere la red.
+    function precargarLogos() {
+      for (const n of D.negocios) {
+        if (!n.logo) continue;
+        if (/\.svg$/i.test(n.logo)) fetch(n.logo).catch(() => {}); else new Image().src = n.logo;
+      }
+    }
     // La primera vez, la pregunta se escribe justo antes de que la caja entre en pantalla (así no se ve parpadear).
     if (!reduceMov.matches && 'IntersectionObserver' in window) {
       const io = new IntersectionObserver(([e]) => {
         if (!e.isIntersecting) return;
         io.disconnect();
+        precargarLogos();
         if (kit.paso === 1 && !kit.negocio) escribir($('#kit-pregunta'));
       }, { rootMargin: '0px 0px 30% 0px' });
       io.observe($('#kit-resultado'));
@@ -369,8 +408,11 @@
       if (n) { kit.negocio = n.dataset.negocio; kit.paso = 2; }
       if (s) { kit.etapa = s.dataset.etapa; kit.paso = 3; }
       if (volver) kit.paso = 1;
+      const trabajo = e.target.closest('[data-trabajo]');
+      if (trabajo) { abrirProyecto(proyecto(trabajo.dataset.trabajo)); return; }
       if (n || s || volver) {
-        if (n || s) liquido?.pensar(s ? 1900 : 1400); // el logo «piensa» un poco más cuando ya sale el kit
+        const cambioDeLogo = n ? ponerLogo() : false; // la metamorfosis ya revuelve el logo
+        if (!cambioDeLogo && (n || s)) liquido?.pensar(s ? 1900 : 1400); // el logo «piensa» un poco más cuando ya sale el kit
         pintarKit({ animar: true });
         verCaja();
       }
