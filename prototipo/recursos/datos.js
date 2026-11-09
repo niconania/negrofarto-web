@@ -4,10 +4,17 @@
 // Las láminas de un carrusel: <id>/01.webp … <id>/NN.webp, con su miniatura <id>/t-NN.webp (herramientas/preparar-trabajos.mjs).
 const laminas = (id, n) => Array.from({ length: n }, (_, k) => ({ img: `${id}/${String(k + 1).padStart(2, '0')}.webp` }));
 
+// Las fotos de una pieza de WuandaCrafts: img/wuanda/catalogo/<grupo>-NN.webp y su miniatura <grupo>-tNN.webp (herramientas/preparar-catalogo-wc.mjs).
+const fotosWC = (grupo, n) => Array.from({ length: n }, (_, k) => { const nn = String(k + 1).padStart(2, '0'); return { img: `catalogo/${grupo}-${nn}.webp`, mini: `catalogo/${grupo}-t${nn}.webp` }; });
+
 window.NFG_DATOS = {
   // WhatsApp reales (confirmados el 9 oct 2026): número completo, solo dígitos.
   // EE.UU. → Juan en Miami; Colombia → el WhatsApp Business de Cartagena.
   contacto: { whatsapp: { miami: '17868373919', cartagena: '573017480634' } },
+
+  // «¿Por qué farto?»: el último video de Instagram de Juan, instalando con la camiseta de NFG (reel DfWzK3PRNZz, @negrofartogroup; Juan, 9 nov 2026:
+  // «anclar el último video que subí»). Se abre en una ventana con el reproductor de Instagram (la imagen es img/equipo/instalacion-ada.webp).
+  nosotros: { video: 'https://www.instagram.com/reel/DfWzK3PRNZz/' },
 
   servicios: [
     {
@@ -60,29 +67,53 @@ window.NFG_DATOS = {
 
   // Trabajos reales publicados en Instagram (@negrofartogroup y @wuandacrafts), cada uno con el enlace a su
   // publicación (comprobados el 12 oct 2026 comparando imagen y texto; /reel/ en los que son video).
-  // «medios» (26 oct 2026): lo que se ve al pasar por la tarjeta y en el visor, en orden. Cada uno es una lámina
-  // { img } o un video { video, poster, dur }; las rutas son relativas a img/proyectos/. Sin «medios», el trabajo
-  // se ve como una sola imagen (su portada «img»). Las láminas son las del carrusel de la publicación; en Bom Paso,
-  // además del reel, van su lámina de presentación y el menú del paquete del Drive.
+  // «medios»: lo que se ve al pasar por la tarjeta y en el visor, en orden. Cada uno es una lámina { img } o un video { video, poster, dur };
+  // las rutas son relativas a img/proyectos/. Las láminas son las del carrusel de la publicación.
+  //
+  // 9 nov 2026 (Juan): «Our work» es solo de carruseles de marcas, en este orden: SYNC, ADA, Wedding Identity, Visuapex, SpillMug,
+  // Karin, Thunder Tribe, Warao, Infusionada. SYNC y ADA son «las nuevas» (las sube esta semana) y de Visuapex falta el enlace: entran
+  // en su lugar cuando existan sus publicaciones (agregarlas aquí, con sus láminas, en ese orden). Salen Bom Paso, La Escuadra y Green
+  // Team (cerraron, no están en Miami o ya traían el logo) y los dos videos de instalación (Isayes y la oficina): ver «proyectosFuera».
+  // «rol» (lo que Juan llama «brand created» y «brand worked»; se reconoce en la portada de Instagram):
+  //   'creada'    → «Brand by Negrofarto Group»: la marca se hizo desde cero aquí;
+  //   'trabajada' → «Worked with us»: ya tenían su marca y se les produjeron piezas.
+  // Warao y la boda salen como «creada» por ser trabajos de identidad (categoría branding): Juan lo confirma.
   proyectos: [
-    { id: 'karin', img: 'karin-ramirez.webp', categoria: 'branding', servicio: 'branding', anio: '2024', titulo: 'Karin Ramirez',
+    { id: 'boda', rol: 'creada', img: 'boda.webp', categoria: 'branding', servicio: 'branding', anio: '2026',
+      titulo: { en: 'A wedding identity', es: 'Identidad para una boda' },
+      instagram: 'https://www.instagram.com/p/DanF-tjEYOQ/', medios: laminas('boda', 13),
+      sector: { en: 'Weddings', es: 'Bodas' },
+      texto: { en: "Illustrated monogram and visual identity for a couple's celebration.", es: 'Monograma ilustrado e identidad visual para la celebración de una pareja.' } },
+    { id: 'spillmug', rol: 'trabajada', img: 'spillmug.webp', categoria: 'productos', servicio: 'merch', anio: '2026', titulo: 'SpillMug Coffee',
+      instagram: 'https://www.instagram.com/p/Dd4J4OzEVKc/', medios: laminas('spillmug', 5),
+      sector: { en: 'Coffee shop', es: 'Cafetería' },
+      texto: { en: 'Pieces for their first Coffee Party, in April 2025.', es: 'Piezas para su primer Coffee Party, en abril de 2025.' } },
+    { id: 'karin', rol: 'creada', img: 'karin-ramirez.webp', categoria: 'branding', servicio: 'branding', anio: '2024', titulo: 'Karin Ramirez',
       instagram: 'https://www.instagram.com/p/DAnxl5YORh9/', medios: laminas('karin', 9),
       sector: { en: 'Health services', es: 'Servicios de salud' },
       texto: { en: 'Brand identity for an emotional learning practice.', es: 'Identidad de marca para un espacio de aprendizaje emocional.' } },
+    { id: 'thunder', rol: 'trabajada', img: 'thunder-tribe.webp', categoria: 'productos', servicio: 'merch', anio: '2026', titulo: 'The Thunder Tribe',
+      instagram: 'https://www.instagram.com/p/DexOHkbgT5-/', medios: laminas('thunder', 5),
+      sector: { en: 'Fitness & wellness', es: 'Fitness y bienestar' },
+      texto: { en: 'Custom tote bags, tumblers, T-shirts and decals for a fitness community.', es: 'Tote bags, termos, camisetas y calcomanías personalizados para una comunidad de fitness.' } },
+    { id: 'warro', rol: 'creada', img: 'warro.webp', categoria: 'branding', servicio: 'branding', anio: '2025', titulo: 'Warao',
+      instagram: 'https://www.instagram.com/p/DKxyAiLAcLE/', medios: laminas('warro', 7),
+      sector: { en: 'Wellness', es: 'Bienestar' },
+      texto: { en: 'Brand identity for a wellness brand.', es: 'Identidad para una marca de bienestar.' } },
+    { id: 'infusionada', rol: 'trabajada', img: 'infusionada.webp', categoria: 'productos', servicio: 'merch', anio: '2026', titulo: 'Infusionada',
+      instagram: 'https://www.instagram.com/p/DefdL75GTuo/', medios: laminas('infusionada', 4),
+      sector: { en: 'Tea shop', es: 'Tienda de té' },
+      texto: { en: 'Tote bags, stickers and T-shirts that take their identity beyond a cup of tea.', es: 'Tote bags, stickers y camisetas que llevan su identidad más allá de una taza de té.' } },
+  ],
+
+  // Los trabajos que ya no se muestran en «Our work» (Juan, 9 nov 2026). Se guardan por si los quiere de vuelta: para mostrarlos, pasarlos a
+  // «proyectos» (con su «rol»). Sus láminas y videos siguen en img/proyectos/. Nada de la página los lee.
+  proyectosFuera: [
     { id: 'bompaso', img: 'bom-paso.webp', categoria: 'branding', servicio: 'branding', anio: '2023', titulo: 'Bom Paso',
       instagram: 'https://www.instagram.com/reel/Cy-9veLA4bq/',
       medios: [{ video: 'bompaso/video.mp4', poster: 'bompaso/poster.webp', dur: '0:31' }, ...laminas('bompaso', 4).slice(1)],
       sector: { en: 'Restaurant', es: 'Restaurante' },
       texto: { en: 'Brand management, from the logo to the takeout bag.', es: 'Manejo de marca, del logo a la bolsa para llevar.' } },
-    { id: 'boda', img: 'boda.webp', categoria: 'branding', servicio: 'branding', anio: '2026',
-      titulo: { en: 'A wedding identity', es: 'Identidad para una boda' },
-      instagram: 'https://www.instagram.com/p/DanF-tjEYOQ/', medios: laminas('boda', 13),
-      sector: { en: 'Weddings', es: 'Bodas' },
-      texto: { en: "Illustrated monogram and visual identity for a couple's celebration.", es: 'Monograma ilustrado e identidad visual para la celebración de una pareja.' } },
-    { id: 'warro', img: 'warro.webp', categoria: 'branding', servicio: 'branding', anio: '2025', titulo: 'Warro',
-      instagram: 'https://www.instagram.com/p/DKxyAiLAcLE/', medios: laminas('warro', 7),
-      sector: { en: 'Wellness', es: 'Bienestar' },
-      texto: { en: 'Brand identity for a wellness brand.', es: 'Identidad para una marca de bienestar.' } },
     { id: 'gables', img: 'isayes.webp', categoria: 'letreros', servicio: 'letreros', titulo: 'Gables Tailor · Isayes',
       instagram: 'https://www.instagram.com/reel/CpBwwBUudnl/',
       sector: { en: 'Retail', es: 'Comercio' },
@@ -101,15 +132,12 @@ window.NFG_DATOS = {
       instagram: 'https://www.instagram.com/p/DdE2v-CEdEW/', medios: laminas('infinity', 5),
       sector: { en: 'Home remodeling', es: 'Remodelación' },
       texto: { en: 'Custom products for a remodeling company.', es: 'Productos personalizados para una empresa de remodelación.' } },
-    { id: 'spillmug', img: 'spillmug.webp', categoria: 'productos', servicio: 'merch', anio: '2026', titulo: 'SpillMug Coffee',
-      instagram: 'https://www.instagram.com/p/Dd4J4OzEVKc/', medios: laminas('spillmug', 5),
-      sector: { en: 'Coffee shop', es: 'Cafetería' },
-      texto: { en: 'Pieces for their first Coffee Party, in April 2025.', es: 'Piezas para su primer Coffee Party, en abril de 2025.' } },
   ],
 
   // «¿Qué necesita tu negocio?»: kit base por tipo de negocio, ajustado por etapa. «logo» es al que se transforma el «nfg.» del
   // recomendador al elegirlo (la metamorfosis que propuso Juan el 29 oct 2026): el de un trabajo de ese tipo («proyecto»,
-  // el id de arriba) o el de La Fartedá («enlace»). Los de los clientes están sacados de las portadas de sus trabajos
+  // el id de arriba) o el de La Fartedá («enlace»). Sin «logo», el «nfg.» se queda (contratista y organización: desde el 9 nov 2026 no
+  // hay un trabajo de Juan de ese tipo; los de Infinity y Green Team salieron de «Our work»). Los de los clientes están sacados de las portadas de sus trabajos
   // (herramientas/construir-logos-clientes.sh) hasta que Juan mande los originales.
   negocios: [
     { id: 'cafe', icono: 'i-cafe', logo: 'img/marcas/clientes/spillmug.webp', proyecto: 'spillmug', titulo: { en: 'Café or restaurant', es: 'Café o restaurante' }, kit: [
@@ -132,13 +160,13 @@ window.NFG_DATOS = {
       { servicio: 'letreros', titulo: { en: 'Office or suite sign', es: 'Letrero de oficina o suite' }, porque: { en: 'Clients find you without calling.', es: 'Los clientes te encuentran sin llamar.' } },
       { servicio: 'branding', titulo: { en: 'Brand guidelines', es: 'Manual de marca' }, porque: { en: 'Every document looks like the same company.', es: 'Cada documento parece de la misma empresa.' } },
     ] },
-    { id: 'contratista', icono: 'i-casa', logo: 'img/marcas/clientes/infinity.webp', proyecto: 'infinity', titulo: { en: 'Contractor or home services', es: 'Contratista o servicios a domicilio' }, kit: [
+    { id: 'contratista', icono: 'i-casa', titulo: { en: 'Contractor or home services', es: 'Contratista o servicios a domicilio' }, kit: [
       { servicio: 'merch', titulo: { en: 'Crew uniforms', es: 'Uniformes para tu equipo' }, porque: { en: "Clients know who's at their door.", es: 'El cliente sabe quién llega a su puerta.' } },
       { servicio: 'impresos', titulo: { en: 'Business cards with QR', es: 'Tarjetas de presentación con QR' }, porque: { en: 'Leave your contact at every job.', es: 'Deja tu contacto en cada trabajo.' } },
       { servicio: 'impresos', titulo: { en: 'Yard signs and door hangers', es: 'Letreros de jardín y colgadores de puerta' }, porque: { en: 'Neighbors see your work and your number.', es: 'Los vecinos ven tu trabajo y tu número.' } },
     ] },
-    { id: 'organizacion', icono: 'i-grupo', logo: 'img/marcas/clientes/green-team.webp', proyecto: 'greenteam', titulo: { en: 'School, team or organization', es: 'Escuela, equipo u organización' }, kit: [
-      { servicio: 'merch', titulo: { en: 'Team uniforms and merch', es: 'Uniformes y merch del equipo' }, porque: { en: 'Like Green Team FC: everyone in the same colors.', es: 'Como Green Team FC: todos con los mismos colores.' } },
+    { id: 'organizacion', icono: 'i-grupo', titulo: { en: 'School, team or organization', es: 'Escuela, equipo u organización' }, kit: [
+      { servicio: 'merch', titulo: { en: 'Team uniforms and merch', es: 'Uniformes y merch del equipo' }, porque: { en: 'Like The Thunder Tribe: the whole community wearing the same brand.', es: 'Como The Thunder Tribe: toda la comunidad con la misma marca.' } },
       { servicio: 'letreros', titulo: { en: 'Banners and event signage', es: 'Pendones y señalización para eventos' }, porque: { en: 'Your event looks organized from the entrance.', es: 'Tu evento se ve organizado desde la entrada.' } },
       { servicio: 'impresos', titulo: { en: 'Flyers and QR for sign-ups', es: 'Flyers y QR para inscripciones' }, porque: { en: 'From the flyer to the sign-up form in one scan.', es: 'Del flyer a la inscripción en un escaneo.' } },
     ] },
@@ -152,7 +180,8 @@ window.NFG_DATOS = {
       extra: { servicio: 'asesoria', titulo: { en: '1:1 review of your brand', es: 'Revisión 1 a 1 de tu marca' }, porque: { en: 'We look at what you have and decide what to change first.', es: 'Vemos lo que tienes y decidimos qué cambiar primero.' } } },
   ],
 
-  // La Fartedá — catálogo 2026. La camiseta Clásica cuesta menos en COP.
+  // La Fartedá — catálogo 2026, con los precios de Juan del 9 nov 2026: las camisetas suben a US$39,95 (las totes se quedan en US$24,99,
+  // como las leí de «las totes sí están bien a ese precio»: confirmar) y la Clásica pasa a COP 50.000. El envío ya no va incluido.
   colores: {
     blanco: { hex: '#ffffff', nombre: { en: 'White', es: 'Blanco' } },
     negro: { hex: '#151515', nombre: { en: 'Black', es: 'Negro' } },
@@ -161,8 +190,8 @@ window.NFG_DATOS = {
   },
   tallas: ['S', 'M', 'L', 'XL', 'Oversize'],
   precios: {
-    camiseta: { usd: 34.99, cop: 69900 },
-    clasica: { usd: 34.99, cop: 39900 },
+    camiseta: { usd: 39.95, cop: 69900 },
+    clasica: { usd: 39.95, cop: 50000 },
     tote: { usd: 24.99, cop: 39900 },
   },
   disenos: [
@@ -177,7 +206,8 @@ window.NFG_DATOS = {
       camiseta: { colores: ['negro'] }, tote: { colores: ['negro'] } },
     { id: 'oveja-proud', nombre: 'La Oveja Proud de la Familia',
       texto: { en: 'For the proud sheep of the family.', es: 'Para la oveja orgullosa de la familia.' },
-      camiseta: { colores: ['blanco'], estilos: [{ en: 'Large chest logo', es: 'Logo grande en el pecho' }, { en: 'Small pocket logo', es: 'Logo pequeño tipo bolsillo' }] },
+      // Sin las opciones de logo (Juan, 9 nov 2026): solo se hace el pequeño, al frente.
+      camiseta: { colores: ['blanco'], detalle: { en: 'Small logo on the front.', es: 'Logo pequeño al frente.' } },
       tote: { colores: ['crema'] } },
     { id: 'unboxing', nombre: 'Unboxing de Adulto',
       texto: { en: 'Horror stories of adult life. Black in Spanish, white in English.', es: 'Cuentos de terror de la vida adulta. Negra en español, blanca en inglés.' },
@@ -230,16 +260,7 @@ window.NFG_DATOS = {
       { id: 'otros', icono: 'i-regalo', titulo: { en: 'Other', es: 'Otros' },
         texto: { en: 'Personalized with your name or your logo.', es: 'Personalizado con tu nombre o tu logo.' } },
     ],
-    estilos: [ // los estilos de termo que nombró Juan (la subcategoría)
-      { id: 'lata', titulo: { en: 'Can', es: 'Lata' } },
-      { id: 'campero', titulo: { en: 'Camper', es: 'Campero' } },
-      { id: 'botella', titulo: { en: 'Bottle', es: 'Botella' } },
-      { id: 'mug', titulo: { en: 'Ceramic mug', es: 'Mug de cerámica' } },
-      { id: 'kids', titulo: { en: 'Kids', es: 'Kids' } },
-      { id: 'bebe', titulo: { en: 'Baby', es: 'Bebés' } },
-      { id: 'skinny', titulo: { en: 'Skinny', es: 'Skinny' } },
-      { id: 'huevo', titulo: { en: 'Egg', es: 'Huevo' } },
-    ],
+    // Los estilos de termo ya no son un filtro (Juan, 9 nov 2026): se agrupan en cuatro piezas y cada una trae su estilo para elegir («variantes»).
     colores: {
       blanco: { hex: '#ffffff', nombre: { en: 'White', es: 'Blanco' } },
       negro: { hex: '#151515', nombre: { en: 'Black', es: 'Negro' } },
@@ -256,33 +277,44 @@ window.NFG_DATOS = {
       { id: 'redonda', css: "'Fredoka', sans-serif", peso: 600, nombre: { en: 'Rounded', es: 'Redonda' } },
     ],
     escalas: [{ desde: 1, hasta: 9 }, { desde: 10, hasta: 24 }, { desde: 25, hasta: null }], // ejemplo, salvo «de 10 a 24»
-    // El orden es el de «Todo»: arriba las piezas que ya tienen foto. El orden real lo decide Juan.
-    // «instagram»: la publicación de la foto (la misma del tendedero). «tamanos» y «colores» son ejemplos hasta que Juan los defina.
+    // El orden es el de «Todo»: los termos primero (la categoría principal de Juan) y al final lo que aún no tiene foto. El orden real lo decide Juan.
+    // «fotos»: la galería de la ficha (la primera es la portada de la tarjeta); salen del Drive que mandó Juan el 9 nov 2026
+    // (herramientas/preparar-catalogo-wc.mjs). «variantes»: el estilo que se elige en la ficha; viaja en el pedido. «instagram»: la publicación
+    // de la foto única de la pieza. «tamanos» y «colores» son ejemplos hasta que Juan los defina.
+    //
+    // Agrupación de los termos: PROPUESTA DE JUAN (9 nov 2026: «Can tumblers con bottle tumbler y skinny; Baby con kids; Egg tumbler con
+    // campero y enamel; igual estoy abierto a sugerencias»), por afinar cuando se reúnan. «Wine» sale de su carpeta de fotos («Campero Enamel
+    // Wine (Tipo Huevo)»): confirmar si va con el huevo. Los nombres en inglés de los estilos son traducción nuestra.
     catalogo: [
-      { id: 'termo-lata', cat: 'termos', estilo: 'lata', icono: 'i-termo', tono: 'azul', titulo: { en: 'Can tumbler', es: 'Termo lata' },
-        foto: 'termos.webp', encuadre: '50% 50%', insignia: 'mas-vendido', instagram: 'https://www.instagram.com/reel/Cy4FXEigbS-/',
-        pie: { en: 'Tumblers with custom art', es: 'Termos con arte a medida' },
+      { id: 'termo-can', cat: 'termos', icono: 'i-termo', tono: 'azul', titulo: { en: 'Can tumblers', es: 'Termos lata' }, fotos: fotosWC('can', 7), encuadre: '50% 40%',
+        insignia: 'mas-vendido', pie: { en: 'Can, bottle and skinny tumblers with your name or art', es: 'Termos lata, botella y skinny con tu nombre o tu arte' },
+        variantes: [{ id: 'lata', titulo: { en: 'Can', es: 'Lata' } }, { id: 'botella', titulo: { en: 'Bottle', es: 'Botella' } }, { id: 'skinny', titulo: { en: 'Skinny', es: 'Skinny' } }],
         tamanos: ['20 oz', '30 oz'], colores: ['blanco', 'negro', 'rosa', 'azul', 'verde'] },
-      { id: 'tote', cat: 'totes', icono: 'i-bolsa', tono: 'verde', titulo: { en: 'Tote bag', es: 'Tote bag' },
-        foto: 'tote-foto.webp', encuadre: '50% 50%', instagram: 'https://www.instagram.com/p/DRMbJaajpSd/',
-        pie: { en: 'Tote with a photo', es: 'Tote con foto' }, colores: ['natural', 'negro'] },
-      { id: 'lampara', cat: 'lamparas', icono: 'i-lampara', tono: 'naranja', titulo: { en: 'Lamp with plate', es: 'Lámpara con placa' },
-        foto: 'lampara-foto.webp', encuadre: '50% 56%', insignia: 'nuevo', instagram: 'https://www.instagram.com/reel/DeY6XO0suIh/',
-        pie: { en: 'Lamp with a custom illustration', es: 'Lámpara con ilustración a medida' } },
+      { id: 'termo-kids', cat: 'termos', icono: 'i-termo', tono: 'rosa', titulo: { en: 'Baby & kids tumblers', es: 'Termos bebé y kids' }, fotos: fotosWC('kids', 4), encuadre: '50% 45%',
+        pie: { en: 'Sippy cups and kids’ bottles with their name', es: 'Vasos con asas y botellas para niños, con su nombre' },
+        variantes: [{ id: 'bebe', titulo: { en: 'Baby', es: 'Bebé' } }, { id: 'kids', titulo: { en: 'Kids', es: 'Kids' } }],
+        colores: ['blanco', 'negro', 'rosa', 'azul', 'verde'] },
+      { id: 'termo-huevo', cat: 'termos', icono: 'i-termo', tono: 'azul', titulo: { en: 'Egg tumblers', es: 'Termos huevo' }, fotos: fotosWC('huevo', 7), encuadre: '50% 50%',
+        pie: { en: 'Egg-shaped wine tumblers, camper and enamel mugs', es: 'Termos tipo huevo (wine), campero y enamel' },
+        variantes: [{ id: 'wine', titulo: { en: 'Wine', es: 'Wine' } }, { id: 'campero', titulo: { en: 'Camper', es: 'Campero' } }, { id: 'enamel', titulo: { en: 'Enamel', es: 'Enamel' } }],
+        colores: ['blanco', 'negro', 'rosa', 'azul', 'verde'] },
+      { id: 'mug', cat: 'termos', icono: 'i-cafe', tono: 'naranja', titulo: { en: 'Ceramic mug', es: 'Mug de cerámica' }, fotos: fotosWC('mug', 6), encuadre: '50% 50%',
+        pie: { en: 'Ceramic mugs with your name, your pet or your art', es: 'Mugs de cerámica con tu nombre, tu mascota o tu arte' },
+        colores: ['blanco', 'negro', 'rosa', 'azul', 'verde'] },
+      { id: 'tote', cat: 'totes', icono: 'i-bolsa', tono: 'verde', titulo: { en: 'Tote bag', es: 'Tote bag' }, fotos: fotosWC('tote', 8), encuadre: '50% 40%',
+        pie: { en: 'Tote bags with your name, a photo or your art', es: 'Tote bags con tu nombre, una foto o tu arte' }, colores: ['natural', 'negro'] },
+      { id: 'camiseta', cat: 'camisetas', icono: 'i-camiseta', tono: 'rosa', titulo: { en: 'T-shirt', es: 'Camiseta' }, fotos: fotosWC('camiseta', 8), encuadre: '50% 50%',
+        pie: { en: 'T-shirts with your name, your art or your logo', es: 'Camisetas con tu nombre, tu arte o tu logo' },
+        tamanos: ['S', 'M', 'L', 'XL'], colores: ['negro', 'blanco', 'rosa', 'azul'] },
+      { id: 'hoodie', cat: 'hoodies', icono: 'i-hoodie', tono: 'naranja', titulo: { en: 'Hoodie', es: 'Hoodie' }, fotos: fotosWC('hoodie', 4), encuadre: '50% 45%',
+        pie: { en: 'Hoodies with your name, your art or your logo', es: 'Hoodies con tu nombre, tu arte o tu logo' },
+        tamanos: ['S', 'M', 'L', 'XL'], colores: ['negro', 'blanco', 'rosa', 'azul'] },
       { id: 'calcomania', cat: 'calcomanias', icono: 'i-calcomania', tono: 'rosa', titulo: { en: 'Custom decal', es: 'Calcomanía con tu nombre' }, unidad: 'pliego',
         foto: 'calcomania-mascota.webp', encuadre: '50% 90%', instagram: 'https://www.instagram.com/reel/CnQhQQJJbfl/',
         pie: { en: "Decal with the pet's name", es: 'Calcomanía con el nombre de la mascota' }, colores: ['morado', 'negro', 'blanco', 'rosa', 'azul'] },
-      { id: 'hoodie', cat: 'hoodies', icono: 'i-hoodie', tono: 'naranja', titulo: { en: 'Hoodie', es: 'Hoodie' },
-        tamanos: ['S', 'M', 'L', 'XL'], colores: ['negro', 'blanco', 'rosa', 'azul'] },
-      { id: 'camiseta', cat: 'camisetas', icono: 'i-camiseta', tono: 'rosa', titulo: { en: 'T-shirt', es: 'Camiseta' },
-        tamanos: ['S', 'M', 'L', 'XL'], colores: ['negro', 'blanco', 'rosa', 'azul'] },
-      { id: 'termo-campero', cat: 'termos', estilo: 'campero', icono: 'i-termo', tono: 'azul', titulo: { en: 'Camper tumbler', es: 'Termo campero' }, tamanos: ['20 oz', '30 oz'], colores: ['blanco', 'negro', 'rosa', 'azul', 'verde'] },
-      { id: 'termo-botella', cat: 'termos', estilo: 'botella', icono: 'i-termo', tono: 'verde', titulo: { en: 'Bottle tumbler', es: 'Termo botella' }, tamanos: ['20 oz', '30 oz'], colores: ['blanco', 'negro', 'rosa', 'azul', 'verde'] },
-      { id: 'mug', cat: 'termos', estilo: 'mug', icono: 'i-cafe', tono: 'naranja', titulo: { en: 'Ceramic mug', es: 'Mug de cerámica' }, colores: ['blanco', 'negro', 'rosa', 'azul', 'verde'] },
-      { id: 'termo-kids', cat: 'termos', estilo: 'kids', icono: 'i-termo', tono: 'rosa', titulo: { en: 'Kids tumbler', es: 'Termo kids' }, colores: ['blanco', 'negro', 'rosa', 'azul', 'verde'] },
-      { id: 'termo-bebe', cat: 'termos', estilo: 'bebe', icono: 'i-termo', tono: 'verde', titulo: { en: 'Baby tumbler', es: 'Termo bebé' }, colores: ['blanco', 'negro', 'rosa', 'azul', 'verde'] },
-      { id: 'termo-skinny', cat: 'termos', estilo: 'skinny', icono: 'i-termo', tono: 'morado', titulo: { en: 'Skinny tumbler', es: 'Termo skinny' }, tamanos: ['20 oz', '30 oz'], colores: ['blanco', 'negro', 'rosa', 'azul', 'verde'] },
-      { id: 'termo-huevo', cat: 'termos', estilo: 'huevo', icono: 'i-termo', tono: 'azul', titulo: { en: 'Egg tumbler', es: 'Termo huevo' }, colores: ['blanco', 'negro', 'rosa', 'azul', 'verde'] },
+      { id: 'lampara', cat: 'lamparas', icono: 'i-lampara', tono: 'naranja', titulo: { en: 'Lamp with plate', es: 'Lámpara con placa' },
+        foto: 'lampara-foto.webp', encuadre: '50% 56%', insignia: 'nuevo', instagram: 'https://www.instagram.com/reel/DeY6XO0suIh/',
+        pie: { en: 'Lamp with a custom illustration', es: 'Lámpara con ilustración a medida' } },
       { id: 'wine-bag', cat: 'otros', icono: 'i-vino', tono: 'morado', titulo: { en: 'Wine bag', es: 'Wine bag' }, colores: ['natural', 'negro'] },
       { id: 'flask', cat: 'otros', icono: 'i-flask', tono: 'azul', titulo: { en: 'Flask', es: 'Flask' }, colores: ['blanco', 'negro', 'rosa', 'azul', 'verde'] },
       { id: 'mouse-pad', cat: 'otros', icono: 'i-mousepad', tono: 'rosa', titulo: { en: 'Mouse pad', es: 'Mouse pad' }, colores: ['negro', 'blanco'] },

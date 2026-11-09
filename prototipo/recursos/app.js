@@ -52,9 +52,12 @@
       wuanda: '<a href="#contacto" data-whatsapp="elegir" data-t="nav.contacto"></a>',
       merch: '<a href="#contacto" data-whatsapp="elegir" data-t="nav.contacto"></a>',
     }[pagina];
+    // El botón de la cabecera también se queda en la marca: en La Fartedá lleva a su colección, no a la cotización de la agencia.
     const cta = pagina === 'wuanda'
       ? '<a class="boton boton--acento boton--chico boton--cotizar" href="#catalogo" data-t="wc.cta"></a>'
-      : `<a class="boton boton--acento boton--chico boton--cotizar" href="${ancla('cotizar')}" data-t="nav.cotizar"></a>`;
+      : pagina === 'merch'
+        ? '<a class="boton boton--acento boton--chico boton--cotizar" href="#coleccion" data-t="lf.cta_cab"></a>'
+        : `<a class="boton boton--acento boton--chico boton--cotizar" href="${ancla('cotizar')}" data-t="nav.cotizar"></a>`;
     // Cada puerta es solo el logo de su marca: sin nombres (Juan, 12 oct y 29 oct 2026: «solo el imagotipo como en LF»). El nombre
     // va en el aria-label y en el title. La Fartedá va con su isotipo «LF» (23 oct 2026). La barra es negra en la agencia, blanca en
     // La Fartedá y morada en WuandaCrafts (29 oct 2026): sobre la blanca van los logos oscuros.
@@ -68,11 +71,15 @@
     document.body.insertAdjacentHTML('afterbegin', window.NFG_ICONOS
       + '<div class="aviso" data-t="aviso"></div>'
       + '<header class="cabecera"><div class="caja">'
-      +   `<a class="logo" href="${inicio}" aria-label="Negrofarto Group"><img src="${base}img/marcas/marca-negro.svg" alt="negrofarto group." width="113" height="34" /></a>`
+      +   `<a class="logo" href="${inicio}" aria-label="NFG"><img src="${base}img/marcas/marca-negro.svg" alt="negrofarto group." width="113" height="34" /></a>`
       +   '<nav class="menu" id="menu">'
-      +     `<a href="${ancla('servicios')}" data-t="nav.servicios"></a>`
-      +     `<a href="${ancla('trabajos')}" data-t="nav.trabajos"></a>`
-      +     `<a href="${ancla('nosotros')}" data-t="nav.nosotros"></a>`
+      // Servicios, Trabajos y Nosotros son de la agencia: en La Fartedá y WuandaCrafts llevaban a NFG sin avisar (Juan, 9 nov 2026),
+      // así que ahí se ocultan y solo queda «Contacto». El pie conserva su columna «Agencia».
+      +     (pagina === 'agencia'
+        ? `<a href="${ancla('servicios')}" data-t="nav.servicios"></a>`
+          + `<a href="${ancla('trabajos')}" data-t="nav.trabajos"></a>`
+          + `<a href="${ancla('nosotros')}" data-t="nav.nosotros"></a>`
+        : '')
       +     contacto
       +   '</nav>'
       +   selectorIdioma()
@@ -80,7 +87,7 @@
       +   cta
       +   `<button class="menu-movil" type="button" aria-controls="menu" aria-expanded="false" data-t-aria="nav.abrir">${icono('i-menu')}</button>`
       + '</div></header>'
-      + '<nav class="puertas" aria-label="Negrofarto Group"><div class="caja">'
+      + '<nav class="puertas" aria-label="NFG"><div class="caja">'
       + puertas.map((p) => `<a class="puerta puerta--${p.clase}" href="${p.href}" data-t-aria="${p.clave}" data-t-title="${p.clave}"${p.id === pagina ? ' aria-current="page"' : ''}>`
           + `<img src="${base}${p.img}" alt="" /></a>`).join('')
       + '</div></nav>');
@@ -430,7 +437,8 @@
       }
     });
 
-    const filtros = ['todos', 'branding', 'letreros', 'productos'];
+    // Los filtros son los dos rótulos de sus portadas de Instagram (Juan, 9 nov 2026): «brand created» y «worked with us».
+    const filtros = ['todos', 'creada', 'trabajada'];
     // Cada trabajo abre el visor; el ícono de Instagram lleva directo a su publicación (lo pidió Juan, 10 oct 2026).
     // Van como hermanos y no uno dentro del otro: un enlace no puede ir dentro de un botón.
     const enlaceInstagram = (p, clase, contenido, aria) => `<a class="${clase}" href="${esc(p.instagram)}" target="_blank" rel="noopener"${aria ? ` aria-label="${esc(aria)}" title="${esc(aria)}"` : ''}>${contenido}</a>`;
@@ -455,11 +463,11 @@
       tarjetaActiva = null;
       $('#filtros-trabajos').innerHTML = filtros.map((f) => `<button class="chip" type="button" data-filtro="${f}" aria-pressed="${filtro === f}">${t('trab.' + f)}</button>`).join('');
       $('#lista-trabajos').innerHTML = D.proyectos.map((p) => `
-        <div class="trabajo${p.medios ? ' trabajo--medios' : ''}${conLaminas(p) ? ' trabajo--laminas' : ''}" data-id="${p.id}"${filtro !== 'todos' && p.categoria !== filtro ? ' hidden' : ''}>
+        <div class="trabajo${p.medios ? ' trabajo--medios' : ''}${conLaminas(p) ? ' trabajo--laminas' : ''}" data-id="${p.id}"${filtro !== 'todos' && p.rol !== filtro ? ' hidden' : ''}>
           <button class="trabajo-abrir" type="button" data-proyecto="${p.id}">
             <img class="trabajo-portada" src="${rutaProy(p.img)}" alt="${esc(L(p.titulo))}" loading="lazy" />
             ${insignia(p)}${conLaminas(p) ? '<span class="trabajo-contador" aria-hidden="true"></span>' : ''}
-            <span class="trabajo-info"><strong>${esc(L(p.titulo))}</strong><span>${esc(L(p.sector))}${p.anio ? ' · ' + p.anio : ''}</span></span>
+            <span class="trabajo-info">${p.rol ? `<span class="trabajo-rol trabajo-rol--${p.rol}">${esc(t('trab.' + p.rol))}</span>` : ''}<strong>${esc(L(p.titulo))}</strong><span>${esc(L(p.sector))}${p.anio ? ' · ' + p.anio : ''}</span></span>
           </button>
           ${conLaminas(p) ? [-1, 1].map((paso) => `<button class="boton-circulo trabajo-flecha ${paso < 0 ? 'ant' : 'sig'}" type="button" tabindex="-1" data-paso="${paso}" aria-label="${esc(t(paso < 0 ? 'trab.ant' : 'trab.sig'))}">${icono(paso < 0 ? 'i-izq' : 'i-der')}</button>`).join('') : ''}
           ${p.instagram ? enlaceInstagram(p, 'trabajo-ig', icono('i-instagram'), t('trab.ver_ig_de', { proyecto: L(p.titulo) })) : ''}
@@ -557,6 +565,7 @@
           : '')
         + '</div>'
         + `<div class="modal-cuerpo"><p class="ceja">${esc(L(s.titulo))}</p><h3>${esc(L(p.titulo))}</h3>`
+        + (p.rol ? `<p><span class="trabajo-rol trabajo-rol--${p.rol}">${esc(t('trab.' + p.rol))}</span></p>` : '')
         + `<p><strong>${esc(L(p.sector))}</strong>${p.anio ? ' · ' + p.anio : ''}</p><p>${esc(L(p.texto))}</p>`
         + `<button class="boton boton--acento" type="button" data-similar="${p.id}">${t('trab.similar')}</button>`
         + (p.instagram ? enlaceInstagram(p, 'boton boton--borde', `${icono('i-instagram')}${esc(t('trab.ver_ig'))}`) : '')
@@ -667,6 +676,17 @@
       abrirWhatsApp('miami', mensaje);
     });
 
+    // «¿Por qué farto?»: el video de Instagram se abre en una ventana. El reproductor de Instagram (un iframe) solo se carga al abrirla y se
+    // quita al cerrarla, así no pesa en la página y el video se detiene.
+    const ventanaVideo = $('#modal-video');
+    $('#abrir-video').addEventListener('click', () => {
+      ventanaVideo.innerHTML = botonCerrar() + '<div class="video-cuerpo">'
+        + `<iframe src="${esc(D.nosotros.video)}embed/" title="${esc(t('nos.video'))}" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen></iframe>`
+        + `<a class="boton boton--borde boton--chico" href="${esc(D.nosotros.video)}" target="_blank" rel="noopener">${icono('i-instagram')}${esc(t('trab.ver_ig'))}</a></div>`;
+      ventanaVideo.showModal();
+    });
+    ventanaVideo.addEventListener('close', () => { ventanaVideo.innerHTML = ''; });
+
     alCambiarIdioma.push(pintarCinta, pintarServicios, pintarKit, pintarTrabajos, pintarChipsCotizar, pintarRuta);
   }
 
@@ -679,6 +699,9 @@
     let carrito = [];
     try { carrito = JSON.parse(leer('nfg-carrito') || '[]').filter((l) => productos.some((p) => p.id === l.producto)); } catch (e) { carrito = []; }
     let actual = null; // producto abierto en la ficha
+    // Cómo recibe el pedido quien compra en EE.UU. (Juan, 9 nov 2026): en el área de Miami, pick-up o a medio camino; fuera, envío según la zona,
+    // que se confirma en el chat. No hay tarifas todavía: no se calcula nada. null = sin elegir.
+    let zona = null;
     let eleccion = null;
     const ficha = $('#modal-producto');
     const cajon = $('#cajon-carrito');
@@ -750,8 +773,8 @@
         + '<div class="modal-cuerpo">'
         +   `<p class="producto-tipo">${esc(nombreTipo(p))}${p.diseno.masVendido && p.tipo === 'camiseta' ? ' · ' + t('lf.mas_vendido') : ''}</p>`
         +   `<h3>${esc(p.diseno.nombre)}</h3>`
-        +   `<p>${esc(L(p.diseno.texto))}${p.tipo === 'tote' ? ' ' + esc(t('lf.tote_texto')) : ''}</p>`
-        +   `<p class="ficha-precio">${dinero(precio(p))}<small>${t('lf.envio_incluido')}</small></p>`
+        +   `<p>${esc(L(p.diseno.texto))}${p.tipo === 'tote' ? ' ' + esc(t('lf.tote_texto')) : ''}${op.detalle ? ' ' + esc(L(op.detalle)) : ''}</p>`
+        +   `<p class="ficha-precio">${dinero(precio(p))}<small>${t(pais === 'usa' ? 'lf.envio_usa' : 'lf.envio_col')}</small></p>`
         +   grupo(t('lf.color'), esc(nombreColor(p, eleccion.color)), op.colores.map((c) => `<button class="opcion-btn" type="button" data-color="${c}" aria-pressed="${eleccion.color === c}"><span class="punto" style="background:${D.colores[c].hex}"></span>${esc(L(D.colores[c].nombre))}</button>`).join(''))
         +   (op.estilos ? grupo(t('lf.estilo'), '', op.estilos.map((s, i) => `<button class="opcion-btn" type="button" data-estilo="${i}" aria-pressed="${eleccion.estilo === i}">${esc(L(s))}</button>`).join('')) : '')
         +   (p.tipo === 'camiseta' ? grupo(t('lf.talla'), t('lf.tallas_nota'), D.tallas.map((s) => `<button class="opcion-btn" type="button" data-talla="${s}" aria-pressed="${eleccion.talla === s}">${s}</button>`).join(''))
@@ -793,6 +816,7 @@
     function detalleLinea(l, p) {
       const partes = [nombreTipo(p), nombreColor(p, l.color)];
       if (l.estilo != null && opcionesDe(p).estilos) partes.push(L(opcionesDe(p).estilos[l.estilo]));
+      if (opcionesDe(p).detalle) partes.push(L(opcionesDe(p).detalle).replace(/\.$/, '').toLowerCase());
       if (l.talla) partes.push(`${t('lf.talla_corta')} ${l.talla}`);
       return partes.join(', ');
     }
@@ -818,12 +842,18 @@
         + (carrito.length === 0 ? '' : '<form class="cajon-pie" id="form-pedido" novalidate>'
           + '<div class="totales">'
           +   `<div><span>${t('car.subtotal')}</span><span>${dinero(total())}</span></div>`
-          +   `<div><span>${t('car.envio')}</span><span>${t('car.incluido')}</span></div>`
+          +   `<div><span>${t('car.envio')}</span><span>${t(pais === 'usa' && zona === 'miami' ? 'car.envio_recoger' : 'car.envio_chat')}</span></div>`
           +   `<div class="total"><span>${t('car.total')}</span><span>${dinero(total())}</span></div>`
           + '</div>'
+          + (pais === 'usa'
+            ? `<div class="grupo-opciones grupo-zona"><h4>${t('car.zona')}</h4><div class="opciones">`
+              + [['miami', 'car.zona_miami', 'car.zona_miami_sub'], ['otro', 'car.zona_otro', 'car.zona_otro_sub']].map(([id, titulo, sub]) =>
+                `<button class="opcion-btn opcion-zona" type="button" data-zona="${id}" aria-pressed="${zona === id}"><strong>${t(titulo)}</strong><small>${t(sub)}</small></button>`).join('')
+              + `</div><p class="error-campo" data-error="zona" hidden>${t('car.err_zona')}</p></div>`
+            : '')
           + '<div class="fila-2">'
           +   `<label class="campo"><span class="etiqueta-campo">${t('car.nombre')}</span><input name="nombre" autocomplete="name" value="${esc(datos.nombre)}" /></label>`
-          +   `<label class="campo"><span class="etiqueta-campo">${t('car.ciudad')}</span><input name="ciudad" autocomplete="address-level2" value="${esc(datos.ciudad)}" /></label>`
+          +   `<label class="campo"><span class="etiqueta-campo">${t(pais === 'usa' ? 'car.ciudad_usa' : 'car.ciudad')}</span><input name="ciudad" autocomplete="address-level2" value="${esc(datos.ciudad)}" /></label>`
           + '</div>'
           + `<label class="campo"><span class="etiqueta-campo">${t('car.notas')} <span class="opcional">(${t('cot.opcional')})</span></span><textarea name="notas" rows="2" placeholder="${esc(t('car.notas_ph'))}">${esc(datos.notas)}</textarea></label>`
           + `<p class="error-campo" data-error="pedido" hidden>${t('car.err')}</p>`
@@ -834,7 +864,9 @@
     cajon.addEventListener('click', (e) => {
       const b = e.target.closest('button');
       if (!b) return;
-      if (b.dataset.linea != null) {
+      if (b.dataset.zona) {
+        zona = b.dataset.zona;
+      } else if (b.dataset.linea != null) {
         const l = carrito[Number(b.dataset.linea)];
         l.cantidad = Math.min(20, l.cantidad + Number(b.dataset.cant));
         if (l.cantidad < 1) carrito.splice(Number(b.dataset.linea), 1);
@@ -849,8 +881,11 @@
       const f = e.target;
       const nombre = f.elements.nombre.value.trim();
       const ciudad = f.elements.ciudad.value.trim();
-      const ok = nombre !== '' && ciudad !== '';
-      $('[data-error="pedido"]', f).hidden = ok;
+      const zonaOk = pais !== 'usa' || zona !== null;
+      const ok = nombre !== '' && ciudad !== '' && zonaOk;
+      $('[data-error="pedido"]', f).hidden = nombre !== '' && ciudad !== '';
+      const errZona = $('[data-error="zona"]', f);
+      if (errZona) errZona.hidden = zonaOk;
       f.elements.nombre.closest('.campo').classList.toggle('con-error', !nombre);
       f.elements.ciudad.closest('.campo').classList.toggle('con-error', !ciudad);
       if (!ok) return;
@@ -862,7 +897,7 @@
         const p = productos.find((x) => x.id === l.producto);
         lineas.push(`• ${l.cantidad} × ${p.diseno.nombre} — ${detalleLinea(l, p)} — ${dinero(precio(p) * l.cantidad)}`);
       });
-      lineas.push('', t('lf.wa_total', { total: dinero(total()) }), t(pais === 'usa' ? 'lf.wa_envio_usa' : 'lf.wa_envio_col'), '');
+      lineas.push('', t('lf.wa_total', { total: dinero(total()) }), t(pais === 'col' ? 'lf.wa_envio_col' : zona === 'miami' ? 'lf.wa_envio_miami' : 'lf.wa_envio_otro'), '');
       lineas.push(`${t('lf.wa_nombre')}: ${nombre} · ${t('lf.wa_ciudad')}: ${ciudad}`);
       const notas = f.elements.notas.value.trim();
       if (notas) lineas.push(`${t('lf.wa_notas')}: ${notas}`);
@@ -884,7 +919,9 @@
   // solo por el correo (hasta 5 por pedido): si no puede ir, el mensaje de WhatsApp dice que la persona lo envía por el chat.
   function iniciarWuanda() {
     const W = D.wc;
+    W.catalogo.forEach((p) => { if (p.fotos && !p.foto) p.foto = p.fotos[0].img; }); // la portada de una pieza con galería es su primera foto
     const piezaDe = (id) => W.catalogo.find((x) => x.id === id);
+    const estiloDe = (p, id) => (p.variantes || []).find((v) => v.id === id);
     const catDe = (id) => W.categorias.find((x) => x.id === id);
     const fuenteDe = (id) => W.fuentes.find((x) => x.id === id) || W.fuentes[0];
     const colorDe = (id) => (id && W.colores[id] ? L(W.colores[id].nombre) : '');
@@ -900,7 +937,6 @@
     const diasHasta = (valor) => (valor ? (new Date(valor + 'T12:00:00') - new Date()) / 864e5 : Infinity);
 
     let categoria = 'todo';
-    let filtroEstilo = 'todos';
     let filtroTamano = 'todos';
     let elec = null; // lo que se está eligiendo en la ficha abierta
     let pedido = []; // las líneas de «Tu pedido»
@@ -913,7 +949,7 @@
     const CLAVE = 'nfg-pedido-wc';
     try {
       pedido = JSON.parse(leer(CLAVE) || '[]').filter((l) => piezaDe(l.pieza)).map((l) => ({
-        pieza: l.pieza, tamano: String(l.tamano || '').slice(0, 20), color: W.colores[l.color] ? l.color : '',
+        pieza: l.pieza, estilo: estiloDe(piezaDe(l.pieza), l.estilo) ? l.estilo : '', tamano: String(l.tamano || '').slice(0, 20), color: W.colores[l.color] ? l.color : '',
         cantidad: Math.min(500, Math.max(1, parseInt(l.cantidad, 10) || 1)), texto: String(l.texto || '').slice(0, 60), fuente: fuenteDe(l.fuente).id,
         notas: String(l.notas || '').slice(0, 500), archivo: null, archivoNombre: String(l.archivoNombre || '').slice(0, 120),
       }));
@@ -921,8 +957,8 @@
     const guardarPedido = () => guardar(CLAVE, JSON.stringify(pedido.map(({ archivo, ...resto }) => resto)));
 
     /* ── El catálogo ── */
-    const fotoHtml = (p) => (p.foto
-      ? `<img src="${base}img/wuanda/${p.foto}" alt="${esc(L(p.pie || p.titulo))}" style="object-position:${p.encuadre || '50% 50%'}" />`
+    const fotoHtml = (p, i = 0) => (p.foto
+      ? `<img src="${base}img/wuanda/${p.fotos ? p.fotos[i].img : p.foto}" alt="${esc(L(p.pie || p.titulo))}" style="object-position:${p.encuadre || '50% 50%'}" />`
       : `<div class="pz-tile">${icono(p.icono)}<span class="pz-pendiente">${esc(t('wc.foto_pronto'))}</span></div>`);
     const insignia = (p) => (p.insignia ? `<span class="pz-insignia">${esc(t(p.insignia === 'nuevo' ? 'wc.nuevo' : 'wc.mas_vendido'))}</span>` : '');
     const tarjeta = (p) => `
@@ -933,19 +969,19 @@
     function pintarCatalogo() {
       $('#wc-tabs').innerHTML = [{ id: 'todo', icono: 'i-todo', titulo: t('wc.todo') }, ...W.categorias.map((c) => ({ id: c.id, icono: c.icono, titulo: L(c.titulo) }))]
         .map((c) => `<button class="cat-tab" type="button" data-cat="${c.id}" aria-pressed="${categoria === c.id}">${icono(c.icono)}${esc(c.titulo)}</button>`).join('');
-      // Los termos tienen subcategorías (Juan, 23 oct 2026): el estilo y, "también por onzas", el tamaño.
+      // Los termos tienen una subcategoría (Juan, 23 oct 2026): "también por onzas", el tamaño. Los estilos (lata, botella, huevo…) ya no son un
+      // filtro: desde el 9 nov 2026 son las opciones dentro de cada termo.
       const sub = $('#wc-sub');
       sub.hidden = categoria !== 'termos';
       if (categoria === 'termos') {
         const chips = (lista, actual, atributo) => lista.map(([id, txt]) => `<button class="chip" type="button" data-${atributo}="${esc(id)}" aria-pressed="${actual === id}">${esc(txt)}</button>`).join('');
-        sub.innerHTML = `<div class="sub-grupo"><span class="rotulo">${esc(t('wc.estilo'))}</span><div class="chips chips--claro">${chips([['todos', t('wc.estilo_todos')], ...W.estilos.map((x) => [x.id, L(x.titulo)])], filtroEstilo, 'f-estilo')}</div></div>`
-          + `<div class="sub-grupo"><span class="rotulo">${esc(t('wc.tamano'))}</span><div class="chips chips--claro">${chips([['todos', t('wc.tamano_todos')], ...W.tamanosFiltro.map((x) => [x, x])], filtroTamano, 'f-tamano')}${nd('wc.tamano_otros')}</div></div>`;
+        sub.innerHTML = `<div class="sub-grupo"><span class="rotulo">${esc(t('wc.tamano'))}</span><div class="chips chips--claro">${chips([['todos', t('wc.tamano_todos')], ...W.tamanosFiltro.map((x) => [x, x])], filtroTamano, 'f-tamano')}${nd('wc.tamano_otros')}</div></div>`;
       }
       const lista = W.catalogo.filter((p) => (categoria === 'todo' || p.cat === categoria)
-        && (categoria !== 'termos' || ((filtroEstilo === 'todos' || p.estilo === filtroEstilo) && (filtroTamano === 'todos' || (p.tamanos || []).includes(filtroTamano)))));
+        && (categoria !== 'termos' || filtroTamano === 'todos' || (p.tamanos || []).includes(filtroTamano)));
       $('#wc-grilla').innerHTML = lista.length ? lista.map(tarjeta).join('') : `<p class="cat-vacio">${esc(t('wc.vacio_filtro'))}</p>`;
     }
-    function elegirCategoria(id) { categoria = id; filtroEstilo = 'todos'; filtroTamano = 'todos'; pintarCatalogo(); }
+    function elegirCategoria(id) { categoria = id; filtroTamano = 'todos'; pintarCatalogo(); }
 
     /* ── Tendedero de fotos (recursos/tendedero.js): las piezas cuelgan de una cuerda que se arrastra, y las de portada, de la cortina del
        héroe. «¿Quieres uno así?» lleva a la categoría de esa pieza en el catálogo. ── */
@@ -973,7 +1009,7 @@
 
     /* ── La ficha de una pieza ── */
     const nuevaEleccion = (p) => ({
-      id: p.id, tamano: (p.tamanos || [])[0] || '', color: (p.colores || [])[0] || '', cantidad: 1, pers: p.unidad === 'pliego', texto: '',
+      id: p.id, estilo: (p.variantes || [])[0]?.id || '', foto: 0, tamano: (p.tamanos || [])[0] || '', color: (p.colores || [])[0] || '', cantidad: 1, pers: p.unidad === 'pliego', texto: '',
       fuente: W.fuentes[0].id, notas: '', archivo: null, archivoUrl: '', galeria: 'pliego',
     });
     function liberarVista() { if (elec && elec.archivoUrl) URL.revokeObjectURL(elec.archivoUrl); }
@@ -1014,12 +1050,17 @@
       };
       const marco = esCalco
         ? `<div class="pliego" data-g="pliego">${htmlHoja(false)}</div>${p.foto ? `<div data-g="foto" hidden>${fotoHtml(p)}</div>` : ''}`
-        : `${fotoHtml(p)}${insignia(p)}`;
+        : `${fotoHtml(p, elec.foto)}${insignia(p)}`;
+      // La galería de fotos de la pieza (Drive de Juan, 9 nov 2026): una tira de miniaturas bajo la foto grande.
+      const minisFotos = !esCalco && p.fotos && p.fotos.length > 1
+        ? `<div class="mini-galeria mini-galeria--fotos" role="group" aria-label="${esc(t('wc.fotos'))}">${p.fotos.map((f, i) => `<button class="mini" type="button" data-foto="${i}" aria-label="${esc(t('wc.foto_n', { i: i + 1, n: p.fotos.length }))}" aria-pressed="${i === elec.foto}"><img src="${base}img/wuanda/${f.mini}" alt="" loading="lazy" /></button>`).join('')}</div>` : '';
       const minis = esCalco && p.foto
         ? `<div class="mini-galeria"><button class="mini" type="button" data-galeria="pliego" aria-label="${esc(t('wc.area_imp'))}"><span class="pliego">${htmlHoja(true)}</span></button>`
           + `<button class="mini" type="button" data-galeria="foto" aria-label="${esc(L(p.pie || p.titulo))}">${fotoHtml(p)}</button></div>` : '';
       const ig = p.instagram ? `<div class="galeria-ig"><span>${esc(L(p.pie || p.titulo))}</span><a href="${esc(p.instagram)}" target="_blank" rel="noopener">${icono('i-instagram')}${esc(t('wc.ig_ver'))}</a></div>` : '';
 
+      const gEstilo = p.variantes
+        ? `<div class="grupo"><div class="grupo-cab">${esc(t('wc.estilo'))}</div><div class="chips chips--claro">${p.variantes.map((x) => `<button class="chip" type="button" data-estilo="${x.id}" aria-pressed="false">${esc(L(x.titulo))}</button>`).join('')}</div></div>` : '';
       const gTamano = p.tamanos
         ? `<div class="grupo"><div class="grupo-cab">${esc(t('wc.tamano'))}<span>${nd('wc.ejemplo')}</span></div><div class="chips chips--claro">${p.tamanos.map((x) => `<button class="chip" type="button" data-tamano="${esc(x)}" aria-pressed="false">${esc(x)}</button>`).join('')}</div></div>` : '';
       const gColor = p.colores
@@ -1048,11 +1089,11 @@
       vistaPieza.innerHTML = '<div class="caja">'
         + `<nav class="migas" aria-label="${esc(t('wc.migas'))}"><a href="#catalogo">${esc(t('wc.migas_cat'))}</a>${icono('i-flecha')}<a href="#catalogo" data-cat="${p.cat}">${esc(L(c.titulo))}</a>${icono('i-flecha')}<b aria-current="page">${esc(L(p.titulo))}</b></nav>`
         + '<div class="pieza">'
-        +   `<div class="galeria"><div class="galeria-marco tono-${p.tono}">${marco}</div>${minis}${ig}</div>`
+        +   `<div class="galeria"><div class="galeria-marco tono-${p.tono}${minisFotos ? ' galeria-marco--fotos' : ''}">${marco}</div>${minis}${minisFotos}${ig}</div>`
         +   '<div class="pieza-info">'
         +     `<div class="pieza-titulo"><span class="pz-cat">${esc(L(c.titulo))}</span><h1 tabindex="-1">${esc(L(p.titulo))}</h1>`
         +       `<div class="pieza-precio">${esc(t('wc.desde'))} <b>$ —</b> ${nd('wc.precio_nd')}</div><p class="pieza-texto">${esc(L(c.texto))}</p></div>`
-        +     gTamano + gColor + (esCalco ? cNombre + cFuente : '') + gCantidad + (esCalco ? cArchivo : personalizar)
+        +     gEstilo + gTamano + gColor + (esCalco ? cNombre + cFuente : '') + gCantidad + (esCalco ? cArchivo : personalizar)
         +     `<div class="accion"><p class="error-campo" id="p-err-calco" hidden>${esc(t('wc.err_calco'))}</p>`
         +       `<button class="boton boton--acento boton--ancho" type="button" data-agregar data-escritorio>${icono('i-bolsa-compra')}${esc(t('wc.agregar'))}</button>`
         +       `<p class="accion-nota">${icono('i-whatsapp')}<span>${esc(t('wc.nota_agregar'))}</span></p></div>`
@@ -1067,6 +1108,12 @@
       const p = piezaDe(elec.id);
       const v = vistaPieza;
       $$('[data-tamano]', v).forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.tamano === elec.tamano)));
+      $$('[data-estilo]', v).forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.estilo === elec.estilo)));
+      if (p.fotos) {
+        const grande = $('.galeria-marco img', v);
+        if (grande) { grande.src = `${base}img/wuanda/${p.fotos[elec.foto].img}`; grande.alt = p.fotos.length > 1 ? `${L(p.pie || p.titulo)} — ${t('wc.foto_n', { i: elec.foto + 1, n: p.fotos.length })}` : L(p.pie || p.titulo); }
+        $$('[data-foto]', v).forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.foto) === elec.foto)));
+      }
       $$('[data-color]', v).forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.color === elec.color)));
       const nombreColor = $('#p-color-nombre', v);
       if (nombreColor) nombreColor.textContent = colorDe(elec.color);
@@ -1083,7 +1130,7 @@
         $$('[data-galeria]', v).forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.galeria === elec.galeria)));
       }
       const unidad = t(p.unidad === 'pliego' ? (elec.cantidad === 1 ? 'wc.u_pliego' : 'wc.u_pliegos') : (elec.cantidad === 1 ? 'wc.u_pieza' : 'wc.u_piezas'));
-      $('#p-resumen', v).textContent = [`${elec.cantidad} ${unidad}`, colorDe(elec.color)].filter(Boolean).join(' · ');
+      $('#p-resumen', v).textContent = [`${elec.cantidad} ${unidad}`, estiloDe(p, elec.estilo) && L(estiloDe(p, elec.estilo).titulo), colorDe(elec.color)].filter(Boolean).join(' · ');
     }
     function pintarArchivo() {
       $('#p-archivo-zona', vistaPieza).innerHTML = htmlArchivo();
@@ -1112,6 +1159,8 @@
       const b = e.target.closest('button');
       if (!b) return;
       if (b.dataset.tamano != null) elec.tamano = b.dataset.tamano;
+      else if (b.dataset.estilo) elec.estilo = b.dataset.estilo;
+      else if (b.dataset.foto != null) elec.foto = Number(b.dataset.foto);
       else if (b.dataset.color) elec.color = b.dataset.color;
       else if (b.dataset.cant) { elec.cantidad = Math.min(500, Math.max(1, elec.cantidad + Number(b.dataset.cant))); $('#p-cant', vistaPieza).value = elec.cantidad; }
       else if (b.dataset.fuente) elec.fuente = b.dataset.fuente;
@@ -1149,7 +1198,7 @@
       const archivo = elec.pers ? elec.archivo : null;
       if (p.unidad === 'pliego' && !texto && !archivo) { $('#p-err-calco', vistaPieza).hidden = false; return; }
       pedido.push({
-        pieza: p.id, tamano: elec.tamano, color: elec.color, cantidad: elec.cantidad, texto, fuente: texto ? elec.fuente : W.fuentes[0].id,
+        pieza: p.id, estilo: elec.estilo, tamano: elec.tamano, color: elec.color, cantidad: elec.cantidad, texto, fuente: texto ? elec.fuente : W.fuentes[0].id,
         notas: elec.pers ? elec.notas.trim() : '', archivo, archivoNombre: archivo ? archivo.name : '',
       });
       guardarPedido();
@@ -1182,7 +1231,7 @@
       const linea = (l, i) => {
         const p = piezaDe(l.pieza);
         const miniatura = p.foto ? `<img src="${base}img/wuanda/${p.foto}" alt="" style="object-position:${p.encuadre || '50% 50%'}" />` : `<span class="linea-tile tono-${p.tono}">${icono(p.icono)}</span>`;
-        const detalle = [l.tamano, colorDe(l.color)].filter(Boolean).join(' · ');
+        const detalle = [estiloDe(p, l.estilo) && L(estiloDe(p, l.estilo).titulo), l.tamano, colorDe(l.color)].filter(Boolean).join(' · ');
         const extras = [];
         if (l.texto) extras.push(`<span>${icono('i-pincel')}${esc(t('wc.l_nombre', { x: l.texto, fuente: nombreFuente(l.fuente) }))}</span>`);
         if (l.archivo) extras.push(`<span class="ok">${icono('i-check')}${esc(t('wc.l_archivo', { archivo: l.archivoNombre }))}</span>`);
@@ -1291,7 +1340,7 @@
       pedido.forEach((l, i) => {
         const p = piezaDe(l.pieza);
         lineas.push(`${i + 1}. ${l.cantidad} × ${L(p.titulo)}${p.unidad === 'pliego' ? ` (${t(l.cantidad === 1 ? 'wc.u_pliego' : 'wc.u_pliegos')})` : ''}`);
-        const detalle = [l.tamano, colorDe(l.color)].filter(Boolean).join(' · ');
+        const detalle = [estiloDe(p, l.estilo) && L(estiloDe(p, l.estilo).titulo), l.tamano, colorDe(l.color)].filter(Boolean).join(' · ');
         if (detalle) lineas.push(`   ${detalle}`);
         if (l.texto) lineas.push(`   ${t('wc.wa_nombre_texto')}: «${l.texto}» (${t('wc.wa_fuente', { f: nombreFuente(l.fuente) })})`);
         if (l.archivoNombre) lineas.push(`   ${t(porCorreo.has(i) ? 'wc.wa_archivo_correo' : 'wc.wa_archivo_chat', { archivo: l.archivoNombre })}`);
@@ -1391,11 +1440,9 @@
 
     document.addEventListener('click', (e) => {
       const cat = e.target.closest('[data-cat]');
-      const fe = e.target.closest('[data-f-estilo]');
       const ft = e.target.closest('[data-f-tamano]');
       const quiero = e.target.closest('[data-pieza]');
       if (cat) elegirCategoria(cat.dataset.cat);
-      if (fe) { filtroEstilo = fe.dataset.fEstilo; pintarCatalogo(); }
       if (ft) { filtroTamano = ft.dataset.fTamano; pintarCatalogo(); }
       if (quiero) { // «¿Quieres uno así?»: al catálogo, en la categoría de esa pieza (las ilustraciones a medida ya no son una categoría)
         const tipo = tipoDe(D.piezas[Number(quiero.dataset.pieza)].tipo);
