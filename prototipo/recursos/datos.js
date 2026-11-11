@@ -12,9 +12,10 @@ window.NFG_DATOS = {
   // EE.UU. → Juan en Miami; Colombia → el WhatsApp Business de Cartagena.
   contacto: { whatsapp: { miami: '17868373919', cartagena: '573017480634' } },
 
-  // «¿Por qué farto?»: el último video de Instagram de Juan, instalando con la camiseta de NFG (reel DfWzK3PRNZz, @negrofartogroup; Juan, 9 nov 2026:
-  // «anclar el último video que subí»). Se abre en una ventana con el reproductor de Instagram (la imagen es img/equipo/instalacion-ada.webp).
-  nosotros: { video: 'https://www.instagram.com/reel/DfWzK3PRNZz/' },
+  // «¿Por qué farto?»: el video de Juan instalando en ADA (Aventura Dental Arts) con la camiseta de NFG. Juan lo pidió el 9 nov 2026 («anclar el
+  // último video que subí») y mandó el archivo el 10 nov: va alojado en la web, sin Instagram y sin audio (traía una canción de fondo; ver
+  // herramientas/preparar-video-nosotros.mjs). «instagram» es la misma instalación en su reel, para quien quiera verla allá.
+  nosotros: { video: 'img/equipo/instalacion-ada.mp4', poster: 'img/equipo/instalacion-ada-poster.webp', instagram: 'https://www.instagram.com/reel/DfWzK3PRNZz/' },
 
   servicios: [
     {
@@ -71,14 +72,18 @@ window.NFG_DATOS = {
   // las rutas son relativas a img/proyectos/. Las láminas son las del carrusel de la publicación.
   //
   // 9 nov 2026 (Juan): «Our work» es solo de carruseles de marcas, en este orden: SYNC, ADA, Wedding Identity, Visuapex, SpillMug,
-  // Karin, Thunder Tribe, Warao, Infusionada. SYNC y ADA son «las nuevas» (las sube esta semana) y de Visuapex falta el enlace: entran
+  // Karin, Thunder Tribe, Warao, Infusionada. SYNC llegó el 10 nov 2026 (DfkeE5oGZZF); ADA y Visuapex todavía no tienen enlace: entran
   // en su lugar cuando existan sus publicaciones (agregarlas aquí, con sus láminas, en ese orden). Salen Bom Paso, La Escuadra y Green
   // Team (cerraron, no están en Miami o ya traían el logo) y los dos videos de instalación (Isayes y la oficina): ver «proyectosFuera».
   // «rol» (lo que Juan llama «brand created» y «brand worked»; se reconoce en la portada de Instagram):
   //   'creada'    → «Brand by Negrofarto Group»: la marca se hizo desde cero aquí;
   //   'trabajada' → «Worked with us»: ya tenían su marca y se les produjeron piezas.
-  // Warao y la boda salen como «creada» por ser trabajos de identidad (categoría branding): Juan lo confirma.
+  // Warao y la boda son «creada» (Juan lo confirmó el 10 nov 2026), y Karin es «Karin Ramirez».
   proyectos: [
+    { id: 'sync', rol: 'trabajada', img: 'sync.webp', categoria: 'letreros', servicio: 'letreros', anio: '2026', titulo: 'Sync Into Formation',
+      instagram: 'https://www.instagram.com/p/DfkeE5oGZZF/', medios: laminas('sync', 7),
+      sector: { en: 'Pilates studio', es: 'Estudio de pilates' },
+      texto: { en: 'Storefront sign, window decals, T-shirts, tote bags, mugs and tumblers for a Pilates studio.', es: 'Letrero de fachada, vinil en la vidriera, camisetas, tote bags, tazas y termos para un estudio de pilates.' } },
     { id: 'boda', rol: 'creada', img: 'boda.webp', categoria: 'branding', servicio: 'branding', anio: '2026',
       titulo: { en: 'A wedding identity', es: 'Identidad para una boda' },
       instagram: 'https://www.instagram.com/p/DanF-tjEYOQ/', medios: laminas('boda', 13),
@@ -189,6 +194,11 @@ window.NFG_DATOS = {
     vinotinto: { hex: '#7a1f2b', nombre: { en: 'Wine', es: 'Vinotinto' } },
   },
   tallas: ['S', 'M', 'L', 'XL', 'Oversize'],
+  // Envío de La Fartedá (Juan, 9 y 10 nov 2026). Colombia: no va incluido; «el mínimo envío son 20.000» (se confirma en el chat).
+  // EE.UU.: «por zona y zip code»; en el área de Miami se ofrece pick-up («meet me halfway»). Juan no ha dado tarifas para EE.UU.: no se
+  // calcula nada, el costo se confirma en el chat. «zipLocal»: los tres primeros dígitos del ZIP que cuentan como área de Miami
+  // (330–332 Miami-Dade, 333 Broward; Aventura es 33180). Confirmar con Juan si incluye Palm Beach (334).
+  envio: { copMinimo: 20000, zipLocal: ['330', '331', '332', '333'] },
   precios: {
     camiseta: { usd: 39.95, cop: 69900 },
     clasica: { usd: 39.95, cop: 50000 },
@@ -269,6 +279,10 @@ window.NFG_DATOS = {
       verde: { hex: '#9fc75b', nombre: { en: 'Green', es: 'Verde' } },
       morado: { hex: '#7c599b', nombre: { en: 'Purple', es: 'Morado' } },
       natural: { hex: '#eadfc6', nombre: { en: 'Natural', es: 'Natural' } },
+      // los del wine bag de terciopelo (premiertablelinens.com, la tienda que indicó Juan el 10 nov 2026): burgundy, holiday red, black y royal blue
+      vinotinto: { hex: '#6b1d2b', nombre: { en: 'Burgundy', es: 'Vinotinto' } },
+      rojo: { hex: '#b3141f', nombre: { en: 'Red', es: 'Rojo' } },
+      azulrey: { hex: '#2340b8', nombre: { en: 'Royal blue', es: 'Azul rey' } },
     },
     fuentes: [ // se muestran con el nombre que escribe la persona; Pacifico, Montserrat, Permanent Marker y Fredoka (Google Fonts)
       { id: 'cursiva', css: "'Pacifico', cursive", peso: 400, nombre: { en: 'Script', es: 'Cursiva' } },
@@ -276,48 +290,69 @@ window.NFG_DATOS = {
       { id: 'marcador', css: "'Permanent Marker', cursive", peso: 400, nombre: { en: 'Marker', es: 'Marcador' } },
       { id: 'redonda', css: "'Fredoka', sans-serif", peso: 600, nombre: { en: 'Rounded', es: 'Redonda' } },
     ],
-    escalas: [{ desde: 1, hasta: 9 }, { desde: 10, hasta: 24 }, { desde: 25, hasta: null }], // ejemplo, salvo «de 10 a 24»
-    // El orden es el de «Todo»: los termos primero (la categoría principal de Juan) y al final lo que aún no tiene foto. El orden real lo decide Juan.
+    // Precios de Juan (10 nov 2026), en dólares y CON EL ENVÍO INCLUIDO («todos estos precios son shipping included»): por pieza, según la
+    // cantidad de esa línea del pedido. Él los dio «for 1», «x 6» y «x 12»: de 1 a 5, de 6 a 11 y 12 o más. Cada pieza (o cada estilo) dice
+    // qué tarifa usa («precio»); la calcomanía tiene un «desde» («Custom Decals starting $12»). En Colombia, el precio en pesos se confirma
+    // en el chat: Juan no lo dio.
+    escalas: [{ desde: 1, hasta: 5 }, { desde: 6, hasta: 11 }, { desde: 12, hasta: null }],
+    tarifas: {
+      can: [29.95, 23.95, 19.95],     // Can tumblers; «mismo precio»: wine y coffee, camisetas y flask
+      kids: [24.95, 19.95, 17.95],    // Baby & kids; también enamel («enamel mismo precio kids»)
+      mug: [14.99, 12.99, 9.99],      // Ceramic mugs; también el mouse pad («mismo precio que ceramic»)
+      tote: [11.99, 6.99, 4.99],
+      hoodie: [40, 35, 30],           // «Hoddies starting $40 for 1, $35 x 6, $30 x 12»
+      lampara: [19.95, 17.95, 15.95],
+      wineBag: [36.89, 28.77, 23.17], // también dio «24 $23.17», el mismo de 12: queda en «12 o más»
+    },
+    // El orden es el de «Todo»: los termos primero (la categoría principal de Juan) y al final «otros». El orden real lo decide Juan.
     // «fotos»: la galería de la ficha (la primera es la portada de la tarjeta); salen del Drive que mandó Juan el 9 nov 2026
     // (herramientas/preparar-catalogo-wc.mjs). «variantes»: el estilo que se elige en la ficha; viaja en el pedido. «instagram»: la publicación
-    // de la foto única de la pieza. «tamanos» y «colores» son ejemplos hasta que Juan los defina.
+    // de la foto única de la pieza. «tamanos» y «colores» son ejemplos hasta que Juan los defina (salvo los del wine bag: «coloresReales»).
+    // «precio»: la tarifa de arriba; un estilo puede tener la suya. «texto»: lo que dice la ficha si no es el texto de la categoría.
     //
     // Agrupación de los termos: PROPUESTA DE JUAN (9 nov 2026: «Can tumblers con bottle tumbler y skinny; Baby con kids; Egg tumbler con
-    // campero y enamel; igual estoy abierto a sugerencias»), por afinar cuando se reúnan. «Wine» sale de su carpeta de fotos («Campero Enamel
-    // Wine (Tipo Huevo)»): confirmar si va con el huevo. Los nombres en inglés de los estilos son traducción nuestra.
+    // campero y enamel; igual estoy abierto a sugerencias»), por afinar cuando se reúnan. El 10 nov: «cambiemos Egg y pongamos Wine / Coffee
+    // Tumblers». Los nombres en inglés de los estilos de lata y bebé son traducción nuestra.
     catalogo: [
       { id: 'termo-can', cat: 'termos', icono: 'i-termo', tono: 'azul', titulo: { en: 'Can tumblers', es: 'Termos lata' }, fotos: fotosWC('can', 7), encuadre: '50% 40%',
-        insignia: 'mas-vendido', pie: { en: 'Can, bottle and skinny tumblers with your name or art', es: 'Termos lata, botella y skinny con tu nombre o tu arte' },
+        insignia: 'mas-vendido', precio: 'can', pie: { en: 'Can, bottle and skinny tumblers with your name or art', es: 'Termos lata, botella y skinny con tu nombre o tu arte' },
         variantes: [{ id: 'lata', titulo: { en: 'Can', es: 'Lata' } }, { id: 'botella', titulo: { en: 'Bottle', es: 'Botella' } }, { id: 'skinny', titulo: { en: 'Skinny', es: 'Skinny' } }],
         tamanos: ['20 oz', '30 oz'], colores: ['blanco', 'negro', 'rosa', 'azul', 'verde'] },
       { id: 'termo-kids', cat: 'termos', icono: 'i-termo', tono: 'rosa', titulo: { en: 'Baby & kids tumblers', es: 'Termos bebé y kids' }, fotos: fotosWC('kids', 4), encuadre: '50% 45%',
-        pie: { en: 'Sippy cups and kids’ bottles with their name', es: 'Vasos con asas y botellas para niños, con su nombre' },
+        precio: 'kids', pie: { en: 'Sippy cups and kids’ bottles with their name', es: 'Vasos con asas y botellas para niños, con su nombre' },
         variantes: [{ id: 'bebe', titulo: { en: 'Baby', es: 'Bebé' } }, { id: 'kids', titulo: { en: 'Kids', es: 'Kids' } }],
         colores: ['blanco', 'negro', 'rosa', 'azul', 'verde'] },
-      { id: 'termo-huevo', cat: 'termos', icono: 'i-termo', tono: 'azul', titulo: { en: 'Egg tumblers', es: 'Termos huevo' }, fotos: fotosWC('huevo', 7), encuadre: '50% 50%',
-        pie: { en: 'Egg-shaped wine tumblers, camper and enamel mugs', es: 'Termos tipo huevo (wine), campero y enamel' },
-        variantes: [{ id: 'wine', titulo: { en: 'Wine', es: 'Wine' } }, { id: 'campero', titulo: { en: 'Camper', es: 'Campero' } }, { id: 'enamel', titulo: { en: 'Enamel', es: 'Enamel' } }],
+      // «Wine y Egg lo mismo de Can tumblers»; «Enamel mismo precio kids». El café (el campero) va con el de Can: confirmar con Juan.
+      { id: 'termo-wine-coffee', cat: 'termos', icono: 'i-termo', tono: 'azul', titulo: { en: 'Wine / Coffee tumblers', es: 'Termos para vino y café' }, fotos: fotosWC('huevo', 7), encuadre: '50% 50%',
+        precio: 'can', pie: { en: 'Egg-shaped wine tumblers, coffee camper mugs and enamel mugs', es: 'Termos de vino (tipo huevo), de café (campero) y enamel' },
+        variantes: [{ id: 'wine', precio: 'can', titulo: { en: 'Wine', es: 'Vino' } }, { id: 'coffee', precio: 'can', titulo: { en: 'Coffee', es: 'Café' } }, { id: 'enamel', precio: 'kids', titulo: { en: 'Enamel', es: 'Enamel' } }],
         colores: ['blanco', 'negro', 'rosa', 'azul', 'verde'] },
       { id: 'mug', cat: 'termos', icono: 'i-cafe', tono: 'naranja', titulo: { en: 'Ceramic mug', es: 'Mug de cerámica' }, fotos: fotosWC('mug', 6), encuadre: '50% 50%',
-        pie: { en: 'Ceramic mugs with your name, your pet or your art', es: 'Mugs de cerámica con tu nombre, tu mascota o tu arte' },
+        precio: 'mug', pie: { en: 'Ceramic mugs with your name, your pet or your art', es: 'Mugs de cerámica con tu nombre, tu mascota o tu arte' },
         colores: ['blanco', 'negro', 'rosa', 'azul', 'verde'] },
       { id: 'tote', cat: 'totes', icono: 'i-bolsa', tono: 'verde', titulo: { en: 'Tote bag', es: 'Tote bag' }, fotos: fotosWC('tote', 8), encuadre: '50% 40%',
-        pie: { en: 'Tote bags with your name, a photo or your art', es: 'Tote bags con tu nombre, una foto o tu arte' }, colores: ['natural', 'negro'] },
+        precio: 'tote', pie: { en: 'Tote bags with your name, a photo or your art', es: 'Tote bags con tu nombre, una foto o tu arte' }, colores: ['natural', 'negro'] },
       { id: 'camiseta', cat: 'camisetas', icono: 'i-camiseta', tono: 'rosa', titulo: { en: 'T-shirt', es: 'Camiseta' }, fotos: fotosWC('camiseta', 8), encuadre: '50% 50%',
-        pie: { en: 'T-shirts with your name, your art or your logo', es: 'Camisetas con tu nombre, tu arte o tu logo' },
+        precio: 'can', pie: { en: 'T-shirts with your name, your art or your logo', es: 'Camisetas con tu nombre, tu arte o tu logo' },
         tamanos: ['S', 'M', 'L', 'XL'], colores: ['negro', 'blanco', 'rosa', 'azul'] },
       { id: 'hoodie', cat: 'hoodies', icono: 'i-hoodie', tono: 'naranja', titulo: { en: 'Hoodie', es: 'Hoodie' }, fotos: fotosWC('hoodie', 4), encuadre: '50% 45%',
-        pie: { en: 'Hoodies with your name, your art or your logo', es: 'Hoodies con tu nombre, tu arte o tu logo' },
+        precio: 'hoodie', pie: { en: 'Hoodies with your name, your art or your logo', es: 'Hoodies con tu nombre, tu arte o tu logo' },
         tamanos: ['S', 'M', 'L', 'XL'], colores: ['negro', 'blanco', 'rosa', 'azul'] },
-      { id: 'calcomania', cat: 'calcomanias', icono: 'i-calcomania', tono: 'rosa', titulo: { en: 'Custom decal', es: 'Calcomanía con tu nombre' }, unidad: 'pliego',
+      { id: 'calcomania', cat: 'calcomanias', icono: 'i-calcomania', tono: 'rosa', titulo: { en: 'Custom decal', es: 'Calcomanía con tu nombre' }, unidad: 'pliego', precioDesde: 12,
         foto: 'calcomania-mascota.webp', encuadre: '50% 90%', instagram: 'https://www.instagram.com/reel/CnQhQQJJbfl/',
         pie: { en: "Decal with the pet's name", es: 'Calcomanía con el nombre de la mascota' }, colores: ['morado', 'negro', 'blanco', 'rosa', 'azul'] },
       { id: 'lampara', cat: 'lamparas', icono: 'i-lampara', tono: 'naranja', titulo: { en: 'Lamp with plate', es: 'Lámpara con placa' },
-        foto: 'lampara-foto.webp', encuadre: '50% 56%', insignia: 'nuevo', instagram: 'https://www.instagram.com/reel/DeY6XO0suIh/',
+        precio: 'lampara', foto: 'lampara-foto.webp', encuadre: '50% 56%', insignia: 'nuevo', instagram: 'https://www.instagram.com/reel/DeY6XO0suIh/',
         pie: { en: 'Lamp with a custom illustration', es: 'Lámpara con ilustración a medida' } },
-      { id: 'wine-bag', cat: 'otros', icono: 'i-vino', tono: 'morado', titulo: { en: 'Wine bag', es: 'Wine bag' }, colores: ['natural', 'negro'] },
-      { id: 'flask', cat: 'otros', icono: 'i-flask', tono: 'azul', titulo: { en: 'Flask', es: 'Flask' }, colores: ['blanco', 'negro', 'rosa', 'azul', 'verde'] },
-      { id: 'mouse-pad', cat: 'otros', icono: 'i-mousepad', tono: 'rosa', titulo: { en: 'Mouse pad', es: 'Mouse pad' }, colores: ['negro', 'blanco'] },
+      // Las fotos del wine bag son de la tienda que indicó Juan (premiertablelinens.com: «eso los hice yo»); sus colores y su medida, también.
+      { id: 'wine-bag', cat: 'otros', icono: 'i-vino', tono: 'morado', titulo: { en: 'Wine bag', es: 'Wine bag' }, fotos: fotosWC('winebag', 4), encuadre: '50% 45%',
+        precio: 'wineBag', pie: { en: 'Velvet wine bag with your logo or initials', es: 'Wine bag de terciopelo con tu logo o tus iniciales' },
+        texto: { en: 'Velvet wine bottle bag with drawstring and tassels, 5.75" × 12.25", with your logo, your product or wedding initials.', es: 'Bolsa de terciopelo para botella de vino, con cordón y borlas, de 5.75" × 12.25", con tu logo, tu producto o las iniciales de una boda.' },
+        colores: ['vinotinto', 'rojo', 'negro', 'azulrey'], coloresReales: true },
+      { id: 'flask', cat: 'otros', icono: 'i-flask', tono: 'azul', titulo: { en: 'Flask', es: 'Flask' }, fotos: fotosWC('flask', 2), encuadre: '50% 45%',
+        precio: 'can', pie: { en: 'Flask with your name or your art', es: 'Flask con tu nombre o tu arte' }, colores: ['blanco', 'negro', 'rosa', 'azul', 'verde'] },
+      { id: 'mouse-pad', cat: 'otros', icono: 'i-mousepad', tono: 'rosa', titulo: { en: 'Mouse pad', es: 'Mouse pad' }, fotos: fotosWC('mousepad', 4), encuadre: '50% 50%',
+        precio: 'mug', pie: { en: 'Mouse pad with your name or your art', es: 'Mouse pad con tu nombre o tu arte' }, colores: ['negro', 'blanco'] },
     ],
   },
 

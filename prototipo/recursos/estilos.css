@@ -434,7 +434,8 @@ h2 em { font-style: normal; color: var(--acento-oscuro); }
 .video-texto span { display: block; margin-top: 3px; font-size: 14px; color: var(--gris); }
 dialog.modal--video { max-width: min(440px, calc(100% - 24px)); max-height: calc(100dvh - 24px); overflow: auto; background: #111; }
 .video-cuerpo { display: grid; gap: 12px; padding: 54px 14px 14px; justify-items: center; }
-.video-cuerpo iframe { width: 100%; height: min(70dvh, 660px); border: 0; border-radius: 12px; background: #fff; }
+.video-cuerpo video { display: block; height: min(72dvh, 720px); max-width: 100%; aspect-ratio: 9 / 16; border-radius: 12px; background: #000; object-fit: cover; }
+.modal .video-pie { margin: 0; max-width: 34ch; font-size: 13.5px; color: rgba(255, 255, 255, .78); text-align: center; }
 .modal--video .modal-cerrar { top: 10px; right: 10px; }
 .modal--video .boton--borde { border-color: rgba(255, 255, 255, .4); color: #fff; }
 
@@ -616,6 +617,10 @@ dialog.modal--visor { max-width: min(1080px, calc(100% - 32px)); max-height: cal
 .opcion-zona { flex: 1 1 150px; flex-direction: column; align-items: flex-start; gap: 1px; text-align: left; }
 .opcion-zona strong { font-size: 14px; font-weight: 800; }
 .opcion-zona small { font-size: 12px; font-weight: 500; opacity: .72; }
+/* El código postal (ZIP) del carrito de La Fartedá en EE.UU. y lo que se dice debajo según la zona (10 nov 2026). */
+.campo-zip input { max-width: 170px; letter-spacing: .06em; }
+.entrega-nota { display: flex; align-items: flex-start; gap: 7px; margin: 8px 0 10px; font-size: 13.5px; color: var(--gris); }
+.entrega-nota .icono { flex: none; width: 17px; height: 17px; margin-top: 1px; }
 .cantidad { display: inline-flex; align-items: center; border: 1.5px solid #d9cfbd; border-radius: 999px; }
 .cantidad button { display: grid; place-items: center; width: 38px; height: 38px; border: 0; background: none; cursor: pointer; }
 .cantidad output { min-width: 26px; font-weight: 800; text-align: center; }
@@ -803,6 +808,13 @@ dialog.cajon[open] { display: flex; flex-direction: column; animation: deslizar 
 .pz-nombre { font-size: 17px; font-weight: 800; line-height: 1.25; }
 .pz-precio { font-size: 14.5px; color: var(--wc-cafe); }
 .pz-precio b { color: var(--texto); font-weight: 800; }
+.pz-precio small { font-size: 12.5px; font-weight: 600; color: var(--gris); }
+/* Precios de WuandaCrafts (10 nov 2026): en la ficha, lo que incluye; en «Tu pedido», el precio por pieza de cada línea, la propina y la nota. */
+.pieza-envio { display: flex; align-items: flex-start; gap: 7px; margin-top: 2px; font-size: 13.5px; color: var(--wc-cafe); }
+.pieza-envio .icono { flex: none; width: 17px; height: 17px; margin-top: 1px; }
+.linea-precio small { font-size: 11.5px; font-weight: 600; color: var(--gris); }
+.campo-propina .chips { gap: 6px; }
+.totales .nota-precio { margin-top: 2px; font-size: 12.5px; color: var(--gris); }
 /* Las barras fijas del celular: el pedido en el catálogo y «Agregar» en la ficha (solo se ven en el bloque de 600 px). */
 .barra-pedido, .pieza-barra {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; display: none; align-items: center; justify-content: space-between; gap: 14px;

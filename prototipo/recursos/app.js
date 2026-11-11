@@ -676,16 +676,18 @@
       abrirWhatsApp('miami', mensaje);
     });
 
-    // «¿Por qué farto?»: el video de Instagram se abre en una ventana. El reproductor de Instagram (un iframe) solo se carga al abrirla y se
-    // quita al cerrarla, así no pesa en la página y el video se detiene.
+    // «¿Por qué farto?»: el video de Juan (alojado en la web desde el 10 nov 2026) se abre en una ventana y arranca solo, sin sonido (no trae
+    // audio). Con «reducir movimiento» no arranca: se le da play. El video solo se baja al abrir la ventana y se quita al cerrarla.
     const ventanaVideo = $('#modal-video');
     $('#abrir-video').addEventListener('click', () => {
+      const quieto = matchMedia('(prefers-reduced-motion: reduce)').matches;
       ventanaVideo.innerHTML = botonCerrar() + '<div class="video-cuerpo">'
-        + `<iframe src="${esc(D.nosotros.video)}embed/" title="${esc(t('nos.video'))}" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen></iframe>`
-        + `<a class="boton boton--borde boton--chico" href="${esc(D.nosotros.video)}" target="_blank" rel="noopener">${icono('i-instagram')}${esc(t('trab.ver_ig'))}</a></div>`;
+        + `<video src="${base}${esc(D.nosotros.video)}" poster="${base}${esc(D.nosotros.poster)}" controls playsinline muted loop preload="auto"${quieto ? '' : ' autoplay'} aria-label="${esc(t('nos.video'))}"></video>`
+        + `<p class="video-pie">${esc(t('nos.video_nota'))}</p>`
+        + `<a class="boton boton--borde boton--chico" href="${esc(D.nosotros.instagram)}" target="_blank" rel="noopener">${icono('i-instagram')}${esc(t('trab.ver_ig'))}</a></div>`;
       ventanaVideo.showModal();
     });
-    ventanaVideo.addEventListener('close', () => { ventanaVideo.innerHTML = ''; });
+    ventanaVideo.addEventListener('close', () => { $('video', ventanaVideo)?.pause(); ventanaVideo.innerHTML = ''; });
 
     alCambiarIdioma.push(pintarCinta, pintarServicios, pintarKit, pintarTrabajos, pintarChipsCotizar, pintarRuta);
   }
@@ -699,9 +701,14 @@
     let carrito = [];
     try { carrito = JSON.parse(leer('nfg-carrito') || '[]').filter((l) => productos.some((p) => p.id === l.producto)); } catch (e) { carrito = []; }
     let actual = null; // producto abierto en la ficha
-    // Cómo recibe el pedido quien compra en EE.UU. (Juan, 9 nov 2026): en el área de Miami, pick-up o a medio camino; fuera, envío según la zona,
-    // que se confirma en el chat. No hay tarifas todavía: no se calcula nada. null = sin elegir.
-    let zona = null;
+    // Cómo recibe el pedido quien compra en EE.UU. (Juan, 9 y 10 nov 2026: «por zona y zip code»): por su código postal se sabe si está en el área
+    // de Miami (D.envio.zipLocal), donde elige pick-up / a medio camino o envío; fuera, se le envía y el costo depende de la zona. No hay tarifas
+    // todavía: no se calcula nada, se confirma en el chat. En Colombia el envío va aparte: desde COP 20.000 (D.envio.copMinimo).
+    let zip = '';     // solo cifras, hasta 5
+    let modo = null;  // en el área de Miami: 'recoger' o 'envio' (null = sin elegir)
+    const zipListo = () => /^\d{5}$/.test(zip);
+    const zipLocal = () => zipListo() && D.envio.zipLocal.includes(zip.slice(0, 3));
+    const entrega = () => (!zipListo() ? null : zipLocal() ? modo : 'envio'); // null = falta el ZIP o elegir
     let eleccion = null;
     const ficha = $('#modal-producto');
     const cajon = $('#cajon-carrito');
@@ -727,7 +734,7 @@
       $('#lf-filtros').innerHTML = [['todo', 'lf.todos'], ['camiseta', 'lf.camisetas'], ['tote', 'lf.totes']]
         .map(([id, clave]) => `<button class="chip" type="button" data-filtro="${id}" aria-pressed="${filtro === id}">${t(clave)}</button>`).join('');
       $$('[data-pais]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.pais === pais)));
-      $('#lf-nota-envio').innerHTML = icono('i-envio') + t(pais === 'usa' ? 'lf.nota_usa' : 'lf.nota_col');
+      $('#lf-nota-envio').innerHTML = icono('i-envio') + t(pais === 'usa' ? 'lf.nota_usa' : 'lf.nota_col', { monto: dinero(D.envio.copMinimo) });
     }
     function pintarProductos() {
       $('#lista-productos').innerHTML = productos.filter((p) => filtro === 'todo' || p.tipo === filtro).map((p) => `
@@ -774,7 +781,7 @@
         +   `<p class="producto-tipo">${esc(nombreTipo(p))}${p.diseno.masVendido && p.tipo === 'camiseta' ? ' · ' + t('lf.mas_vendido') : ''}</p>`
         +   `<h3>${esc(p.diseno.nombre)}</h3>`
         +   `<p>${esc(L(p.diseno.texto))}${p.tipo === 'tote' ? ' ' + esc(t('lf.tote_texto')) : ''}${op.detalle ? ' ' + esc(L(op.detalle)) : ''}</p>`
-        +   `<p class="ficha-precio">${dinero(precio(p))}<small>${t(pais === 'usa' ? 'lf.envio_usa' : 'lf.envio_col')}</small></p>`
+        +   `<p class="ficha-precio">${dinero(precio(p))}<small>${t(pais === 'usa' ? 'lf.envio_usa' : 'lf.envio_col', { monto: dinero(D.envio.copMinimo) })}</small></p>`
         +   grupo(t('lf.color'), esc(nombreColor(p, eleccion.color)), op.colores.map((c) => `<button class="opcion-btn" type="button" data-color="${c}" aria-pressed="${eleccion.color === c}"><span class="punto" style="background:${D.colores[c].hex}"></span>${esc(L(D.colores[c].nombre))}</button>`).join(''))
         +   (op.estilos ? grupo(t('lf.estilo'), '', op.estilos.map((s, i) => `<button class="opcion-btn" type="button" data-estilo="${i}" aria-pressed="${eleccion.estilo === i}">${esc(L(s))}</button>`).join('')) : '')
         +   (p.tipo === 'camiseta' ? grupo(t('lf.talla'), t('lf.tallas_nota'), D.tallas.map((s) => `<button class="opcion-btn" type="button" data-talla="${s}" aria-pressed="${eleccion.talla === s}">${s}</button>`).join(''))
@@ -821,6 +828,29 @@
       return partes.join(', ');
     }
     function total() { return carrito.reduce((s, l) => s + precio(productos.find((p) => p.id === l.producto)) * l.cantidad, 0); }
+    // Lo que dice la fila «Envío» y el total: en pesos, el envío mínimo se suma y el total es «desde».
+    function textoEnvio() {
+      if (pais === 'col') return t('car.envio_desde', { monto: dinero(D.envio.copMinimo) });
+      const e = entrega();
+      return t(e === 'recoger' ? 'car.envio_recoger' : e === 'envio' ? 'car.envio_chat' : 'car.envio_zip');
+    }
+    const textoTotal = () => (pais === 'col' ? t('car.total_desde', { total: dinero(total() + D.envio.copMinimo) }) : dinero(total()));
+    // Lo que va bajo el ZIP: qué hacer, o las dos opciones si está en el área de Miami.
+    function htmlEntrega() {
+      if (!zipListo()) return `<p class="entrega-nota">${t('car.zip_falta')}</p>`;
+      if (!zipLocal()) return `<p class="entrega-nota">${icono('i-envio')}<span>${t('car.zip_lejos')}</span></p>`;
+      return `<p class="entrega-nota">${icono('i-lugar')}<span>${t('car.zip_local')}</span></p><div class="opciones">`
+        + [['recoger', 'car.modo_recoger', 'car.modo_recoger_sub'], ['envio', 'car.modo_envio', 'car.modo_envio_sub']].map(([id, titulo, sub]) =>
+          `<button class="opcion-btn opcion-zona" type="button" data-modo="${id}" aria-pressed="${modo === id}"><strong>${t(titulo)}</strong><small>${t(sub)}</small></button>`).join('')
+        + '</div>';
+    }
+    // Repinta solo la entrega y la fila del envío (sin tocar el campo del ZIP, para no perder lo que se está escribiendo).
+    function pintarEntrega() {
+      const caja = $('#lf-entrega', cajon);
+      if (caja) caja.innerHTML = htmlEntrega();
+      const valor = $('#lf-envio-valor', cajon);
+      if (valor) valor.textContent = textoEnvio();
+    }
     function pintarCarrito() {
       const unidades = carrito.reduce((s, l) => s + l.cantidad, 0);
       const contador = $('#contador-carrito');
@@ -842,14 +872,14 @@
         + (carrito.length === 0 ? '' : '<form class="cajon-pie" id="form-pedido" novalidate>'
           + '<div class="totales">'
           +   `<div><span>${t('car.subtotal')}</span><span>${dinero(total())}</span></div>`
-          +   `<div><span>${t('car.envio')}</span><span>${t(pais === 'usa' && zona === 'miami' ? 'car.envio_recoger' : 'car.envio_chat')}</span></div>`
-          +   `<div class="total"><span>${t('car.total')}</span><span>${dinero(total())}</span></div>`
+          +   `<div><span>${t('car.envio')}</span><span id="lf-envio-valor">${textoEnvio()}</span></div>`
+          +   `<div class="total"><span>${t('car.total')}</span><span>${textoTotal()}</span></div>`
           + '</div>'
           + (pais === 'usa'
-            ? `<div class="grupo-opciones grupo-zona"><h4>${t('car.zona')}</h4><div class="opciones">`
-              + [['miami', 'car.zona_miami', 'car.zona_miami_sub'], ['otro', 'car.zona_otro', 'car.zona_otro_sub']].map(([id, titulo, sub]) =>
-                `<button class="opcion-btn opcion-zona" type="button" data-zona="${id}" aria-pressed="${zona === id}"><strong>${t(titulo)}</strong><small>${t(sub)}</small></button>`).join('')
-              + `</div><p class="error-campo" data-error="zona" hidden>${t('car.err_zona')}</p></div>`
+            ? `<div class="grupo-opciones grupo-zona"><h4>${t('car.zona')}</h4>`
+              + `<label class="campo campo-zip"><span class="etiqueta-campo">${t('car.zip')}</span><input name="zip" inputmode="numeric" autocomplete="postal-code" maxlength="5" placeholder="33180" value="${esc(zip)}" /></label>`
+              + `<div id="lf-entrega" aria-live="polite">${htmlEntrega()}</div>`
+              + `<p class="error-campo" data-error="zip" hidden>${t('car.err_zip')}</p><p class="error-campo" data-error="zona" hidden>${t('car.err_zona')}</p></div>`
             : '')
           + '<div class="fila-2">'
           +   `<label class="campo"><span class="etiqueta-campo">${t('car.nombre')}</span><input name="nombre" autocomplete="name" value="${esc(datos.nombre)}" /></label>`
@@ -864,8 +894,12 @@
     cajon.addEventListener('click', (e) => {
       const b = e.target.closest('button');
       if (!b) return;
-      if (b.dataset.zona) {
-        zona = b.dataset.zona;
+      if (b.dataset.modo) { // pick-up o envío, en el área de Miami: solo cambia la entrega
+        modo = b.dataset.modo;
+        pintarEntrega();
+        const errZona = $('[data-error="zona"]', cajon);
+        if (errZona) errZona.hidden = true;
+        return;
       } else if (b.dataset.linea != null) {
         const l = carrito[Number(b.dataset.linea)];
         l.cantidad = Math.min(20, l.cantidad + Number(b.dataset.cant));
@@ -881,10 +915,12 @@
       const f = e.target;
       const nombre = f.elements.nombre.value.trim();
       const ciudad = f.elements.ciudad.value.trim();
-      const zonaOk = pais !== 'usa' || zona !== null;
-      const ok = nombre !== '' && ciudad !== '' && zonaOk;
+      const zipOk = pais !== 'usa' || zipListo();
+      const zonaOk = pais !== 'usa' || !zipListo() || entrega() !== null;
+      const ok = nombre !== '' && ciudad !== '' && zipOk && zonaOk;
       $('[data-error="pedido"]', f).hidden = nombre !== '' && ciudad !== '';
-      const errZona = $('[data-error="zona"]', f);
+      const errZip = $('[data-error="zip"]', f), errZona = $('[data-error="zona"]', f);
+      if (errZip) { errZip.hidden = zipOk; f.elements.zip.closest('.campo').classList.toggle('con-error', !zipOk); }
       if (errZona) errZona.hidden = zonaOk;
       f.elements.nombre.closest('.campo').classList.toggle('con-error', !nombre);
       f.elements.ciudad.closest('.campo').classList.toggle('con-error', !ciudad);
@@ -897,7 +933,10 @@
         const p = productos.find((x) => x.id === l.producto);
         lineas.push(`• ${l.cantidad} × ${p.diseno.nombre} — ${detalleLinea(l, p)} — ${dinero(precio(p) * l.cantidad)}`);
       });
-      lineas.push('', t('lf.wa_total', { total: dinero(total()) }), t(pais === 'col' ? 'lf.wa_envio_col' : zona === 'miami' ? 'lf.wa_envio_miami' : 'lf.wa_envio_otro'), '');
+      lineas.push('');
+      if (pais === 'col') lineas.push(t('lf.wa_subtotal', { total: dinero(total()) }), t('lf.wa_envio_col', { monto: dinero(D.envio.copMinimo) }), t('lf.wa_total_desde', { total: dinero(total() + D.envio.copMinimo) }));
+      else lineas.push(t('lf.wa_total', { total: dinero(total()) }), t(entrega() === 'recoger' ? 'lf.wa_envio_miami' : 'lf.wa_envio_otro', { zip }));
+      lineas.push('');
       lineas.push(`${t('lf.wa_nombre')}: ${nombre} · ${t('lf.wa_ciudad')}: ${ciudad}`);
       const notas = f.elements.notas.value.trim();
       if (notas) lineas.push(`${t('lf.wa_notas')}: ${notas}`);
@@ -905,7 +944,19 @@
       copiaAlCorreo({ tipo: 'lafarteda', destino: pais === 'col' ? 'cartagena' : 'miami', ref: numero, moneda: pais === 'col' ? 'COP' : 'USD', nombre, ciudad, mensaje });
       abrirWhatsApp(pais === 'col' ? 'lf_cartagena' : 'lf_miami', mensaje);
     });
-    cajon.addEventListener('input', (e) => { if (e.target.name) e.target.closest('.campo')?.classList.remove('con-error'); });
+    cajon.addEventListener('input', (e) => {
+      if (e.target.name) e.target.closest('.campo')?.classList.remove('con-error');
+      if (e.target.name === 'zip') { // solo cifras; al completar los 5 se sabe si es el área de Miami
+        const limpio = e.target.value.replace(/\D/g, '').slice(0, 5);
+        if (limpio !== e.target.value) e.target.value = limpio;
+        const eraLocal = zipLocal();
+        zip = limpio;
+        if (zipLocal() !== eraLocal) modo = null;
+        pintarEntrega();
+        const errZip = $('[data-error="zip"]', cajon);
+        if (errZip) errZip.hidden = true;
+      }
+    });
     $('#abrir-carrito').addEventListener('click', () => { pintarCarrito(); cajon.showModal(); });
 
     alCambiarIdioma.push(pintarBarra, pintarProductos, pintarCarrito, () => { if (ficha.open) pintarFicha(); });
@@ -922,6 +973,34 @@
     W.catalogo.forEach((p) => { if (p.fotos && !p.foto) p.foto = p.fotos[0].img; }); // la portada de una pieza con galería es su primera foto
     const piezaDe = (id) => W.catalogo.find((x) => x.id === id);
     const estiloDe = (p, id) => (p.variantes || []).find((v) => v.id === id);
+    // Precios (Juan, 10 nov 2026): en dólares, con el envío incluido, por pieza y según la cantidad de la línea (W.escalas y W.tarifas). La tarifa
+    // sale del estilo elegido o, si no tiene, de la pieza; la calcomanía no tiene escalas: solo un «desde» (precioDesde).
+    const usd = (n) => '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const tarifaDe = (p, estilo) => W.tarifas[(estiloDe(p, estilo) || {}).precio || p.precio] || null;
+    const escalonDe = (cantidad) => Math.max(0, W.escalas.findIndex((r) => cantidad >= r.desde && (r.hasta == null || cantidad <= r.hasta)));
+    // { unidad, desde }: el precio por pieza para esa cantidad y si es un «desde». null si la pieza no tiene precio.
+    function precioDe(p, estilo, cantidad) {
+      const tf = tarifaDe(p, estilo);
+      if (tf) return { unidad: tf[escalonDe(cantidad)], desde: false };
+      return p.precioDesde != null ? { unidad: p.precioDesde, desde: true } : null;
+    }
+    const montoTxt = (n, desde) => (desde ? t('wc.desde_precio', { precio: usd(n) }) : usd(n));
+    // La tarjeta: el precio de 1 y el de 12 o más («desde» si cambia según el estilo).
+    function precioTarjeta(p) {
+      const tarifas = (p.variantes && p.variantes.some((v) => v.precio) ? p.variantes.map((v) => W.tarifas[v.precio || p.precio]) : [W.tarifas[p.precio]]).filter(Boolean);
+      if (!tarifas.length) return p.precioDesde != null ? `<b>${esc(t('wc.desde_precio', { precio: usd(p.precioDesde) }))}</b>` : `${esc(t('wc.desde'))} <b>$ —</b>`;
+      const uno = Math.min(...tarifas.map((tf) => tf[0])), mucho = Math.min(...tarifas.map((tf) => tf[tf.length - 1]));
+      const varios = new Set(tarifas.map((tf) => tf[0])).size > 1;
+      return `<b>${esc(varios ? t('wc.desde_precio', { precio: usd(uno) }) : usd(uno))}</b> <small>${esc(t('wc.precio_cantidad', { n: W.escalas[W.escalas.length - 1].desde, precio: usd(mucho) }))}</small>`;
+    }
+    // El total del pedido: la suma de las líneas («desde» si alguna lo es) y, si la persona quiere, la propina.
+    let propina = 0; // por ciento: 0, 10, 15 o 20 (Juan, 10 nov 2026: «¿podemos colocar algo que la gente deje tip?»)
+    function cuentas() {
+      let subtotal = 0, desde = false;
+      pedido.forEach((l) => { const pr = precioDe(piezaDe(l.pieza), l.estilo, l.cantidad); if (pr) { subtotal += pr.unidad * l.cantidad; desde = desde || pr.desde; } });
+      const extra = Math.round(subtotal * propina) / 100;
+      return { subtotal, extra, total: subtotal + extra, desde };
+    }
     const catDe = (id) => W.categorias.find((x) => x.id === id);
     const fuenteDe = (id) => W.fuentes.find((x) => x.id === id) || W.fuentes[0];
     const colorDe = (id) => (id && W.colores[id] ? L(W.colores[id].nombre) : '');
@@ -964,7 +1043,7 @@
     const tarjeta = (p) => `
       <a class="pz tono-${p.tono}" href="#pieza/${p.id}">
         <div class="pz-foto">${fotoHtml(p)}${insignia(p)}</div>
-        <div class="pz-info"><span class="pz-cat">${esc(L(catDe(p.cat).titulo))}</span><strong class="pz-nombre">${esc(L(p.titulo))}</strong><span class="pz-precio">${esc(t('wc.desde'))} <b>$ —</b></span></div>
+        <div class="pz-info"><span class="pz-cat">${esc(L(catDe(p.cat).titulo))}</span><strong class="pz-nombre">${esc(L(p.titulo))}</strong><span class="pz-precio">${precioTarjeta(p)}</span></div>
       </a>`;
     function pintarCatalogo() {
       $('#wc-tabs').innerHTML = [{ id: 'todo', icono: 'i-todo', titulo: t('wc.todo') }, ...W.categorias.map((c) => ({ id: c.id, icono: c.icono, titulo: L(c.titulo) }))]
@@ -1064,14 +1143,14 @@
       const gTamano = p.tamanos
         ? `<div class="grupo"><div class="grupo-cab">${esc(t('wc.tamano'))}<span>${nd('wc.ejemplo')}</span></div><div class="chips chips--claro">${p.tamanos.map((x) => `<button class="chip" type="button" data-tamano="${esc(x)}" aria-pressed="false">${esc(x)}</button>`).join('')}</div></div>` : '';
       const gColor = p.colores
-        ? `<div class="grupo"><div class="grupo-cab">${esc(t(esCalco ? 'wc.color_vinil' : 'wc.color'))}<span><span id="p-color-nombre"></span> ${nd('wc.ejemplo')}</span></div>`
+        ? `<div class="grupo"><div class="grupo-cab">${esc(t(esCalco ? 'wc.color_vinil' : 'wc.color'))}<span><span id="p-color-nombre"></span> ${p.coloresReales ? '' : nd('wc.ejemplo')}</span></div>`
           + `<div class="muestras">${p.colores.map((x) => `<button class="muestra" type="button" data-color="${x}" style="background:${W.colores[x].hex}" aria-label="${esc(colorDe(x))}" title="${esc(colorDe(x))}" aria-pressed="false"></button>`).join('')}</div></div>` : '';
       const gCantidad = `<div class="grupo"><div class="grupo-cab">${esc(t(esCalco ? 'wc.cuantos_pliegos' : 'wc.cuantos'))}</div>`
         + `<div class="cantidad-fila"><div class="cantidad"><button type="button" data-cant="-1" aria-label="${esc(t('car.menos'))}">${icono('i-menos')}</button>`
         + `<input id="p-cant" type="number" min="1" max="500" inputmode="numeric" aria-label="${esc(t(esCalco ? 'wc.cuantos_pliegos' : 'wc.cuantos'))}" />`
         + `<button type="button" data-cant="1" aria-label="${esc(t('car.mas'))}">${icono('i-mas')}</button></div><p>${esc(t(esCalco ? 'wc.escala_nota_pliego' : 'wc.escala_nota'))}</p></div>`
-        + `<div class="escala"><div class="escala-cab"><span>${esc(t(esCalco ? 'wc.escala_pliego' : 'wc.escala_pieza'))}</span>${nd()}</div>`
-        + W.escalas.map((r, i) => `<div class="escala-fila" data-fila="${i}"><span>${esc(r.hasta == null ? t('wc.rango_mas', { a: r.desde }) : t('wc.rango', { a: r.desde, b: r.hasta }))}<em hidden>${esc(t('wc.tu_cantidad'))}</em></span><span>$ —</span></div>`).join('')
+        + `<div class="escala"><div class="escala-cab"><span>${esc(t(esCalco ? 'wc.escala_pliego' : 'wc.escala_pieza'))}</span><span>${esc(t('wc.usd_envio'))}</span></div>`
+        + (tarifaDe(p, elec.estilo) ? W.escalas : [{ desde: 1, hasta: null }]).map((r, i) => `<div class="escala-fila" data-fila="${i}"><span>${esc(r.hasta == null ? t('wc.rango_mas', { a: r.desde }) : t('wc.rango', { a: r.desde, b: r.hasta }))}<em hidden>${esc(t('wc.tu_cantidad'))}</em></span><span class="escala-precio"></span></div>`).join('')
         + '</div></div>';
 
       const cNombre = campo(esc(t('wc.pers_nombre')), '', `<input id="p-texto" maxlength="60" autocomplete="off" placeholder="${esc(t('wc.pers_nombre_ph'))}" value="${esc(elec.texto)}" />`, 'p-texto');
@@ -1092,7 +1171,8 @@
         +   `<div class="galeria"><div class="galeria-marco tono-${p.tono}${minisFotos ? ' galeria-marco--fotos' : ''}">${marco}</div>${minis}${minisFotos}${ig}</div>`
         +   '<div class="pieza-info">'
         +     `<div class="pieza-titulo"><span class="pz-cat">${esc(L(c.titulo))}</span><h1 tabindex="-1">${esc(L(p.titulo))}</h1>`
-        +       `<div class="pieza-precio">${esc(t('wc.desde'))} <b>$ —</b> ${nd('wc.precio_nd')}</div><p class="pieza-texto">${esc(L(c.texto))}</p></div>`
+        +       `<div class="pieza-precio"><b id="p-precio"></b> <span id="p-precio-unidad">${esc(t(esCalco ? 'wc.por_pliego' : 'wc.por_pieza'))}</span></div>`
+        +       `<p class="pieza-envio">${icono('i-envio')}<span>${esc(t('wc.envio_incluido'))}</span></p><p class="pieza-texto">${esc(L(p.texto || c.texto))}</p></div>`
         +     gEstilo + gTamano + gColor + (esCalco ? cNombre + cFuente : '') + gCantidad + (esCalco ? cArchivo : personalizar)
         +     `<div class="accion"><p class="error-campo" id="p-err-calco" hidden>${esc(t('wc.err_calco'))}</p>`
         +       `<button class="boton boton--acento boton--ancho" type="button" data-agregar data-escritorio>${icono('i-bolsa-compra')}${esc(t('wc.agregar'))}</button>`
@@ -1100,7 +1180,7 @@
         +   '</div>'
         +   como
         + '</div></div>'
-        + `<div class="pieza-barra"><div class="resumen"><strong id="p-resumen"></strong><span>${esc(t('wc.total_nd'))}</span></div><button class="boton boton--acento" type="button" data-agregar>${esc(t('wc.agregar_corto'))}</button></div>`;
+        + `<div class="pieza-barra"><div class="resumen"><strong id="p-resumen"></strong><span id="p-total"></span></div><button class="boton boton--acento" type="button" data-agregar>${esc(t('wc.agregar_corto'))}</button></div>`;
       sincronizarPieza();
     }
     // Lo que cambia con cada toque se actualiza en su sitio (sin repintar la ficha), para no perder el foco ni lo que se está escribiendo.
@@ -1119,8 +1199,15 @@
       if (nombreColor) nombreColor.textContent = colorDe(elec.color);
       const cant = $('#p-cant', v);
       if (cant && document.activeElement !== cant) cant.value = elec.cantidad;
-      const activa = W.escalas.findIndex((r) => elec.cantidad >= r.desde && (r.hasta == null || elec.cantidad <= r.hasta));
+      // El precio (cambia con el estilo y con la cantidad) y la fila de la escala que corresponde.
+      const tf = tarifaDe(p, elec.estilo), pr = precioDe(p, elec.estilo, elec.cantidad);
+      const activa = tf ? escalonDe(elec.cantidad) : 0;
       $$('.escala-fila', v).forEach((f, i) => { f.classList.toggle('activa', i === activa); $('em', f).hidden = i !== activa; });
+      $$('.escala-precio', v).forEach((s, i) => { s.textContent = tf ? usd(tf[i]) : montoTxt(p.precioDesde, true); });
+      if (pr) {
+        $('#p-precio', v).textContent = montoTxt(pr.unidad, pr.desde);
+        $('#p-total', v).textContent = t('wc.total_x', { total: montoTxt(pr.unidad * elec.cantidad, pr.desde) });
+      }
       const interruptor = $('#p-pers', v);
       if (interruptor) { interruptor.setAttribute('aria-checked', String(elec.pers)); $('#p-pers-cuerpo', v).hidden = !elec.pers; }
       $$('[data-fuente]', v).forEach((b) => { b.setAttribute('aria-pressed', String(b.dataset.fuente === elec.fuente)); $('.ejemplo', b).textContent = elec.texto.trim() || t('wc.pers_ejemplo'); });
@@ -1217,17 +1304,26 @@
       barra.hidden = enPieza || pedido.length === 0;
       document.body.classList.toggle('con-barra', enPieza || pedido.length > 0);
     }
+    function pintarPedidoBarra() {
+      const cu = cuentas(), span = $('.resumen span', barra);
+      if (span) span.textContent = t('wc.total_x', { total: montoTxt(cu.total, cu.desde) });
+    }
     function pintarPedido() {
       const n = pedido.length;
       const unidades = `${n} ${t(n === 1 ? 'wc.u_pieza' : 'wc.u_piezas')}`;
       const contador = $('#contador-carrito');
       contador.hidden = n === 0;
       contador.textContent = n;
-      barra.innerHTML = `<div class="resumen"><strong>${esc(t('car.titulo'))} · ${esc(unidades)}</strong><span>${esc(t('wc.total_nd'))}</span></div><button class="boton boton--acento" type="button" data-abrir-pedido>${esc(t('wc.car_ver'))}</button>`;
+      const cu = cuentas();
+      barra.innerHTML = `<div class="resumen"><strong>${esc(t('car.titulo'))} · ${esc(unidades)}</strong><span>${esc(t('wc.total_x', { total: montoTxt(cu.total, cu.desde) }))}</span></div><button class="boton boton--acento" type="button" data-abrir-pedido>${esc(t('wc.car_ver'))}</button>`;
       sincronizarBarras();
       const alto = { cajon: cajon.scrollTop, lista: (cajon.querySelector('.cajon-lista') || {}).scrollTop || 0 };
       const antes = cajon.querySelector('form');
       const d = antes ? { nombre: antes.elements.nombre.value, telefono: antes.elements.telefono.value, fecha: antes.elements.fecha.value, donde: antes.elements.donde.value } : { nombre: '', telefono: '', fecha: '', donde: '' };
+      const lineaPrecio = (l) => {
+        const pr = precioDe(piezaDe(l.pieza), l.estilo, l.cantidad);
+        return pr ? `<span>${esc(montoTxt(pr.unidad * l.cantidad, pr.desde))}</span><small>${esc(t('wc.c_u', { precio: usd(pr.unidad) }))}</small>` : '<span>$ —</span>';
+      };
       const linea = (l, i) => {
         const p = piezaDe(l.pieza);
         const miniatura = p.foto ? `<img src="${base}img/wuanda/${p.foto}" alt="" style="object-position:${p.encuadre || '50% 50%'}" />` : `<span class="linea-tile tono-${p.tono}">${icono(p.icono)}</span>`;
@@ -1240,7 +1336,7 @@
         if (!extras.length) extras.push(`<span>${esc(t('wc.l_sin_pers'))}</span>`);
         return `<div class="linea-carrito">${miniatura}<div><strong>${esc(L(p.titulo))}</strong>${detalle ? `<small>${esc(detalle)}</small>` : ''}<div class="linea-extras">${extras.join('')}</div>`
           + `<div class="cantidad cantidad--chica"><button type="button" data-linea="${i}" data-cant="-1" aria-label="${esc(t('car.menos'))}">${icono('i-menos')}</button><output>${l.cantidad}</output><button type="button" data-linea="${i}" data-cant="1" aria-label="${esc(t('car.mas'))}">${icono('i-mas')}</button></div></div>`
-          + `<div class="linea-precio"><span>$ —</span><button class="quitar" type="button" data-quitar="${i}" aria-label="${esc(t('car.quitar'))}">${icono('i-basura')}</button></div></div>`;
+          + `<div class="linea-precio">${lineaPrecio(l)}<button class="quitar" type="button" data-quitar="${i}" aria-label="${esc(t('car.quitar'))}">${icono('i-basura')}</button></div></div>`;
       };
       cajon.innerHTML = `<div class="cajon-cabeza"><h3>${esc(t('car.titulo'))} <small>${n ? esc(unidades) : ''}</small></h3>${botonCerrar()}</div>`
         + '<div class="cajon-lista">'
@@ -1258,13 +1354,16 @@
           +   `<label class="opcion"><input type="radio" name="donde" value="col"${d.donde === 'col' ? ' checked' : ''} /><span>${esc(t('wc.col'))}</span></label></div>`
           +   `<p class="ruta" id="wc-ruta" hidden></p><p class="error-campo" data-error="donde" hidden>${esc(t('wc.err_donde'))}</p></fieldset>`
           + `<label class="campo"><span class="etiqueta-campo">${esc(t('wc.fecha'))} <span class="opcional">(${esc(t('cot.opcional'))})</span></span><input name="fecha" type="date" min="${minFecha}" value="${esc(d.fecha)}" /><span class="aviso-fecha" id="wc-fecha-aviso" hidden>${esc(t('wc.fecha_aviso'))}</span></label>`
-          + `<div class="totales"><div class="total"><span>${esc(t('car.total'))}</span>${nd()}</div></div>`
+          + `<fieldset class="campo campo-propina"><legend class="etiqueta-campo">${esc(t('wc.propina'))} <span class="opcional">(${esc(t('cot.opcional'))})</span></legend><div class="chips chips--claro">`
+          +   [0, 10, 15, 20].map((x) => `<button class="chip" type="button" data-propina="${x}" aria-pressed="${propina === x}">${esc(x ? x + ' %' : t('wc.propina_no'))}</button>`).join('')
+          + '</div></fieldset>'
+          + '<div class="totales" id="wc-totales"></div>'
           + `<p class="error-campo" data-error="pedido" hidden>${esc(t('wc.err_pedido'))}</p>`
           + `<button class="boton boton--acento boton--ancho" type="submit">${icono('i-whatsapp')} ${esc(t('car.enviar'))}</button>`
           + `<p class="nota-form">${esc(t('cot.nota'))}</p>`
           + '</form>');
       const f = cajon.querySelector('form');
-      if (f) { pintarRuta(f); revisarFecha(f); }
+      if (f) { pintarRuta(f); revisarFecha(f); pintarTotales(f); }
       cajon.scrollTop = alto.cajon;
       const lista = cajon.querySelector('.cajon-lista');
       if (lista) lista.scrollTop = alto.lista;
@@ -1276,6 +1375,16 @@
       if (donde) ruta.innerHTML = icono('i-whatsapp') + esc(t('car.ruta', { destino: t(donde === 'col' ? 'destino.wc_cartagena' : 'destino.wc_miami') }));
     }
     function revisarFecha(f) { $('#wc-fecha-aviso', f).hidden = !(diasHasta(f.elements.fecha.value) < 5); }
+    // Subtotal y propina (si la hay), el total y lo que incluye: en EE.UU. el envío; en Colombia el precio en pesos se confirma en el chat.
+    function pintarTotales(f) {
+      const cu = cuentas(), col = f.elements.donde.value === 'col';
+      $('#wc-totales', f).innerHTML = (cu.extra
+        ? `<div><span>${esc(t('car.subtotal'))}</span><span>${esc(montoTxt(cu.subtotal, cu.desde))}</span></div><div><span>${esc(t('wc.propina_linea', { pct: propina }))}</span><span>${esc(montoTxt(cu.extra, cu.desde))}</span></div>`
+        : '')
+        + `<div class="total"><span>${esc(t('car.total'))}</span><span>${esc(montoTxt(cu.total, cu.desde))}</span></div>`
+        + `<p class="nota-precio">${esc(t(col ? 'wc.nota_cop' : 'wc.nota_usd'))}</p>`;
+      $$('[data-propina]', f).forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.propina) === propina)));
+    }
 
     cajon.addEventListener('click', (e) => {
       const b = e.target.closest('button');
@@ -1286,6 +1395,11 @@
         if (l.cantidad < 1) pedido.splice(Number(b.dataset.linea), 1);
       } else if (b.dataset.quitar != null) {
         pedido.splice(Number(b.dataset.quitar), 1);
+      } else if (b.dataset.propina != null) { // la propina solo cambia los totales
+        propina = Number(b.dataset.propina);
+        pintarTotales(b.form);
+        pintarPedidoBarra();
+        return;
       } else if (b.hasAttribute('data-seguir')) {
         cajon.close();
         if (location.hash === '#catalogo') saltarA('catalogo'); else location.hash = '#catalogo';
@@ -1303,7 +1417,7 @@
     });
     cajon.addEventListener('change', (e) => {
       const el = e.target;
-      if (el.name === 'donde') { pintarRuta(el.form); validarCampo(el.form, 'donde', true); }
+      if (el.name === 'donde') { pintarRuta(el.form); pintarTotales(el.form); validarCampo(el.form, 'donde', true); }
       if (el.name === 'fecha') revisarFecha(el.form);
       if (el.dataset.reponer != null) { // volver a subir el logo de una línea que se recuperó sin su archivo
         const f = el.files && el.files[0];
@@ -1335,11 +1449,13 @@
       });
       return elegidos;
     }
-    function armarMensaje({ nombre, telefono, fecha, porCorreo }) {
+    function armarMensaje({ nombre, telefono, fecha, porCorreo, donde }) {
       const lineas = [t('wc.wa_hola'), ''];
       pedido.forEach((l, i) => {
         const p = piezaDe(l.pieza);
-        lineas.push(`${i + 1}. ${l.cantidad} × ${L(p.titulo)}${p.unidad === 'pliego' ? ` (${t(l.cantidad === 1 ? 'wc.u_pliego' : 'wc.u_pliegos')})` : ''}`);
+        const pr = precioDe(p, l.estilo, l.cantidad);
+        const precio = pr ? ` — ${t('wc.wa_precio', { unidad: montoTxt(pr.unidad, pr.desde), total: montoTxt(pr.unidad * l.cantidad, pr.desde) })}` : '';
+        lineas.push(`${i + 1}. ${l.cantidad} × ${L(p.titulo)}${p.unidad === 'pliego' ? ` (${t(l.cantidad === 1 ? 'wc.u_pliego' : 'wc.u_pliegos')})` : ''}${precio}`);
         const detalle = [estiloDe(p, l.estilo) && L(estiloDe(p, l.estilo).titulo), l.tamano, colorDe(l.color)].filter(Boolean).join(' · ');
         if (detalle) lineas.push(`   ${detalle}`);
         if (l.texto) lineas.push(`   ${t('wc.wa_nombre_texto')}: «${l.texto}» (${t('wc.wa_fuente', { f: nombreFuente(l.fuente) })})`);
@@ -1347,6 +1463,9 @@
         if (l.notas) lineas.push(`   ${t('wc.wa_notas')}: ${l.notas}`);
         lineas.push('');
       });
+      const cu = cuentas();
+      if (cu.extra) lineas.push(t('wc.wa_subtotal', { total: montoTxt(cu.subtotal, cu.desde) }), t('wc.wa_propina', { pct: propina, monto: montoTxt(cu.extra, cu.desde) }));
+      lineas.push(t(donde === 'col' ? 'wc.wa_total_cop' : 'wc.wa_total', { total: montoTxt(cu.total, cu.desde) }), '');
       if (fecha) lineas.push(`${t('wc.wa_fecha')}: ${new Date(fecha + 'T12:00:00').toLocaleDateString(idioma === 'es' ? 'es-CO' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' })}`);
       lineas.push(`${t('wc.wa_contacto')}: ${nombre} · ${telefono}`);
       return lineas.join('\n');
@@ -1364,7 +1483,7 @@
       $('[data-error="pedido"]', f).hidden = !oks.includes(false);
       if (oks.includes(false)) { $('.con-error, [data-error]:not([hidden])', f)?.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
       const destino = v('donde') === 'col' ? 'cartagena' : 'miami';
-      const datos = { nombre: v('nombre'), telefono: v('telefono'), fecha: v('fecha') };
+      const datos = { nombre: v('nombre'), telefono: v('telefono'), fecha: v('fecha'), donde: v('donde') };
       const aCorreo = { tipo: 'wuandacrafts', destino, rush: diasHasta(datos.fecha) < 5 ? '1' : '', nombre: datos.nombre, telefono: datos.telefono };
       const archivos = copiaActiva() ? archivosParaCorreo() : [];
       if (!archivos.length) {
