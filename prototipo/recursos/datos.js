@@ -99,6 +99,12 @@ window.NFG_DATOS = {
       medios: [{ video: 'ada/video.mp4', poster: 'ada/video-poster.webp', dur: '0:20' }, ...laminas('ada', 6)],
       sector: { en: 'Dental practice', es: 'Consultorio dental' },
       texto: { en: 'Window decals, frosted glass graphics, corporate holiday gifts and T-shirts for the ADA Run Club.', es: 'Vinil en las vidrieras, gráficos en vidrio esmerilado, regalos corporativos y camisetas para el ADA Run Club.' } },
+    // Tuned Sports Medicine (18 nov 2026): cinco fotos de la instalación que mandó Nicola (no hay publicación de Instagram: sin enlace). Vinil en las
+    // vidrieras y la puerta de una clínica de fisioterapia deportiva en la zona de Aventura. El año (2026) es una suposición: confirmar con Juan.
+    { id: 'tuned', rol: 'trabajada', img: 'tuned.webp', categoria: 'letreros', servicio: 'letreros', anio: '2026', titulo: 'Tuned Sports Medicine',
+      medios: laminas('tuned', 5),
+      sector: { en: 'Sports physical therapy', es: 'Fisioterapia deportiva' },
+      texto: { en: 'Window and door decals with the logo, the tagline and the list of services for a sports medicine and physical therapy clinic.', es: 'Vinil en las vidrieras y la puerta con el logo, el lema y la lista de servicios de una clínica de fisioterapia y medicina deportiva.' } },
     { id: 'boda', rol: 'creada', img: 'boda.webp', categoria: 'branding', servicio: 'branding', anio: '2026',
       titulo: { en: 'A wedding identity', es: 'Identidad para una boda' },
       instagram: 'https://www.instagram.com/p/DanF-tjEYOQ/', medios: laminas('boda', 13),
