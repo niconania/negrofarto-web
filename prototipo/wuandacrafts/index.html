@@ -82,7 +82,17 @@
             <button class="boton boton--crema boton--chico" type="button" id="regalos-cta" data-t="wc.regalos_cta"></button>
           </div>
           <div class="cat-tabs" id="wc-tabs" role="group" data-t-aria="wc.categorias"></div>
-          <div class="sub-filtros" id="wc-sub" hidden></div>
+          <div class="wc-moneda">
+            <div class="pais">
+              <svg class="icono" aria-hidden="true"><use href="#i-pais"/></svg>
+              <span data-t="wc.precios_en"></span>
+              <div class="pais-botones" role="group">
+                <button type="button" data-wc-pais="usa" aria-pressed="true">USA · USD</button>
+                <button type="button" data-wc-pais="col" aria-pressed="false">Colombia · COP</button>
+              </div>
+            </div>
+            <p class="wc-moneda-nota" id="wc-moneda-nota"></p>
+          </div>
           <div class="cat-grilla" id="wc-grilla"></div>
         </div>
       </section>

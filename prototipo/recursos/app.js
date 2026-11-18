@@ -88,6 +88,9 @@
       +   `<button class="menu-movil" type="button" aria-controls="menu" aria-expanded="false" data-t-aria="nav.abrir">${icono('i-menu')}</button>`
       + '</div></header>'
       + '<nav class="puertas" aria-label="NFG"><div class="caja">'
+      // «Atrás» (Juan, 17 nov 2026): en La Fartedá y WuandaCrafts, para no tener que usar el atrás del navegador y salirse del sitio.
+      // Si la persona llegó desde otra página de NFG vuelve a ella; si no (abrió el enlace directo o viene de Instagram), va al inicio de la agencia.
+      + (pagina === 'merch' || pagina === 'wuanda' ? `<a class="puertas-atras" href="${inicio}" id="atras" data-t-aria="nav.atras">${icono('i-flecha')}<span data-t="nav.atras"></span></a>` : '')
       + puertas.map((p) => `<a class="puerta puerta--${p.clase}" href="${p.href}" data-t-aria="${p.clave}" data-t-title="${p.clave}"${p.id === pagina ? ' aria-current="page"' : ''}>`
           + `<img src="${base}${p.img}" alt="" /></a>`).join('')
       + '</div></nav>');
@@ -166,6 +169,11 @@
   // así que van con un fetch normal y devuelven una promesa (true si el servidor la aceptó) para que el pedido espere antes de WhatsApp.
   // «archivos»: [{ archivo: File, etiqueta }].
   const enProduccion = /^(www\.)?negrofarto\.com$/i.test(location.hostname);
+  // «¿Dónde nos conociste?» (Juan, 17 nov 2026): un campo opcional en la cotización y en los dos pedidos; si se elige, viaja en el mensaje.
+  const CONOCIO = ['boca', 'instagram', 'web', 'evento'];
+  const campoConocio = (valor) => `<label class="campo"><span class="etiqueta-campo">${esc(t('cot.conocio'))} <span class="opcional">(${esc(t('cot.opcional'))})</span></span>`
+    + `<select name="conocio"><option value="">${esc(t('conocio.elegir'))}</option>${CONOCIO.map((c) => `<option value="${c}"${valor === c ? ' selected' : ''}>${esc(t('conocio.' + c))}</option>`).join('')}</select></label>`;
+  const lineaConocio = (valor) => (CONOCIO.includes(valor) ? `${t('cot.wa_conocio')}: ${t('conocio.' + valor)}` : '');
   const copiaActiva = () => enProduccion || !!(window.NFG_ENVIO && window.NFG_ENVIO.activo);
   function copiaAlCorreo(datos, archivos = []) {
     if (!copiaActiva()) return Promise.resolve(false);
@@ -213,6 +221,14 @@
   }
 
   function activarEstructura() {
+    const atras = $('#atras');
+    if (atras) {
+      atras.addEventListener('click', (e) => {
+        let mismoSitio = false;
+        try { mismoSitio = !!document.referrer && new URL(document.referrer).origin === location.origin; } catch (x) { mismoSitio = false; }
+        if (mismoSitio) { e.preventDefault(); history.back(); }
+      });
+    }
     document.addEventListener('click', (e) => {
       const correo = e.target.closest('a[href^="mailto:"]');
       if (correo) copiarCorreo(correo.getAttribute('href').slice(7).split('?')[0]);
@@ -670,6 +686,7 @@
       lineas.push(`• ${t('cot.wa_donde')}: ${t('cot.' + v('donde'))}`);
       lineas.push(`• ${t('cot.wa_cuando')}: ${t('cot.' + v('cuando'))}`);
       if (v('mensaje')) lineas.push(`• ${t('cot.wa_mensaje')}: ${v('mensaje')}`);
+      if (lineaConocio(v('conocio'))) lineas.push(`• ${lineaConocio(v('conocio'))}`);
       lineas.push('', `${t('cot.wa_contacto')}: ${v('nombre')} · ${v('telefono')}${v('correo') ? ' · ' + v('correo') : ''}`);
       const mensaje = lineas.join('\n');
       copiaAlCorreo({ tipo: 'cotizacion', destino: 'miami', nombre: v('nombre'), telefono: v('telefono'), correo: v('correo'), mensaje });
@@ -695,7 +712,7 @@
   /* ── La Fartedá: tienda con precios por país y pedido por WhatsApp ── */
   function iniciarMerch() {
     const productos = [];
-    ['camiseta', 'tote'].forEach((tipo) => D.disenos.forEach((d) => productos.push({ id: `${tipo}-${d.id}`, tipo, diseno: d, img: `${tipo}-${d.id}.webp` })));
+    ['camiseta', 'tote'].forEach((tipo) => D.disenos.forEach((d) => { if (d[tipo]) productos.push({ id: `${tipo}-${d.id}`, tipo, diseno: d, img: `${tipo}-${d.id}.webp` }); }));
     let pais = leer('nfg-pais') === 'col' ? 'col' : 'usa';
     let filtro = 'todo';
     let carrito = [];
@@ -718,6 +735,11 @@
       const tabla = p.tipo === 'tote' ? D.precios.tote : D.precios[p.diseno.precioCamiseta || 'camiseta'];
       return pais === 'usa' ? tabla.usd : tabla.cop;
     }
+    // La foto de un color (Juan, 17 nov 2026: «cuando cambie el color, que cambie la imagen»): «imgs» dice cuál usa cada color; si no, la del diseño.
+    const imagenDe = (p, color) => ((opcionesDe(p).imgs || {})[color]) || p.img;
+    // Un diseño sin precio en dólares (la papaya: Juan solo dio COP 99.000) sale «por confirmar» en EE.UU.
+    const sinPrecio = (p) => precio(p) == null;
+    const precioTxt = (p, cantidad = 1) => (sinPrecio(p) ? t('lf.por_confirmar') : dinero(precio(p) * cantidad));
     function dinero(n) {
       return pais === 'usa'
         ? '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' USD'
@@ -740,11 +762,11 @@
       $('#lista-productos').innerHTML = productos.filter((p) => filtro === 'todo' || p.tipo === filtro).map((p) => `
         <button class="producto" type="button" data-producto="${p.id}">
           ${p.diseno.masVendido && p.tipo === 'camiseta' ? `<span class="etiqueta-producto">${t('lf.mas_vendido')}</span>` : ''}
-          <img src="${base}img/productos/${p.img}" alt="${esc(p.diseno.nombre)} — ${esc(nombreTipo(p))}" loading="lazy" />
+          <img src="${base}img/productos/${imagenDe(p, opcionesDe(p).colores[0])}" alt="${esc(p.diseno.nombre)} — ${esc(nombreTipo(p))}" loading="lazy" />
           <span class="producto-info">
             <span class="producto-tipo">${esc(nombreTipo(p))}</span>
             <span class="producto-nombre">${esc(p.diseno.nombre)}</span>
-            <span class="producto-precio">${dinero(precio(p))}</span>
+            <span class="producto-precio">${precioTxt(p)}</span>
             ${puntos(p)}
           </span>
         </button>`).join('');
@@ -767,7 +789,7 @@
     function abrirFicha(p) {
       actual = p;
       const op = opcionesDe(p);
-      eleccion = { color: op.colores[0], talla: null, estilo: op.estilos ? 0 : null, cantidad: 1, error: false };
+      eleccion = { foto: 0, color: op.colores[0], talla: null, estilo: op.estilos ? 0 : null, cantidad: 1, error: false };
       pintarFicha();
       ficha.showModal();
     }
@@ -776,12 +798,13 @@
       const op = opcionesDe(p);
       const grupo = (titulo, extra, html) => `<div class="grupo-opciones"><h4>${titulo}${extra ? `<span>${extra}</span>` : ''}</h4><div class="opciones">${html}</div></div>`;
       ficha.innerHTML = botonCerrar() + '<div class="ficha">'
-        + `<div class="ficha-img"><img src="${base}img/productos/${p.img}" alt="${esc(p.diseno.nombre)}" /></div>`
+        + `<div class="ficha-img"><img src="${base}${eleccion.foto > 0 && op.galeria ? 'img/' + op.galeria[eleccion.foto - 1] : 'img/productos/' + imagenDe(p, eleccion.color)}" alt="${esc(p.diseno.nombre)}" />`
+        + (op.galeria ? `<div class="ficha-tira" role="group">${[`productos/${imagenDe(p, eleccion.color)}`, ...op.galeria].map((g, i) => `<button class="mini" type="button" data-foto="${i}" aria-label="${esc(t('wc.foto_n', { i: i + 1, n: op.galeria.length + 1 }))}" aria-pressed="${i === eleccion.foto}"><img src="${base}img/${g}" alt="" /></button>`).join('')}</div>` : '') + '</div>'
         + '<div class="modal-cuerpo">'
         +   `<p class="producto-tipo">${esc(nombreTipo(p))}${p.diseno.masVendido && p.tipo === 'camiseta' ? ' · ' + t('lf.mas_vendido') : ''}</p>`
         +   `<h3>${esc(p.diseno.nombre)}</h3>`
         +   `<p>${esc(L(p.diseno.texto))}${p.tipo === 'tote' ? ' ' + esc(t('lf.tote_texto')) : ''}${op.detalle ? ' ' + esc(L(op.detalle)) : ''}</p>`
-        +   `<p class="ficha-precio">${dinero(precio(p))}<small>${t(pais === 'usa' ? 'lf.envio_usa' : 'lf.envio_col', { monto: dinero(D.envio.copMinimo) })}</small></p>`
+        +   `<p class="ficha-precio">${precioTxt(p)}<small>${t(pais === 'usa' ? 'lf.envio_usa' : 'lf.envio_col', { monto: dinero(D.envio.copMinimo) })}</small></p>`
         +   grupo(t('lf.color'), esc(nombreColor(p, eleccion.color)), op.colores.map((c) => `<button class="opcion-btn" type="button" data-color="${c}" aria-pressed="${eleccion.color === c}"><span class="punto" style="background:${D.colores[c].hex}"></span>${esc(L(D.colores[c].nombre))}</button>`).join(''))
         +   (op.estilos ? grupo(t('lf.estilo'), '', op.estilos.map((s, i) => `<button class="opcion-btn" type="button" data-estilo="${i}" aria-pressed="${eleccion.estilo === i}">${esc(L(s))}</button>`).join('')) : '')
         +   (p.tipo === 'camiseta' ? grupo(t('lf.talla'), t('lf.tallas_nota'), D.tallas.map((s) => `<button class="opcion-btn" type="button" data-talla="${s}" aria-pressed="${eleccion.talla === s}">${s}</button>`).join(''))
@@ -795,7 +818,8 @@
     ficha.addEventListener('click', (e) => {
       const b = e.target.closest('button');
       if (!b || b.hasAttribute('data-cerrar')) return;
-      if (b.dataset.color) eleccion.color = b.dataset.color;
+      if (b.dataset.color) { eleccion.color = b.dataset.color; eleccion.foto = 0; }
+      else if (b.dataset.foto != null) eleccion.foto = Number(b.dataset.foto);
       else if (b.dataset.estilo) eleccion.estilo = Number(b.dataset.estilo);
       else if (b.dataset.talla) { eleccion.talla = b.dataset.talla; eleccion.error = false; }
       else if (b.dataset.cant) eleccion.cantidad = Math.min(20, Math.max(1, eleccion.cantidad + Number(b.dataset.cant)));
@@ -827,14 +851,16 @@
       if (l.talla) partes.push(`${t('lf.talla_corta')} ${l.talla}`);
       return partes.join(', ');
     }
-    function total() { return carrito.reduce((s, l) => s + precio(productos.find((p) => p.id === l.producto)) * l.cantidad, 0); }
+    function total() { return carrito.reduce((s, l) => s + (precio(productos.find((p) => p.id === l.producto)) || 0) * l.cantidad, 0); }
+    // Si hay un diseño sin precio, el total lo dice («+ papaya por confirmar»).
+    const aparte = () => (pais === 'usa' && carrito.some((l) => sinPrecio(productos.find((p) => p.id === l.producto))) ? ` ${t('lf.mas_por_confirmar')}` : '');
     // Lo que dice la fila «Envío» y el total: en pesos, el envío mínimo se suma y el total es «desde».
     function textoEnvio() {
       if (pais === 'col') return t('car.envio_desde', { monto: dinero(D.envio.copMinimo) });
       const e = entrega();
       return t(e === 'recoger' ? 'car.envio_recoger' : e === 'envio' ? 'car.envio_chat' : 'car.envio_zip');
     }
-    const textoTotal = () => (pais === 'col' ? t('car.total_desde', { total: dinero(total() + D.envio.copMinimo) }) : dinero(total()));
+    const textoTotal = () => (pais === 'col' ? t('car.total_desde', { total: dinero(total() + D.envio.copMinimo) }) : dinero(total()) + aparte());
     // Lo que va bajo el ZIP: qué hacer, o las dos opciones si está en el área de Miami.
     function htmlEntrega() {
       if (!zipListo()) return `<p class="entrega-nota">${t('car.zip_falta')}</p>`;
@@ -856,22 +882,22 @@
       const contador = $('#contador-carrito');
       contador.hidden = unidades === 0;
       contador.textContent = unidades;
-      const datos = { nombre: cajon.querySelector('[name="nombre"]')?.value || '', ciudad: cajon.querySelector('[name="ciudad"]')?.value || '', notas: cajon.querySelector('[name="notas"]')?.value || '' };
+      const datos = { nombre: cajon.querySelector('[name="nombre"]')?.value || '', ciudad: cajon.querySelector('[name="ciudad"]')?.value || '', notas: cajon.querySelector('[name="notas"]')?.value || '', conocio: cajon.querySelector('[name="conocio"]')?.value || '' };
       cajon.innerHTML = `<div class="cajon-cabeza"><h3>${t('car.titulo')}</h3>${botonCerrar()}</div>`
         + '<div class="cajon-lista">'
         + (carrito.length === 0
           ? `<div class="cajon-vacio">${icono('i-bolsa-compra')}<p>${t('car.vacio')}</p><button class="boton boton--negro boton--chico" type="button" data-cerrar>${t('car.seguir')}</button></div>`
           : carrito.map((l, i) => {
             const p = productos.find((x) => x.id === l.producto);
-            return `<div class="linea-carrito"><img src="${base}img/productos/${p.img}" alt="" />`
+            return `<div class="linea-carrito"><img src="${base}img/productos/${imagenDe(p, l.color)}" alt="" />`
               + `<div><strong>${esc(p.diseno.nombre)}</strong><small>${esc(detalleLinea(l, p))}</small>`
               + `<div class="cantidad cantidad--chica"><button type="button" data-linea="${i}" data-cant="-1" aria-label="${esc(t('car.menos'))}">${icono('i-menos')}</button><output>${l.cantidad}</output><button type="button" data-linea="${i}" data-cant="1" aria-label="${esc(t('car.mas'))}">${icono('i-mas')}</button></div></div>`
-              + `<div class="linea-precio">${dinero(precio(p) * l.cantidad)}<button class="quitar" type="button" data-quitar="${i}" aria-label="${esc(t('car.quitar'))}">${icono('i-basura')}</button></div></div>`;
+              + `<div class="linea-precio">${precioTxt(p, l.cantidad)}<button class="quitar" type="button" data-quitar="${i}" aria-label="${esc(t('car.quitar'))}">${icono('i-basura')}</button></div></div>`;
           }).join(''))
         + '</div>'
         + (carrito.length === 0 ? '' : '<form class="cajon-pie" id="form-pedido" novalidate>'
           + '<div class="totales">'
-          +   `<div><span>${t('car.subtotal')}</span><span>${dinero(total())}</span></div>`
+          +   `<div><span>${t('car.subtotal')}</span><span>${dinero(total())}${aparte()}</span></div>`
           +   `<div><span>${t('car.envio')}</span><span id="lf-envio-valor">${textoEnvio()}</span></div>`
           +   `<div class="total"><span>${t('car.total')}</span><span>${textoTotal()}</span></div>`
           + '</div>'
@@ -886,6 +912,7 @@
           +   `<label class="campo"><span class="etiqueta-campo">${t(pais === 'usa' ? 'car.ciudad_usa' : 'car.ciudad')}</span><input name="ciudad" autocomplete="address-level2" value="${esc(datos.ciudad)}" /></label>`
           + '</div>'
           + `<label class="campo"><span class="etiqueta-campo">${t('car.notas')} <span class="opcional">(${t('cot.opcional')})</span></span><textarea name="notas" rows="2" placeholder="${esc(t('car.notas_ph'))}">${esc(datos.notas)}</textarea></label>`
+          + campoConocio(datos.conocio)
           + `<p class="error-campo" data-error="pedido" hidden>${t('car.err')}</p>`
           + `<p class="ruta">${icono('i-whatsapp')}${esc(t('car.ruta', { destino: t(pais === 'col' ? 'destino.lf_cartagena' : 'destino.lf_miami') }))}</p>`
           + `<button class="boton boton--acento boton--ancho" type="submit">${icono('i-whatsapp')} ${t('car.enviar')}</button>`
@@ -931,15 +958,16 @@
       const lineas = [t('lf.wa_hola'), t('lf.wa_pedido', { numero, pais: t(pais === 'usa' ? 'lf.usa_nombre' : 'lf.col_nombre') }), ''];
       carrito.forEach((l) => {
         const p = productos.find((x) => x.id === l.producto);
-        lineas.push(`• ${l.cantidad} × ${p.diseno.nombre} — ${detalleLinea(l, p)} — ${dinero(precio(p) * l.cantidad)}`);
+        lineas.push(`• ${l.cantidad} × ${p.diseno.nombre} — ${detalleLinea(l, p)} — ${precioTxt(p, l.cantidad)}`);
       });
       lineas.push('');
       if (pais === 'col') lineas.push(t('lf.wa_subtotal', { total: dinero(total()) }), t('lf.wa_envio_col', { monto: dinero(D.envio.copMinimo) }), t('lf.wa_total_desde', { total: dinero(total() + D.envio.copMinimo) }));
-      else lineas.push(t('lf.wa_total', { total: dinero(total()) }), t(entrega() === 'recoger' ? 'lf.wa_envio_miami' : 'lf.wa_envio_otro', { zip }));
+      else lineas.push(t('lf.wa_total', { total: dinero(total()) + aparte() }), t(entrega() === 'recoger' ? 'lf.wa_envio_miami' : 'lf.wa_envio_otro', { zip }));
       lineas.push('');
       lineas.push(`${t('lf.wa_nombre')}: ${nombre} · ${t('lf.wa_ciudad')}: ${ciudad}`);
       const notas = f.elements.notas.value.trim();
       if (notas) lineas.push(`${t('lf.wa_notas')}: ${notas}`);
+      if (lineaConocio(f.elements.conocio.value)) lineas.push(lineaConocio(f.elements.conocio.value));
       const mensaje = lineas.join('\n');
       copiaAlCorreo({ tipo: 'lafarteda', destino: pais === 'col' ? 'cartagena' : 'miami', ref: numero, moneda: pais === 'col' ? 'COP' : 'USD', nombre, ciudad, mensaje });
       abrirWhatsApp(pais === 'col' ? 'lf_cartagena' : 'lf_miami', mensaje);
@@ -976,22 +1004,29 @@
     // Precios (Juan, 10 nov 2026): en dólares, con el envío incluido, por pieza y según la cantidad de la línea (W.escalas y W.tarifas). La tarifa
     // sale del estilo elegido o, si no tiene, de la pieza; la calcomanía no tiene escalas: solo un «desde» (precioDesde).
     const usd = (n) => '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    // La moneda (Juan, 17 nov 2026): en Colombia, «los mismos precios pero en pesos», siempre como «desde»; el precio final se negocia por
+    // WhatsApp. Se comparte con La Fartedá (nfg-pais). Cada precio por pieza se pasa a pesos (tipo de cambio W.cop.porUsd, redondeado al millar;
+    // la camiseta, además, con su copFactor) y después se multiplica por la cantidad.
+    let moneda = leer('nfg-pais') === 'col' ? 'cop' : 'usd';
+    const enCop = () => moneda === 'cop';
+    const aMoneda = (n, p) => (enCop() ? Math.round((n * ((p && p.copFactor) || 1) * W.cop.porUsd) / W.cop.redondeo) * W.cop.redondeo : n);
+    const dinero = (n) => (enCop() ? '$' + n.toLocaleString('es-CO') + ' COP' : usd(n));
     const tarifaDe = (p, estilo) => W.tarifas[(estiloDe(p, estilo) || {}).precio || p.precio] || null;
     const escalonDe = (cantidad) => Math.max(0, W.escalas.findIndex((r) => cantidad >= r.desde && (r.hasta == null || cantidad <= r.hasta)));
-    // { unidad, desde }: el precio por pieza para esa cantidad y si es un «desde». null si la pieza no tiene precio.
+    // { unidad, desde }: el precio por pieza para esa cantidad (en la moneda de la página) y si es un «desde». null si la pieza no tiene precio.
     function precioDe(p, estilo, cantidad) {
       const tf = tarifaDe(p, estilo);
-      if (tf) return { unidad: tf[escalonDe(cantidad)], desde: false };
-      return p.precioDesde != null ? { unidad: p.precioDesde, desde: true } : null;
+      if (tf) return { unidad: aMoneda(tf[escalonDe(cantidad)], p), desde: enCop() };
+      return p.precioDesde != null ? { unidad: aMoneda(p.precioDesde, p), desde: true } : null;
     }
-    const montoTxt = (n, desde) => (desde ? t('wc.desde_precio', { precio: usd(n) }) : usd(n));
-    // La tarjeta: el precio de 1 y el de 12 o más («desde» si cambia según el estilo).
+    const montoTxt = (n, desde) => (desde ? t('wc.desde_precio', { precio: dinero(n) }) : dinero(n));
+    // La tarjeta: el precio de 1 y el de 12 o más («desde» si cambia según el estilo o si es en pesos).
     function precioTarjeta(p) {
       const tarifas = (p.variantes && p.variantes.some((v) => v.precio) ? p.variantes.map((v) => W.tarifas[v.precio || p.precio]) : [W.tarifas[p.precio]]).filter(Boolean);
-      if (!tarifas.length) return p.precioDesde != null ? `<b>${esc(t('wc.desde_precio', { precio: usd(p.precioDesde) }))}</b>` : `${esc(t('wc.desde'))} <b>$ —</b>`;
-      const uno = Math.min(...tarifas.map((tf) => tf[0])), mucho = Math.min(...tarifas.map((tf) => tf[tf.length - 1]));
-      const varios = new Set(tarifas.map((tf) => tf[0])).size > 1;
-      return `<b>${esc(varios ? t('wc.desde_precio', { precio: usd(uno) }) : usd(uno))}</b> <small>${esc(t('wc.precio_cantidad', { n: W.escalas[W.escalas.length - 1].desde, precio: usd(mucho) }))}</small>`;
+      if (!tarifas.length) return p.precioDesde != null ? `<b>${esc(t('wc.desde_precio', { precio: dinero(aMoneda(p.precioDesde, p)) }))}</b>` : `${esc(t('wc.desde'))} <b>$ —</b>`;
+      const uno = Math.min(...tarifas.map((tf) => aMoneda(tf[0], p))), mucho = Math.min(...tarifas.map((tf) => aMoneda(tf[tf.length - 1], p)));
+      const varios = enCop() || new Set(tarifas.map((tf) => tf[0])).size > 1;
+      return `<b>${esc(varios ? t('wc.desde_precio', { precio: dinero(uno) }) : dinero(uno))}</b> <small>${esc(t('wc.precio_cantidad', { n: W.escalas[W.escalas.length - 1].desde, precio: dinero(mucho) }))}</small>`;
     }
     // El total del pedido: la suma de las líneas («desde» si alguna lo es) y, si la persona quiere, la propina.
     let propina = 0; // por ciento: 0, 10, 15 o 20 (Juan, 10 nov 2026: «¿podemos colocar algo que la gente deje tip?»)
@@ -1000,6 +1035,14 @@
       pedido.forEach((l) => { const pr = precioDe(piezaDe(l.pieza), l.estilo, l.cantidad); if (pr) { subtotal += pr.unidad * l.cantidad; desde = desde || pr.desde; } });
       const extra = Math.round(subtotal * propina) / 100;
       return { subtotal, extra, total: subtotal + extra, desde };
+    }
+    // Las fotos de la ficha según lo elegido (Juan, 17 nov 2026): un estilo muestra sus fotos y un color, las de un color parecido («fotoColor»: un
+    // color sin foto propia usa la de otro). Las fotos sin etiqueta salen siempre; si nada coincide, salen todas.
+    function fotosDe(p, estilo, color) {
+      if (!p.fotos) return [];
+      const col = (p.fotoColor && p.fotoColor[color]) || color;
+      const v = p.fotos.filter((f) => (!f.estilo || f.estilo === estilo) && (!f.color || f.color === col));
+      return v.length ? v : p.fotos;
     }
     const catDe = (id) => W.categorias.find((x) => x.id === id);
     const fuenteDe = (id) => W.fuentes.find((x) => x.id === id) || W.fuentes[0];
@@ -1016,7 +1059,6 @@
     const diasHasta = (valor) => (valor ? (new Date(valor + 'T12:00:00') - new Date()) / 864e5 : Infinity);
 
     let categoria = 'todo';
-    let filtroTamano = 'todos';
     let elec = null; // lo que se está eligiendo en la ficha abierta
     let pedido = []; // las líneas de «Tu pedido»
     let scrollInicio = 0;
@@ -1036,8 +1078,8 @@
     const guardarPedido = () => guardar(CLAVE, JSON.stringify(pedido.map(({ archivo, ...resto }) => resto)));
 
     /* ── El catálogo ── */
-    const fotoHtml = (p, i = 0) => (p.foto
-      ? `<img src="${base}img/wuanda/${p.fotos ? p.fotos[i].img : p.foto}" alt="${esc(L(p.pie || p.titulo))}" style="object-position:${p.encuadre || '50% 50%'}" />`
+    const fotoHtml = (p, i = 0, lista = p.fotos) => (p.foto
+      ? `<img src="${base}img/wuanda/${lista && lista.length ? lista[i].img : p.foto}" alt="${esc(L(p.pie || p.titulo))}" style="object-position:${p.encuadre || '50% 50%'}" />`
       : `<div class="pz-tile">${icono(p.icono)}<span class="pz-pendiente">${esc(t('wc.foto_pronto'))}</span></div>`);
     const insignia = (p) => (p.insignia ? `<span class="pz-insignia">${esc(t(p.insignia === 'nuevo' ? 'wc.nuevo' : 'wc.mas_vendido'))}</span>` : '');
     const tarjeta = (p) => `
@@ -1048,19 +1090,29 @@
     function pintarCatalogo() {
       $('#wc-tabs').innerHTML = [{ id: 'todo', icono: 'i-todo', titulo: t('wc.todo') }, ...W.categorias.map((c) => ({ id: c.id, icono: c.icono, titulo: L(c.titulo) }))]
         .map((c) => `<button class="cat-tab" type="button" data-cat="${c.id}" aria-pressed="${categoria === c.id}">${icono(c.icono)}${esc(c.titulo)}</button>`).join('');
-      // Los termos tienen una subcategoría (Juan, 23 oct 2026): "también por onzas", el tamaño. Los estilos (lata, botella, huevo…) ya no son un
-      // filtro: desde el 9 nov 2026 son las opciones dentro de cada termo.
-      const sub = $('#wc-sub');
-      sub.hidden = categoria !== 'termos';
-      if (categoria === 'termos') {
-        const chips = (lista, actual, atributo) => lista.map(([id, txt]) => `<button class="chip" type="button" data-${atributo}="${esc(id)}" aria-pressed="${actual === id}">${esc(txt)}</button>`).join('');
-        sub.innerHTML = `<div class="sub-grupo"><span class="rotulo">${esc(t('wc.tamano'))}</span><div class="chips chips--claro">${chips([['todos', t('wc.tamano_todos')], ...W.tamanosFiltro.map((x) => [x, x])], filtroTamano, 'f-tamano')}${nd('wc.tamano_otros')}</div></div>`;
-      }
-      const lista = W.catalogo.filter((p) => (categoria === 'todo' || p.cat === categoria)
-        && (categoria !== 'termos' || filtroTamano === 'todos' || (p.tamanos || []).includes(filtroTamano)));
+      pintarMoneda();
+      const lista = W.catalogo.filter((p) => categoria === 'todo' || p.cat === categoria);
       $('#wc-grilla').innerHTML = lista.length ? lista.map(tarjeta).join('') : `<p class="cat-vacio">${esc(t('wc.vacio_filtro'))}</p>`;
     }
-    function elegirCategoria(id) { categoria = id; filtroTamano = 'todos'; pintarCatalogo(); }
+    function elegirCategoria(id) { categoria = id; pintarCatalogo(); }
+    // El selector de país del catálogo (USD o COP). También lo cambia la persona al elegir «¿dónde estás?» en su pedido.
+    function pintarMoneda() {
+      $$('[data-wc-pais]').forEach((b) => b.setAttribute('aria-pressed', String((b.dataset.wcPais === 'col') === enCop())));
+      $('#wc-moneda-nota').textContent = t(enCop() ? 'wc.nota_pais_cop' : 'wc.nota_pais_usd');
+    }
+    function cambiarMoneda(nueva) {
+      if ((nueva === 'cop') === enCop()) return;
+      moneda = nueva;
+      guardar('nfg-pais', enCop() ? 'col' : 'usa');
+      pintarCatalogo();
+      // «Tu pedido» se actualiza en su sitio (el formulario no se vuelve a dibujar: se pierde el foco y lo que se esté escribiendo)
+      const f = cajon.querySelector('form');
+      if (f) {
+        $$('.linea-carrito', cajon).forEach((el, i) => { const lp = $('.linea-precio', el), quitar = $('.quitar', lp); lp.innerHTML = lineaPrecio(pedido[i]); lp.appendChild(quitar); });
+        pintarTotales(f); pintarPedidoBarra();
+      } else pintarPedido();
+      if (!vistaPieza.hidden && elec) sincronizarPieza();
+    }
 
     /* ── Tendedero de fotos (recursos/tendedero.js): las piezas cuelgan de una cuerda que se arrastra, y las de portada, de la cortina del
        héroe. «¿Quieres uno así?» lleva a la categoría de esa pieza en el catálogo. ── */
@@ -1116,6 +1168,7 @@
         + `<strong>${esc(t('wc.subir'))}</strong><small>${esc(t('wc.subir_nota', { mb: W.topeMb }))}</small></label>`;
     }
 
+    const htmlMinis = (lista) => lista.map((f, i) => `<button class="mini" type="button" data-foto="${i}" aria-label="${esc(t('wc.foto_n', { i: i + 1, n: lista.length }))}" aria-pressed="${i === elec.foto}"><img src="${base}img/wuanda/${f.mini}" alt="" loading="lazy" /></button>`).join('');
     function pintarPieza() {
       const p = piezaDe(elec.id);
       const c = catDe(p.cat);
@@ -1129,27 +1182,32 @@
       };
       const marco = esCalco
         ? `<div class="pliego" data-g="pliego">${htmlHoja(false)}</div>${p.foto ? `<div data-g="foto" hidden>${fotoHtml(p)}</div>` : ''}`
-        : `${fotoHtml(p, elec.foto)}${insignia(p)}`;
+        : `${fotoHtml(p, elec.foto, fotosDe(p, elec.estilo, elec.color))}${insignia(p)}`;
       // La galería de fotos de la pieza (Drive de Juan, 9 nov 2026): una tira de miniaturas bajo la foto grande.
-      const minisFotos = !esCalco && p.fotos && p.fotos.length > 1
-        ? `<div class="mini-galeria mini-galeria--fotos" role="group" aria-label="${esc(t('wc.fotos'))}">${p.fotos.map((f, i) => `<button class="mini" type="button" data-foto="${i}" aria-label="${esc(t('wc.foto_n', { i: i + 1, n: p.fotos.length }))}" aria-pressed="${i === elec.foto}"><img src="${base}img/wuanda/${f.mini}" alt="" loading="lazy" /></button>`).join('')}</div>` : '';
+      // Las miniaturas son las de las fotos que salen con el estilo y el color elegidos (se repintan en sincronizarPieza al cambiar la lista).
+      const lista = !esCalco && p.fotos ? fotosDe(p, elec.estilo, elec.color) : [];
+      elec.listaKey = lista.map((f) => f.img).join();
+      const minisFotos = !esCalco && p.fotos
+        ? `<div class="mini-galeria mini-galeria--fotos" id="p-minis-fotos" role="group" aria-label="${esc(t('wc.fotos'))}"${lista.length > 1 ? '' : ' hidden'}>${htmlMinis(lista)}</div>` : '';
       const minis = esCalco && p.foto
         ? `<div class="mini-galeria"><button class="mini" type="button" data-galeria="pliego" aria-label="${esc(t('wc.area_imp'))}"><span class="pliego">${htmlHoja(true)}</span></button>`
           + `<button class="mini" type="button" data-galeria="foto" aria-label="${esc(L(p.pie || p.titulo))}">${fotoHtml(p)}</button></div>` : '';
       const ig = p.instagram ? `<div class="galeria-ig"><span>${esc(L(p.pie || p.titulo))}</span><a href="${esc(p.instagram)}" target="_blank" rel="noopener">${icono('i-instagram')}${esc(t('wc.ig_ver'))}</a></div>` : '';
 
       const gEstilo = p.variantes
-        ? `<div class="grupo"><div class="grupo-cab">${esc(t('wc.estilo'))}</div><div class="chips chips--claro">${p.variantes.map((x) => `<button class="chip" type="button" data-estilo="${x.id}" aria-pressed="false">${esc(L(x.titulo))}</button>`).join('')}</div></div>` : '';
+        ? `<div class="grupo"><div class="grupo-cab">${esc(t('wc.estilo'))}</div><div class="chips chips--claro">${p.variantes.map((x) => `<button class="chip" type="button" data-estilo="${x.id}" aria-pressed="false">${esc(L(x.titulo))}</button>`).join('')}</div><p class="grupo-nota" id="p-estilo-desc"></p></div>` : '';
       const gTamano = p.tamanos
         ? `<div class="grupo"><div class="grupo-cab">${esc(t('wc.tamano'))}<span>${nd('wc.ejemplo')}</span></div><div class="chips chips--claro">${p.tamanos.map((x) => `<button class="chip" type="button" data-tamano="${esc(x)}" aria-pressed="false">${esc(x)}</button>`).join('')}</div></div>` : '';
-      const gColor = p.colores
+      const gColor = p.colores && p.colores.length === 1
+        ? `<div class="grupo"><div class="grupo-cab">${esc(t(esCalco ? 'wc.color_vinil' : 'wc.color'))}<span>${esc(colorDe(p.colores[0]))}</span></div><p class="grupo-nota">${esc(t('wc.color_unico', { color: colorDe(p.colores[0]).toLowerCase() }))}</p></div>`
+        : p.colores
         ? `<div class="grupo"><div class="grupo-cab">${esc(t(esCalco ? 'wc.color_vinil' : 'wc.color'))}<span><span id="p-color-nombre"></span> ${p.coloresReales ? '' : nd('wc.ejemplo')}</span></div>`
           + `<div class="muestras">${p.colores.map((x) => `<button class="muestra" type="button" data-color="${x}" style="background:${W.colores[x].hex}" aria-label="${esc(colorDe(x))}" title="${esc(colorDe(x))}" aria-pressed="false"></button>`).join('')}</div></div>` : '';
       const gCantidad = `<div class="grupo"><div class="grupo-cab">${esc(t(esCalco ? 'wc.cuantos_pliegos' : 'wc.cuantos'))}</div>`
         + `<div class="cantidad-fila"><div class="cantidad"><button type="button" data-cant="-1" aria-label="${esc(t('car.menos'))}">${icono('i-menos')}</button>`
         + `<input id="p-cant" type="number" min="1" max="500" inputmode="numeric" aria-label="${esc(t(esCalco ? 'wc.cuantos_pliegos' : 'wc.cuantos'))}" />`
         + `<button type="button" data-cant="1" aria-label="${esc(t('car.mas'))}">${icono('i-mas')}</button></div><p>${esc(t(esCalco ? 'wc.escala_nota_pliego' : 'wc.escala_nota'))}</p></div>`
-        + `<div class="escala"><div class="escala-cab"><span>${esc(t(esCalco ? 'wc.escala_pliego' : 'wc.escala_pieza'))}</span><span>${esc(t('wc.usd_envio'))}</span></div>`
+        + `<div class="escala"><div class="escala-cab"><span>${esc(t(esCalco ? 'wc.escala_pliego' : 'wc.escala_pieza'))}</span><span>${esc(t(enCop() ? 'wc.cop_ref' : 'wc.usd_envio'))}</span></div>`
         + (tarifaDe(p, elec.estilo) ? W.escalas : [{ desde: 1, hasta: null }]).map((r, i) => `<div class="escala-fila" data-fila="${i}"><span>${esc(r.hasta == null ? t('wc.rango_mas', { a: r.desde }) : t('wc.rango', { a: r.desde, b: r.hasta }))}<em hidden>${esc(t('wc.tu_cantidad'))}</em></span><span class="escala-precio"></span></div>`).join('')
         + '</div></div>';
 
@@ -1172,7 +1230,7 @@
         +   '<div class="pieza-info">'
         +     `<div class="pieza-titulo"><span class="pz-cat">${esc(L(c.titulo))}</span><h1 tabindex="-1">${esc(L(p.titulo))}</h1>`
         +       `<div class="pieza-precio"><b id="p-precio"></b> <span id="p-precio-unidad">${esc(t(esCalco ? 'wc.por_pliego' : 'wc.por_pieza'))}</span></div>`
-        +       `<p class="pieza-envio">${icono('i-envio')}<span>${esc(t('wc.envio_incluido'))}</span></p><p class="pieza-texto">${esc(L(p.texto || c.texto))}</p></div>`
+        +       `<p class="pieza-envio">${icono('i-envio')}<span id="p-envio-nota">${esc(t(enCop() ? 'wc.envio_cop' : 'wc.envio_incluido'))}</span></p><p class="pieza-texto">${esc(L(p.texto || c.texto))}</p></div>`
         +     gEstilo + gTamano + gColor + (esCalco ? cNombre + cFuente : '') + gCantidad + (esCalco ? cArchivo : personalizar)
         +     `<div class="accion"><p class="error-campo" id="p-err-calco" hidden>${esc(t('wc.err_calco'))}</p>`
         +       `<button class="boton boton--acento boton--ancho" type="button" data-agregar data-escritorio>${icono('i-bolsa-compra')}${esc(t('wc.agregar'))}</button>`
@@ -1189,9 +1247,17 @@
       const v = vistaPieza;
       $$('[data-tamano]', v).forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.tamano === elec.tamano)));
       $$('[data-estilo]', v).forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.estilo === elec.estilo)));
-      if (p.fotos) {
+      const descEstilo = $('#p-estilo-desc', v);
+      if (descEstilo) { const x = estiloDe(p, elec.estilo); descEstilo.textContent = x && x.desc ? L(x.desc) : ''; }
+      if (p.fotos && p.unidad !== 'pliego') {
+        const lista = fotosDe(p, elec.estilo, elec.color);
+        elec.foto = Math.min(elec.foto, lista.length - 1);
         const grande = $('.galeria-marco img', v);
-        if (grande) { grande.src = `${base}img/wuanda/${p.fotos[elec.foto].img}`; grande.alt = p.fotos.length > 1 ? `${L(p.pie || p.titulo)} — ${t('wc.foto_n', { i: elec.foto + 1, n: p.fotos.length })}` : L(p.pie || p.titulo); }
+        if (grande) { grande.src = `${base}img/wuanda/${lista[elec.foto].img}`; grande.alt = lista.length > 1 ? `${L(p.pie || p.titulo)} — ${t('wc.foto_n', { i: elec.foto + 1, n: lista.length })}` : L(p.pie || p.titulo); }
+        const clave = lista.map((f) => f.img).join();
+        const tira = $('#p-minis-fotos', v);
+        if (tira && clave !== elec.listaKey) { elec.listaKey = clave; tira.innerHTML = htmlMinis(lista); }
+        if (tira) tira.hidden = lista.length < 2;
         $$('[data-foto]', v).forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.foto) === elec.foto)));
       }
       $$('[data-color]', v).forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.color === elec.color)));
@@ -1203,7 +1269,9 @@
       const tf = tarifaDe(p, elec.estilo), pr = precioDe(p, elec.estilo, elec.cantidad);
       const activa = tf ? escalonDe(elec.cantidad) : 0;
       $$('.escala-fila', v).forEach((f, i) => { f.classList.toggle('activa', i === activa); $('em', f).hidden = i !== activa; });
-      $$('.escala-precio', v).forEach((s, i) => { s.textContent = tf ? usd(tf[i]) : montoTxt(p.precioDesde, true); });
+      $$('.escala-precio', v).forEach((s, i) => { s.textContent = tf ? montoTxt(aMoneda(tf[i], p), enCop()) : montoTxt(aMoneda(p.precioDesde, p), true); });
+      $('.escala-cab span:last-child', v).textContent = t(enCop() ? 'wc.cop_ref' : 'wc.usd_envio');
+      $('#p-envio-nota', v).textContent = t(enCop() ? 'wc.envio_cop' : 'wc.envio_incluido');
       if (pr) {
         $('#p-precio', v).textContent = montoTxt(pr.unidad, pr.desde);
         $('#p-total', v).textContent = t('wc.total_x', { total: montoTxt(pr.unidad * elec.cantidad, pr.desde) });
@@ -1246,9 +1314,9 @@
       const b = e.target.closest('button');
       if (!b) return;
       if (b.dataset.tamano != null) elec.tamano = b.dataset.tamano;
-      else if (b.dataset.estilo) elec.estilo = b.dataset.estilo;
+      else if (b.dataset.estilo) { elec.estilo = b.dataset.estilo; elec.foto = 0; }
       else if (b.dataset.foto != null) elec.foto = Number(b.dataset.foto);
-      else if (b.dataset.color) elec.color = b.dataset.color;
+      else if (b.dataset.color) { elec.color = b.dataset.color; elec.foto = 0; }
       else if (b.dataset.cant) { elec.cantidad = Math.min(500, Math.max(1, elec.cantidad + Number(b.dataset.cant))); $('#p-cant', vistaPieza).value = elec.cantidad; }
       else if (b.dataset.fuente) elec.fuente = b.dataset.fuente;
       else if (b.dataset.galeria) elec.galeria = b.dataset.galeria;
@@ -1304,6 +1372,10 @@
       barra.hidden = enPieza || pedido.length === 0;
       document.body.classList.toggle('con-barra', enPieza || pedido.length > 0);
     }
+    const lineaPrecio = (l) => {
+      const pr = precioDe(piezaDe(l.pieza), l.estilo, l.cantidad);
+      return pr ? `<span>${esc(montoTxt(pr.unidad * l.cantidad, pr.desde))}</span><small>${esc(t('wc.c_u', { precio: dinero(pr.unidad) }))}</small>` : '<span>$ —</span>';
+    };
     function pintarPedidoBarra() {
       const cu = cuentas(), span = $('.resumen span', barra);
       if (span) span.textContent = t('wc.total_x', { total: montoTxt(cu.total, cu.desde) });
@@ -1319,14 +1391,12 @@
       sincronizarBarras();
       const alto = { cajon: cajon.scrollTop, lista: (cajon.querySelector('.cajon-lista') || {}).scrollTop || 0 };
       const antes = cajon.querySelector('form');
-      const d = antes ? { nombre: antes.elements.nombre.value, telefono: antes.elements.telefono.value, fecha: antes.elements.fecha.value, donde: antes.elements.donde.value } : { nombre: '', telefono: '', fecha: '', donde: '' };
-      const lineaPrecio = (l) => {
-        const pr = precioDe(piezaDe(l.pieza), l.estilo, l.cantidad);
-        return pr ? `<span>${esc(montoTxt(pr.unidad * l.cantidad, pr.desde))}</span><small>${esc(t('wc.c_u', { precio: usd(pr.unidad) }))}</small>` : '<span>$ —</span>';
-      };
+      const d = antes ? { nombre: antes.elements.nombre.value, telefono: antes.elements.telefono.value, fecha: antes.elements.fecha.value, donde: antes.elements.donde.value, conocio: antes.elements.conocio.value } : { nombre: '', telefono: '', fecha: '', donde: '', conocio: '' };
       const linea = (l, i) => {
         const p = piezaDe(l.pieza);
-        const miniatura = p.foto ? `<img src="${base}img/wuanda/${p.foto}" alt="" style="object-position:${p.encuadre || '50% 50%'}" />` : `<span class="linea-tile tono-${p.tono}">${icono(p.icono)}</span>`;
+ // la foto de su estilo o su color
+        const foto = p.fotos ? fotosDe(p, l.estilo, l.color)[0].img : p.foto;
+        const miniatura = p.foto ? `<img src="${base}img/wuanda/${foto}" alt="" style="object-position:${p.encuadre || '50% 50%'}" />` : `<span class="linea-tile tono-${p.tono}">${icono(p.icono)}</span>`;
         const detalle = [estiloDe(p, l.estilo) && L(estiloDe(p, l.estilo).titulo), l.tamano, colorDe(l.color)].filter(Boolean).join(' · ');
         const extras = [];
         if (l.texto) extras.push(`<span>${icono('i-pincel')}${esc(t('wc.l_nombre', { x: l.texto, fuente: nombreFuente(l.fuente) }))}</span>`);
@@ -1354,6 +1424,7 @@
           +   `<label class="opcion"><input type="radio" name="donde" value="col"${d.donde === 'col' ? ' checked' : ''} /><span>${esc(t('wc.col'))}</span></label></div>`
           +   `<p class="ruta" id="wc-ruta" hidden></p><p class="error-campo" data-error="donde" hidden>${esc(t('wc.err_donde'))}</p></fieldset>`
           + `<label class="campo"><span class="etiqueta-campo">${esc(t('wc.fecha'))} <span class="opcional">(${esc(t('cot.opcional'))})</span></span><input name="fecha" type="date" min="${minFecha}" value="${esc(d.fecha)}" /><span class="aviso-fecha" id="wc-fecha-aviso" hidden>${esc(t('wc.fecha_aviso'))}</span></label>`
+          + campoConocio(d.conocio)
           + `<fieldset class="campo campo-propina"><legend class="etiqueta-campo">${esc(t('wc.propina'))} <span class="opcional">(${esc(t('cot.opcional'))})</span></legend><div class="chips chips--claro">`
           +   [0, 10, 15, 20].map((x) => `<button class="chip" type="button" data-propina="${x}" aria-pressed="${propina === x}">${esc(x ? x + ' %' : t('wc.propina_no'))}</button>`).join('')
           + '</div></fieldset>'
@@ -1377,12 +1448,12 @@
     function revisarFecha(f) { $('#wc-fecha-aviso', f).hidden = !(diasHasta(f.elements.fecha.value) < 5); }
     // Subtotal y propina (si la hay), el total y lo que incluye: en EE.UU. el envío; en Colombia el precio en pesos se confirma en el chat.
     function pintarTotales(f) {
-      const cu = cuentas(), col = f.elements.donde.value === 'col';
+      const cu = cuentas();
       $('#wc-totales', f).innerHTML = (cu.extra
         ? `<div><span>${esc(t('car.subtotal'))}</span><span>${esc(montoTxt(cu.subtotal, cu.desde))}</span></div><div><span>${esc(t('wc.propina_linea', { pct: propina }))}</span><span>${esc(montoTxt(cu.extra, cu.desde))}</span></div>`
         : '')
         + `<div class="total"><span>${esc(t('car.total'))}</span><span>${esc(montoTxt(cu.total, cu.desde))}</span></div>`
-        + `<p class="nota-precio">${esc(t(col ? 'wc.nota_cop' : 'wc.nota_usd'))}</p>`;
+        + `<p class="nota-precio">${esc(t(enCop() ? 'wc.nota_cop' : 'wc.nota_usd'))}</p>`;
       $$('[data-propina]', f).forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.propina) === propina)));
     }
 
@@ -1417,7 +1488,11 @@
     });
     cajon.addEventListener('change', (e) => {
       const el = e.target;
-      if (el.name === 'donde') { pintarRuta(el.form); pintarTotales(el.form); validarCampo(el.form, 'donde', true); }
+      if (el.name === 'donde') { // dónde estás cambia la moneda: en Colombia, pesos; en EE.UU., dólares
+        validarCampo(el.form, 'donde', true);
+        cambiarMoneda(el.value === 'col' ? 'cop' : 'usd');
+        pintarRuta(el.form); pintarTotales(el.form);
+      }
       if (el.name === 'fecha') revisarFecha(el.form);
       if (el.dataset.reponer != null) { // volver a subir el logo de una línea que se recuperó sin su archivo
         const f = el.files && el.files[0];
@@ -1449,12 +1524,14 @@
       });
       return elegidos;
     }
-    function armarMensaje({ nombre, telefono, fecha, porCorreo, donde }) {
+    function armarMensaje({ nombre, telefono, fecha, porCorreo, donde, conocio }) {
+      // En pesos, todo es «desde»: lo dice el total, y cada monto va sin repetirlo
+      const m = (n, desde) => (enCop() ? dinero(n) : montoTxt(n, desde));
       const lineas = [t('wc.wa_hola'), ''];
       pedido.forEach((l, i) => {
         const p = piezaDe(l.pieza);
         const pr = precioDe(p, l.estilo, l.cantidad);
-        const precio = pr ? ` — ${t('wc.wa_precio', { unidad: montoTxt(pr.unidad, pr.desde), total: montoTxt(pr.unidad * l.cantidad, pr.desde) })}` : '';
+        const precio = pr ? ` — ${t('wc.wa_precio', { unidad: m(pr.unidad, pr.desde), total: m(pr.unidad * l.cantidad, pr.desde) })}` : '';
         lineas.push(`${i + 1}. ${l.cantidad} × ${L(p.titulo)}${p.unidad === 'pliego' ? ` (${t(l.cantidad === 1 ? 'wc.u_pliego' : 'wc.u_pliegos')})` : ''}${precio}`);
         const detalle = [estiloDe(p, l.estilo) && L(estiloDe(p, l.estilo).titulo), l.tamano, colorDe(l.color)].filter(Boolean).join(' · ');
         if (detalle) lineas.push(`   ${detalle}`);
@@ -1464,9 +1541,10 @@
         lineas.push('');
       });
       const cu = cuentas();
-      if (cu.extra) lineas.push(t('wc.wa_subtotal', { total: montoTxt(cu.subtotal, cu.desde) }), t('wc.wa_propina', { pct: propina, monto: montoTxt(cu.extra, cu.desde) }));
-      lineas.push(t(donde === 'col' ? 'wc.wa_total_cop' : 'wc.wa_total', { total: montoTxt(cu.total, cu.desde) }), '');
+      if (cu.extra) lineas.push(t('wc.wa_subtotal', { total: m(cu.subtotal, cu.desde) }), t('wc.wa_propina', { pct: propina, monto: m(cu.extra, cu.desde) }));
+      lineas.push(t(enCop() ? 'wc.wa_total_cop' : 'wc.wa_total', { total: m(cu.total, cu.desde) }), '');
       if (fecha) lineas.push(`${t('wc.wa_fecha')}: ${new Date(fecha + 'T12:00:00').toLocaleDateString(idioma === 'es' ? 'es-CO' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' })}`);
+      if (lineaConocio(conocio)) lineas.push(lineaConocio(conocio));
       lineas.push(`${t('wc.wa_contacto')}: ${nombre} · ${telefono}`);
       return lineas.join('\n');
     }
@@ -1483,7 +1561,7 @@
       $('[data-error="pedido"]', f).hidden = !oks.includes(false);
       if (oks.includes(false)) { $('.con-error, [data-error]:not([hidden])', f)?.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
       const destino = v('donde') === 'col' ? 'cartagena' : 'miami';
-      const datos = { nombre: v('nombre'), telefono: v('telefono'), fecha: v('fecha'), donde: v('donde') };
+      const datos = { nombre: v('nombre'), telefono: v('telefono'), fecha: v('fecha'), donde: v('donde'), conocio: v('conocio') };
       const aCorreo = { tipo: 'wuandacrafts', destino, rush: diasHasta(datos.fecha) < 5 ? '1' : '', nombre: datos.nombre, telefono: datos.telefono };
       const archivos = copiaActiva() ? archivosParaCorreo() : [];
       if (!archivos.length) {
@@ -1559,10 +1637,10 @@
 
     document.addEventListener('click', (e) => {
       const cat = e.target.closest('[data-cat]');
-      const ft = e.target.closest('[data-f-tamano]');
+      const mo = e.target.closest('[data-wc-pais]');
       const quiero = e.target.closest('[data-pieza]');
       if (cat) elegirCategoria(cat.dataset.cat);
-      if (ft) { filtroTamano = ft.dataset.fTamano; pintarCatalogo(); }
+      if (mo) cambiarMoneda(mo.dataset.wcPais === 'col' ? 'cop' : 'usd');
       if (quiero) { // «¿Quieres uno así?»: al catálogo, en la categoría de esa pieza (las ilustraciones a medida ya no son una categoría)
         const tipo = tipoDe(D.piezas[Number(quiero.dataset.pieza)].tipo);
         elegirCategoria(tipo && tipo.categoria ? tipo.categoria : 'todo');

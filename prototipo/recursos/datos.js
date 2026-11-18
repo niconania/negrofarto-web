@@ -5,7 +5,16 @@
 const laminas = (id, n) => Array.from({ length: n }, (_, k) => ({ img: `${id}/${String(k + 1).padStart(2, '0')}.webp` }));
 
 // Las fotos de una pieza de WuandaCrafts: img/wuanda/catalogo/<grupo>-NN.webp y su miniatura <grupo>-tNN.webp (herramientas/preparar-catalogo-wc.mjs).
-const fotosWC = (grupo, n) => Array.from({ length: n }, (_, k) => { const nn = String(k + 1).padStart(2, '0'); return { img: `catalogo/${grupo}-${nn}.webp`, mini: `catalogo/${grupo}-t${nn}.webp` }; });
+// Cada foto del catálogo de WuandaCrafts puede llevar una etiqueta: 'estilo:<id>' o 'color:<id>' (Juan, 17 nov 2026: al elegir un estilo o un color se
+// ven las fotos de ese estilo o de un color parecido). Sin etiqueta ('') se ve siempre. El orden de las etiquetas es el de las fotos
+// (herramientas/preparar-catalogo-wc.mjs imprime estas líneas).
+const fotosWC = (grupo, etiquetas) => etiquetas.map((et, k) => {
+  const nn = String(k + 1).padStart(2, '0');
+  const f = { img: `catalogo/${grupo}-${nn}.webp`, mini: `catalogo/${grupo}-t${nn}.webp` };
+  const [tipo, id] = et.split(':');
+  if (id) f[tipo] = id;
+  return f;
+});
 
 window.NFG_DATOS = {
   // WhatsApp reales (confirmados el 9 oct 2026): número completo, solo dígitos.
@@ -72,8 +81,9 @@ window.NFG_DATOS = {
   // las rutas son relativas a img/proyectos/. Las láminas son las del carrusel de la publicación.
   //
   // 9 nov 2026 (Juan): «Our work» es solo de carruseles de marcas, en este orden: SYNC, ADA, Wedding Identity, Visuapex, SpillMug,
-  // Karin, Thunder Tribe, Warao, Infusionada. SYNC llegó el 10 nov 2026 (DfkeE5oGZZF); ADA y Visuapex todavía no tienen enlace: entran
-  // en su lugar cuando existan sus publicaciones (agregarlas aquí, con sus láminas, en ese orden). Salen Bom Paso, La Escuadra y Green
+  // Karin, Thunder Tribe, Warao, Infusionada. SYNC llegó el 10 nov (DfkeE5oGZZF); ADA y Visuapex, el 17 nov (DfpKvNNlmst y DEkrOeFR4u4).
+  // 17 nov 2026: arriba van tres clientes de Aventura, el público al que Juan quiere llegar: SYNC, ADA y Tuned Sport Medicine (este último
+  // sin enlace todavía: entra tercero cuando Juan mande su publicación), «con video y también foto». ADA lleva el video de la instalación. Salen Bom Paso, La Escuadra y Green
   // Team (cerraron, no están en Miami o ya traían el logo) y los dos videos de instalación (Isayes y la oficina): ver «proyectosFuera».
   // «rol» (lo que Juan llama «brand created» y «brand worked»; se reconoce en la portada de Instagram):
   //   'creada'    → «Brand by Negrofarto Group»: la marca se hizo desde cero aquí;
@@ -84,11 +94,20 @@ window.NFG_DATOS = {
       instagram: 'https://www.instagram.com/p/DfkeE5oGZZF/', medios: laminas('sync', 7),
       sector: { en: 'Pilates studio', es: 'Estudio de pilates' },
       texto: { en: 'Storefront sign, window decals, T-shirts, tote bags, mugs and tumblers for a Pilates studio.', es: 'Letrero de fachada, vinil en la vidriera, camisetas, tote bags, tazas y termos para un estudio de pilates.' } },
+    { id: 'ada', rol: 'trabajada', img: 'ada.webp', categoria: 'letreros', servicio: 'letreros', anio: '2026', titulo: 'Aventura Dental Arts',
+      instagram: 'https://www.instagram.com/p/DfpKvNNlmst/',
+      medios: [{ video: 'ada/video.mp4', poster: 'ada/video-poster.webp', dur: '0:20' }, ...laminas('ada', 6)],
+      sector: { en: 'Dental practice', es: 'Consultorio dental' },
+      texto: { en: 'Window decals, frosted glass graphics, corporate holiday gifts and T-shirts for the ADA Run Club.', es: 'Vinil en las vidrieras, gráficos en vidrio esmerilado, regalos corporativos y camisetas para el ADA Run Club.' } },
     { id: 'boda', rol: 'creada', img: 'boda.webp', categoria: 'branding', servicio: 'branding', anio: '2026',
       titulo: { en: 'A wedding identity', es: 'Identidad para una boda' },
       instagram: 'https://www.instagram.com/p/DanF-tjEYOQ/', medios: laminas('boda', 13),
       sector: { en: 'Weddings', es: 'Bodas' },
       texto: { en: "Illustrated monogram and visual identity for a couple's celebration.", es: 'Monograma ilustrado e identidad visual para la celebración de una pareja.' } },
+    { id: 'visuapex', rol: 'creada', img: 'visuapex.webp', categoria: 'branding', servicio: 'branding', anio: '2025', titulo: 'Visuapex Creatives',
+      instagram: 'https://www.instagram.com/p/DEkrOeFR4u4/', medios: laminas('visuapex', 4),
+      sector: { en: 'Digital marketing', es: 'Marketing digital' },
+      texto: { en: 'Logo and brand identity for a digital marketing studio.', es: 'Logo e identidad de marca para un estudio de marketing digital.' } },
     { id: 'spillmug', rol: 'trabajada', img: 'spillmug.webp', categoria: 'productos', servicio: 'merch', anio: '2026', titulo: 'SpillMug Coffee',
       instagram: 'https://www.instagram.com/p/Dd4J4OzEVKc/', medios: laminas('spillmug', 5),
       sector: { en: 'Coffee shop', es: 'Cafetería' },
@@ -203,11 +222,13 @@ window.NFG_DATOS = {
     camiseta: { usd: 39.95, cop: 69900 },
     clasica: { usd: 39.95, cop: 50000 },
     tote: { usd: 24.99, cop: 39900 },
+    papaya: { usd: null, cop: 99000 }, // Juan, 10 nov 2026: «Papaya es 99.000 + envío». El precio en dólares falta: por confirmar
   },
   disenos: [
     { id: 'clasica', nombre: 'La Fartedá Clásica', precioCamiseta: 'clasica',
       texto: { en: 'The house logo, in white or black.', es: 'El logo de la casa, en blanco o negro.' },
-      camiseta: { colores: ['negro', 'blanco'] }, tote: { colores: ['negro', 'crema'] } },
+      camiseta: { colores: ['negro', 'blanco'], imgs: { blanco: 'camiseta-clasica-blanco.webp' } },
+      tote: { colores: ['negro', 'crema'], imgs: { crema: 'tote-clasica-crema.webp' } } },
     { id: 'suero', nombre: "Suero Pa' ese Bollo", masVendido: true,
       texto: { en: "The coast's classic combo: bollo with suero. Our bestseller.", es: 'El clásico de la Costa: bollo con suero. Nuestro más vendido.' },
       camiseta: { colores: ['blanco'] }, tote: { colores: ['crema'] } },
@@ -222,16 +243,22 @@ window.NFG_DATOS = {
     { id: 'unboxing', nombre: 'Unboxing de Adulto',
       texto: { en: 'Horror stories of adult life. Black in Spanish, white in English.', es: 'Cuentos de terror de la vida adulta. Negra en español, blanca en inglés.' },
       camiseta: { colores: ['negro', 'blanco'], notaColor: { negro: { en: 'in Spanish', es: 'en español' }, blanco: { en: 'in English', es: 'en inglés' } } },
-      tote: { colores: ['crema', 'negro'] } },
+      tote: { colores: ['crema', 'negro'], imgs: { crema: 'tote-unboxing-crema.webp' } } },
     { id: 'burro', nombre: 'Puya El Burro',
       texto: { en: '“¡Puya el burro!” — coastal slang for “step on it.”', es: '¡Puya el burro! Para los que van con todo.' },
       camiseta: { colores: ['blanco'] }, tote: { colores: ['crema'] } },
     { id: 'avena', nombre: 'Su Avena y Su Pitillo',
       texto: { en: '“Love has to be taken… with its oat drink and its straw.”', es: '«El amor hay que tomárselo… con su avena y su pitillo».' },
-      camiseta: { colores: ['vinotinto', 'blanco'] }, tote: { colores: ['crema'] } },
+      camiseta: { colores: ['vinotinto', 'blanco'], imgs: { blanco: 'camiseta-avena-blanco.webp' } }, tote: { colores: ['crema'] } },
     { id: 'empana', nombre: 'Mira Tú Esa Empaná',
       texto: { en: "For anyone who can't walk past an empanada.", es: 'Para los que no pasan de largo frente a una empaná.' },
       camiseta: { colores: ['blanco'] }, tote: { colores: ['crema'] } },
+    // Diseño nuevo (Juan, 17 nov 2026: «agrega la camiseta de papaya, las fotos están debajo»): las fotos son las de la sección «Así se ve»
+    // de la página. Solo camiseta, crema. Precio: COP 99.000 (Juan); el de EE.UU. está por confirmar. La imagen plana es el mockup de la
+    // propuesta, de baja resolución: falta el del diseñador.
+    { id: 'papaya', nombre: 'A Papaya Puesta, Papaya Partida', precioCamiseta: 'papaya',
+      texto: { en: 'A coastal saying about not giving “papaya”: not making it easy for others to take advantage of you.', es: 'Dicho costeño: no dar papaya, o sea, no facilitar que se aprovechen de ti.' },
+      camiseta: { colores: ['crema'], galeria: ['lafarteda/estilo-07.webp', 'lafarteda/estilo-02.webp', 'lafarteda/estilo-01.webp', 'lafarteda/estilo-04.webp', 'lafarteda/estilo-05.webp'] } },
   ],
 
   // WuandaCrafts · tendedero de fotos: cómo se rotula cada pieza y a qué categoría del catálogo lleva «¿Quieres uno así?».
@@ -253,7 +280,6 @@ window.NFG_DATOS = {
   wc: {
     // Los mismos topes que enviar.php (servidor/enviar-config.ejemplo.php): por archivo, archivos por pedido y total.
     topeMb: 5, maxArchivos: 5, totalMb: 15,
-    tamanosFiltro: ['20 oz'], // los tamaños de termo que nombró Juan («también por onzas, 20 oz»); las demás medidas, por definir
     categorias: [
       { id: 'termos', icono: 'i-termo', titulo: { en: 'Tumblers', es: 'Termos' },
         texto: { en: 'Sublimated tumbler with your name, your art or your logo. Made one by one in Miami or Cartagena.', es: 'Termo sublimado con tu nombre, tu arte o tu logo. Lo hacemos uno a uno en Miami o en Cartagena.' } },
@@ -283,7 +309,16 @@ window.NFG_DATOS = {
       vinotinto: { hex: '#6b1d2b', nombre: { en: 'Burgundy', es: 'Vinotinto' } },
       rojo: { hex: '#b3141f', nombre: { en: 'Red', es: 'Rojo' } },
       azulrey: { hex: '#2340b8', nombre: { en: 'Royal blue', es: 'Azul rey' } },
+      // 17 nov 2026: los de camisetas, hoodies y totes (Juan: «una paleta más amplia»; el color que se elige muestra una foto parecida)
+      verdemilitar: { hex: '#4b5a3a', nombre: { en: 'Military green', es: 'Verde militar' } },
+      azulmarino: { hex: '#2f3f5c', nombre: { en: 'Navy', es: 'Azul marino' } },
+      malva: { hex: '#b97d88', nombre: { en: 'Mauve', es: 'Malva' } },
+      crema: { hex: '#efe6d2', nombre: { en: 'Cream', es: 'Crema' } },
+      celeste: { hex: '#9db9e4', nombre: { en: 'Light blue', es: 'Celeste' } },
     },
+    // Colombia (Juan, 17 nov 2026): «los mismos precios, pero en pesos», como «desde». El tipo de cambio es una SUPOSICIÓN (confirmar con Nicola
+    // y Juan) y cada precio se redondea al millar; el precio final se negocia por WhatsApp.
+    cop: { porUsd: 3000, redondeo: 1000 },
     fuentes: [ // se muestran con el nombre que escribe la persona; Pacifico, Montserrat, Permanent Marker y Fredoka (Google Fonts)
       { id: 'cursiva', css: "'Pacifico', cursive", peso: 400, nombre: { en: 'Script', es: 'Cursiva' } },
       { id: 'clasica', css: "'Montserrat', sans-serif", peso: 800, nombre: { en: 'Classic', es: 'Clásica' } },
@@ -314,30 +349,39 @@ window.NFG_DATOS = {
     // campero y enamel; igual estoy abierto a sugerencias»), por afinar cuando se reúnan. El 10 nov: «cambiemos Egg y pongamos Wine / Coffee
     // Tumblers». Los nombres en inglés de los estilos de lata y bebé son traducción nuestra.
     catalogo: [
-      { id: 'termo-can', cat: 'termos', icono: 'i-termo', tono: 'azul', titulo: { en: 'Can tumblers', es: 'Termos lata' }, fotos: fotosWC('can', 7), encuadre: '50% 40%',
+      { id: 'termo-can', cat: 'termos', icono: 'i-termo', tono: 'azul', titulo: { en: 'Can tumblers', es: 'Termos lata' }, fotos: fotosWC('can', ['estilo:lata', 'estilo:lata', 'estilo:lata', 'estilo:lata', 'estilo:botella', 'estilo:botella', 'estilo:botella', 'estilo:skinny', 'estilo:skinny']), encuadre: '50% 40%',
         insignia: 'mas-vendido', precio: 'can', pie: { en: 'Can, bottle and skinny tumblers with your name or art', es: 'Termos lata, botella y skinny con tu nombre o tu arte' },
-        variantes: [{ id: 'lata', titulo: { en: 'Can', es: 'Lata' } }, { id: 'botella', titulo: { en: 'Bottle', es: 'Botella' } }, { id: 'skinny', titulo: { en: 'Skinny', es: 'Skinny' } }],
-        tamanos: ['20 oz', '30 oz'], colores: ['blanco', 'negro', 'rosa', 'azul', 'verde'] },
-      { id: 'termo-kids', cat: 'termos', icono: 'i-termo', tono: 'rosa', titulo: { en: 'Baby & kids tumblers', es: 'Termos bebé y kids' }, fotos: fotosWC('kids', 4), encuadre: '50% 45%',
+        variantes: [
+          { id: 'lata', titulo: { en: 'Can', es: 'Lata' }, desc: { en: 'Shaped like a can.', es: 'Con forma de lata.' } },
+          { id: 'botella', titulo: { en: 'Bottle', es: 'Botella' }, desc: { en: 'With a straw, like a can but a bottle.', es: 'Con pitillo: parece una lata, pero es una botella.' } },
+          { id: 'skinny', titulo: { en: 'Skinny', es: 'Skinny' }, desc: { en: 'Slimmer than the others.', es: 'Más delgado que los demás.' } }],
+        colores: ['blanco', 'negro', 'rosa', 'azul', 'verde'] },
+      { id: 'termo-kids', cat: 'termos', icono: 'i-termo', tono: 'rosa', titulo: { en: 'Baby & kids tumblers', es: 'Termos bebé y kids' }, fotos: fotosWC('kids', ['estilo:bebe', 'estilo:kids', 'estilo:kids', 'estilo:kids']), encuadre: '50% 45%',
         precio: 'kids', pie: { en: 'Sippy cups and kids’ bottles with their name', es: 'Vasos con asas y botellas para niños, con su nombre' },
-        variantes: [{ id: 'bebe', titulo: { en: 'Baby', es: 'Bebé' } }, { id: 'kids', titulo: { en: 'Kids', es: 'Kids' } }],
+        variantes: [
+          { id: 'bebe', titulo: { en: 'Baby', es: 'Bebé' }, desc: { en: 'Sippy cup with two handles.', es: 'Vaso con dos agarraderas.' } },
+          { id: 'kids', titulo: { en: 'Kids', es: 'Kids' }, desc: { en: 'Small bottles for kids.', es: 'Botellas pequeñas para niños.' } }],
         colores: ['blanco', 'negro', 'rosa', 'azul', 'verde'] },
       // «Wine y Egg lo mismo de Can tumblers»; «Enamel mismo precio kids». El café (el campero) va con el de Can: confirmar con Juan.
-      { id: 'termo-wine-coffee', cat: 'termos', icono: 'i-termo', tono: 'azul', titulo: { en: 'Wine / Coffee tumblers', es: 'Termos para vino y café' }, fotos: fotosWC('huevo', 7), encuadre: '50% 50%',
+      { id: 'termo-wine-coffee', cat: 'termos', icono: 'i-termo', tono: 'azul', titulo: { en: 'Wine / Coffee tumblers', es: 'Termos para vino y café' }, fotos: fotosWC('huevo', ['estilo:wine', 'estilo:wine', 'estilo:wine', 'estilo:wine', 'estilo:coffee', 'estilo:coffee', 'estilo:coffee', 'estilo:enamel', 'estilo:enamel']), encuadre: '50% 50%',
         precio: 'can', pie: { en: 'Egg-shaped wine tumblers, coffee camper mugs and enamel mugs', es: 'Termos de vino (tipo huevo), de café (campero) y enamel' },
-        variantes: [{ id: 'wine', precio: 'can', titulo: { en: 'Wine', es: 'Vino' } }, { id: 'coffee', precio: 'can', titulo: { en: 'Coffee', es: 'Café' } }, { id: 'enamel', precio: 'kids', titulo: { en: 'Enamel', es: 'Enamel' } }],
-        colores: ['blanco', 'negro', 'rosa', 'azul', 'verde'] },
-      { id: 'mug', cat: 'termos', icono: 'i-cafe', tono: 'naranja', titulo: { en: 'Ceramic mug', es: 'Mug de cerámica' }, fotos: fotosWC('mug', 6), encuadre: '50% 50%',
+        variantes: [
+          { id: 'wine', precio: 'can', titulo: { en: 'Wine', es: 'Vino' }, desc: { en: 'Egg-shaped, with your names on it.', es: 'Tipo huevo, con los nombres.' } },
+          { id: 'coffee', precio: 'can', titulo: { en: 'Coffee', es: 'Café' }, desc: { en: 'Straight, square handle.', es: 'Agarradera recta, como un cuadrado.' } },
+          { id: 'enamel', precio: 'kids', titulo: { en: 'Enamel', es: 'Enamel' }, desc: { en: 'Curved handle.', es: 'Agarradera curva.' } }],
+        colores: ['blanco'] }, // llegan en blanco y el arte va encima (Juan, 17 nov 2026)
+      { id: 'mug', cat: 'termos', icono: 'i-cafe', tono: 'naranja', titulo: { en: 'Ceramic mug', es: 'Mug de cerámica' }, fotos: fotosWC('mug', ['', '', '', '', '', '']), encuadre: '50% 50%',
         precio: 'mug', pie: { en: 'Ceramic mugs with your name, your pet or your art', es: 'Mugs de cerámica con tu nombre, tu mascota o tu arte' },
-        colores: ['blanco', 'negro', 'rosa', 'azul', 'verde'] },
-      { id: 'tote', cat: 'totes', icono: 'i-bolsa', tono: 'verde', titulo: { en: 'Tote bag', es: 'Tote bag' }, fotos: fotosWC('tote', 8), encuadre: '50% 40%',
-        precio: 'tote', pie: { en: 'Tote bags with your name, a photo or your art', es: 'Tote bags con tu nombre, una foto o tu arte' }, colores: ['natural', 'negro'] },
-      { id: 'camiseta', cat: 'camisetas', icono: 'i-camiseta', tono: 'rosa', titulo: { en: 'T-shirt', es: 'Camiseta' }, fotos: fotosWC('camiseta', 8), encuadre: '50% 50%',
+        colores: ['blanco'] }, // blanco: el arte va encima (Juan, 17 nov 2026)
+      { id: 'tote', cat: 'totes', icono: 'i-bolsa', tono: 'verde', titulo: { en: 'Tote bag', es: 'Tote bag' }, fotos: fotosWC('tote', ['color:natural', 'color:natural', 'color:natural', 'color:natural', 'color:natural', 'color:natural', 'color:natural', 'color:natural', 'color:negro', 'color:negro']), encuadre: '50% 40%',
+        precio: 'tote', pie: { en: 'Tote bags with your name, a photo or your art', es: 'Tote bags con tu nombre, una foto o tu arte' }, colores: ['natural', 'negro'], coloresReales: true },
+      { id: 'camiseta', cat: 'camisetas', icono: 'i-camiseta', tono: 'rosa', titulo: { en: 'T-shirt', es: 'Camiseta' }, fotos: fotosWC('camiseta', ['color:blanco', 'color:blanco', 'color:blanco', 'color:blanco', 'color:blanco', 'color:negro', 'color:negro', 'color:negro', 'color:verdemilitar', 'color:azulrey', 'color:azulrey', 'color:azulmarino', 'color:malva', 'color:crema', 'color:crema']), encuadre: '50% 50%',
         precio: 'can', pie: { en: 'T-shirts with your name, your art or your logo', es: 'Camisetas con tu nombre, tu arte o tu logo' },
-        tamanos: ['S', 'M', 'L', 'XL'], colores: ['negro', 'blanco', 'rosa', 'azul'] },
-      { id: 'hoodie', cat: 'hoodies', icono: 'i-hoodie', tono: 'naranja', titulo: { en: 'Hoodie', es: 'Hoodie' }, fotos: fotosWC('hoodie', 4), encuadre: '50% 45%',
+        copFactor: 0.95, // Juan, 17 nov 2026: en Colombia la camiseta se veía desfasada: -5 %
+        tamanos: ['S', 'M', 'L', 'XL'], colores: ['blanco', 'negro', 'verdemilitar', 'azulrey', 'azulmarino', 'malva', 'crema'], coloresReales: true },
+      { id: 'hoodie', cat: 'hoodies', icono: 'i-hoodie', tono: 'naranja', titulo: { en: 'Hoodie', es: 'Hoodie' }, fotos: fotosWC('hoodie', ['color:negro', 'color:negro', 'color:vinotinto', 'color:celeste']), encuadre: '50% 45%',
         precio: 'hoodie', pie: { en: 'Hoodies with your name, your art or your logo', es: 'Hoodies con tu nombre, tu arte o tu logo' },
-        tamanos: ['S', 'M', 'L', 'XL'], colores: ['negro', 'blanco', 'rosa', 'azul'] },
+        tamanos: ['S', 'M', 'L', 'XL'], colores: ['negro', 'vinotinto', 'celeste'], coloresReales: true },
       { id: 'calcomania', cat: 'calcomanias', icono: 'i-calcomania', tono: 'rosa', titulo: { en: 'Custom decal', es: 'Calcomanía con tu nombre' }, unidad: 'pliego', precioDesde: 12,
         foto: 'calcomania-mascota.webp', encuadre: '50% 90%', instagram: 'https://www.instagram.com/reel/CnQhQQJJbfl/',
         pie: { en: "Decal with the pet's name", es: 'Calcomanía con el nombre de la mascota' }, colores: ['morado', 'negro', 'blanco', 'rosa', 'azul'] },
@@ -345,14 +389,14 @@ window.NFG_DATOS = {
         precio: 'lampara', foto: 'lampara-foto.webp', encuadre: '50% 56%', insignia: 'nuevo', instagram: 'https://www.instagram.com/reel/DeY6XO0suIh/',
         pie: { en: 'Lamp with a custom illustration', es: 'Lámpara con ilustración a medida' } },
       // Las fotos del wine bag son de la tienda que indicó Juan (premiertablelinens.com: «eso los hice yo»); sus colores y su medida, también.
-      { id: 'wine-bag', cat: 'otros', icono: 'i-vino', tono: 'morado', titulo: { en: 'Wine bag', es: 'Wine bag' }, fotos: fotosWC('winebag', 4), encuadre: '50% 45%',
+      { id: 'wine-bag', cat: 'otros', icono: 'i-vino', tono: 'morado', titulo: { en: 'Wine bag', es: 'Wine bag' }, fotos: fotosWC('winebag', ['color:rojo', 'color:negro', 'color:azulrey', 'color:azulrey']), encuadre: '50% 45%',
         precio: 'wineBag', pie: { en: 'Velvet wine bag with your logo or initials', es: 'Wine bag de terciopelo con tu logo o tus iniciales' },
         texto: { en: 'Velvet wine bottle bag with drawstring and tassels, 5.75" × 12.25", with your logo, your product or wedding initials.', es: 'Bolsa de terciopelo para botella de vino, con cordón y borlas, de 5.75" × 12.25", con tu logo, tu producto o las iniciales de una boda.' },
-        colores: ['vinotinto', 'rojo', 'negro', 'azulrey'], coloresReales: true },
-      { id: 'flask', cat: 'otros', icono: 'i-flask', tono: 'azul', titulo: { en: 'Flask', es: 'Flask' }, fotos: fotosWC('flask', 2), encuadre: '50% 45%',
-        precio: 'can', pie: { en: 'Flask with your name or your art', es: 'Flask con tu nombre o tu arte' }, colores: ['blanco', 'negro', 'rosa', 'azul', 'verde'] },
-      { id: 'mouse-pad', cat: 'otros', icono: 'i-mousepad', tono: 'rosa', titulo: { en: 'Mouse pad', es: 'Mouse pad' }, fotos: fotosWC('mousepad', 4), encuadre: '50% 50%',
-        precio: 'mug', pie: { en: 'Mouse pad with your name or your art', es: 'Mouse pad con tu nombre o tu arte' }, colores: ['negro', 'blanco'] },
+        colores: ['vinotinto', 'rojo', 'negro', 'azulrey'], coloresReales: true, fotoColor: { vinotinto: 'rojo' } }, // el vinotinto no tiene foto propia: usa la del rojo
+      { id: 'flask', cat: 'otros', icono: 'i-flask', tono: 'azul', titulo: { en: 'Flask', es: 'Flask' }, fotos: fotosWC('flask', ['', '']), encuadre: '50% 45%',
+        precio: 'can', pie: { en: 'Flask with your name or your art', es: 'Flask con tu nombre o tu arte' } }, // sin color (Juan, 17 nov 2026)
+      { id: 'mouse-pad', cat: 'otros', icono: 'i-mousepad', tono: 'rosa', titulo: { en: 'Mouse pad', es: 'Mouse pad' }, fotos: fotosWC('mousepad', ['color:negro', 'color:morado', 'color:azul', 'color:azul']), encuadre: '50% 50%',
+        precio: 'mug', pie: { en: 'Mouse pad with your name or your art', es: 'Mouse pad con tu nombre o tu arte' }, colores: ['negro', 'morado', 'azul'], coloresReales: true },
     ],
   },
 
