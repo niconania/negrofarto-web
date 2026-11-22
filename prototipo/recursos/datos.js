@@ -235,6 +235,18 @@ window.NFG_DATOS = {
     mamon: { usd: null, cop: null },
   },
   disenos: [
+    // Los dos diseños nuevos van de primeros y con la etiqueta «Más vendido» (Nicola, 22 nov 2026: «pon de primeritos la franela de la papaya y el mamón»).
+    // Diseño nuevo (Juan, 17 nov 2026: «agrega la camiseta de papaya, las fotos están debajo»): las fotos son las de la sección «Así se ve»
+    // de la página. Solo camiseta, crema. Sin precio todavía (ver «precios»). La imagen plana es el mockup de la propuesta, de baja resolución:
+    // falta el del diseñador.
+    { id: 'papaya', nombre: 'A Papaya Puesta, Papaya Partida', precioCamiseta: 'papaya', masVendido: true,
+      texto: { en: 'A coastal saying about not giving “papaya”: not making it easy for others to take advantage of you.', es: 'Dicho costeño: no dar papaya, o sea, no facilitar que se aprovechen de ti.' },
+      camiseta: { colores: ['crema'], galeria: ['lafarteda/estilo-07.webp', 'lafarteda/estilo-02.webp', 'lafarteda/estilo-01.webp', 'lafarteda/estilo-04.webp', 'lafarteda/estilo-05.webp'] } },
+    // Mamón (22 nov 2026): los dos mockups sueltos del Drive de Juan (9 nov: «camiseta verde MAMÓN, Est. 2026»): la espalda y el frente. Solo
+    // camiseta, verde oscuro. Sin precio todavía. El texto se apoya en lo que dice la propia camiseta (definición de «mamón» y la fruta).
+    { id: 'mamon', nombre: 'Mamón', precioCamiseta: 'mamon', masVendido: true,
+      texto: { en: 'Mamón (adj.): a person, attitude or situation that is annoying, intense or heavy-going. It is also a tropical fruit.', es: 'Mamón (adj.): persona, actitud o situación fastidiosa, intensa o pesada. También es una fruta tropical.' },
+      camiseta: { colores: ['verde'], galeria: ['productos/camiseta-mamon-frente.webp'] } },
     { id: 'clasica', nombre: 'La Fartedá Clásica', precioCamiseta: 'clasica',
       texto: { en: 'The house logo, in white or black.', es: 'El logo de la casa, en blanco o negro.' },
       camiseta: { colores: ['negro', 'blanco'], imgs: { blanco: 'camiseta-clasica-blanco.webp' } },
@@ -263,17 +275,6 @@ window.NFG_DATOS = {
     { id: 'empana', nombre: 'Mira Tú Esa Empaná',
       texto: { en: "For anyone who can't walk past an empanada.", es: 'Para los que no pasan de largo frente a una empaná.' },
       camiseta: { colores: ['blanco'] }, tote: { colores: ['crema'] } },
-    // Diseño nuevo (Juan, 17 nov 2026: «agrega la camiseta de papaya, las fotos están debajo»): las fotos son las de la sección «Así se ve»
-    // de la página. Solo camiseta, crema. Sin precio todavía (ver «precios»). La imagen plana es el mockup de la propuesta, de baja resolución:
-    // falta el del diseñador.
-    { id: 'papaya', nombre: 'A Papaya Puesta, Papaya Partida', precioCamiseta: 'papaya',
-      texto: { en: 'A coastal saying about not giving “papaya”: not making it easy for others to take advantage of you.', es: 'Dicho costeño: no dar papaya, o sea, no facilitar que se aprovechen de ti.' },
-      camiseta: { colores: ['crema'], galeria: ['lafarteda/estilo-07.webp', 'lafarteda/estilo-02.webp', 'lafarteda/estilo-01.webp', 'lafarteda/estilo-04.webp', 'lafarteda/estilo-05.webp'] } },
-    // Mamón (22 nov 2026): los dos mockups sueltos del Drive de Juan (9 nov: «camiseta verde MAMÓN, Est. 2026»): la espalda y el frente. Solo
-    // camiseta, verde oscuro. Sin precio todavía. El texto se apoya en lo que dice la propia camiseta (definición de «mamón» y la fruta).
-    { id: 'mamon', nombre: 'Mamón', precioCamiseta: 'mamon',
-      texto: { en: 'Mamón (adj.): a person, attitude or situation that is annoying, intense or heavy-going. It is also a tropical fruit.', es: 'Mamón (adj.): persona, actitud o situación fastidiosa, intensa o pesada. También es una fruta tropical.' },
-      camiseta: { colores: ['verde'], galeria: ['productos/camiseta-mamon-frente.webp'] } },
   ],
 
   // WuandaCrafts · tendedero de fotos: cómo se rotula cada pieza y a qué categoría del catálogo lleva «¿Quieres uno así?».
