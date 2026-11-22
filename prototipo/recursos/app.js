@@ -853,14 +853,14 @@
     }
     function total() { return carrito.reduce((s, l) => s + (precio(productos.find((p) => p.id === l.producto)) || 0) * l.cantidad, 0); }
     // Si hay un diseño sin precio, el total lo dice («+ papaya por confirmar»).
-    const aparte = () => (pais === 'usa' && carrito.some((l) => sinPrecio(productos.find((p) => p.id === l.producto))) ? ` ${t('lf.mas_por_confirmar')}` : '');
+    const aparte = () => (carrito.some((l) => sinPrecio(productos.find((p) => p.id === l.producto))) ? ` ${t('lf.mas_por_confirmar')}` : '');
     // Lo que dice la fila «Envío» y el total: en pesos, el envío mínimo se suma y el total es «desde».
     function textoEnvio() {
       if (pais === 'col') return t('car.envio_desde', { monto: dinero(D.envio.copMinimo) });
       const e = entrega();
       return t(e === 'recoger' ? 'car.envio_recoger' : e === 'envio' ? 'car.envio_chat' : 'car.envio_zip');
     }
-    const textoTotal = () => (pais === 'col' ? t('car.total_desde', { total: dinero(total() + D.envio.copMinimo) }) : dinero(total()) + aparte());
+    const textoTotal = () => (pais === 'col' ? t('car.total_desde', { total: dinero(total() + D.envio.copMinimo) }) + aparte() : dinero(total()) + aparte());
     // Lo que va bajo el ZIP: qué hacer, o las dos opciones si está en el área de Miami.
     function htmlEntrega() {
       if (!zipListo()) return `<p class="entrega-nota">${t('car.zip_falta')}</p>`;
@@ -961,7 +961,7 @@
         lineas.push(`• ${l.cantidad} × ${p.diseno.nombre} — ${detalleLinea(l, p)} — ${precioTxt(p, l.cantidad)}`);
       });
       lineas.push('');
-      if (pais === 'col') lineas.push(t('lf.wa_subtotal', { total: dinero(total()) }), t('lf.wa_envio_col', { monto: dinero(D.envio.copMinimo) }), t('lf.wa_total_desde', { total: dinero(total() + D.envio.copMinimo) }));
+      if (pais === 'col') lineas.push(t('lf.wa_subtotal', { total: dinero(total()) + aparte() }), t('lf.wa_envio_col', { monto: dinero(D.envio.copMinimo) }), t('lf.wa_total_desde', { total: dinero(total() + D.envio.copMinimo) + aparte() }));
       else lineas.push(t('lf.wa_total', { total: dinero(total()) + aparte() }), t(entrega() === 'recoger' ? 'lf.wa_envio_miami' : 'lf.wa_envio_otro', { zip }));
       lineas.push('');
       lineas.push(`${t('lf.wa_nombre')}: ${nombre} · ${t('lf.wa_ciudad')}: ${ciudad}`);

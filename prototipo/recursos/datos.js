@@ -217,6 +217,7 @@ window.NFG_DATOS = {
     negro: { hex: '#151515', nombre: { en: 'Black', es: 'Negro' } },
     crema: { hex: '#eee3cc', nombre: { en: 'Cream', es: 'Crema' } },
     vinotinto: { hex: '#7a1f2b', nombre: { en: 'Wine', es: 'Vinotinto' } },
+    verde: { hex: '#2f3e37', nombre: { en: 'Dark green', es: 'Verde oscuro' } },
   },
   tallas: ['S', 'M', 'L', 'XL', 'Oversize'],
   // Envío de La Fartedá (Juan, 9 y 10 nov 2026). Colombia: no va incluido; «el mínimo envío son 20.000» (se confirma en el chat).
@@ -228,7 +229,10 @@ window.NFG_DATOS = {
     camiseta: { usd: 39.95, cop: 69900 },
     clasica: { usd: 39.95, cop: 50000 },
     tote: { usd: 24.99, cop: 39900 },
-    papaya: { usd: null, cop: 99000 }, // Juan, 10 nov 2026: «Papaya es 99.000 + envío». El precio en dólares falta: por confirmar
+    // Papaya y Mamón: SIN precio todavía (Nicola, 22 nov 2026: «no le pongas el precio, Juan no me lo ha dado»). Juan había dicho el 10 nov «Papaya es
+    // 99.000 + envío» (COP); se quitó hasta que lo confirme. Con usd y cop en null la web dice «Precio por confirmar» en las dos monedas.
+    papaya: { usd: null, cop: null },
+    mamon: { usd: null, cop: null },
   },
   disenos: [
     { id: 'clasica', nombre: 'La Fartedá Clásica', precioCamiseta: 'clasica',
@@ -260,11 +264,16 @@ window.NFG_DATOS = {
       texto: { en: "For anyone who can't walk past an empanada.", es: 'Para los que no pasan de largo frente a una empaná.' },
       camiseta: { colores: ['blanco'] }, tote: { colores: ['crema'] } },
     // Diseño nuevo (Juan, 17 nov 2026: «agrega la camiseta de papaya, las fotos están debajo»): las fotos son las de la sección «Así se ve»
-    // de la página. Solo camiseta, crema. Precio: COP 99.000 (Juan); el de EE.UU. está por confirmar. La imagen plana es el mockup de la
-    // propuesta, de baja resolución: falta el del diseñador.
+    // de la página. Solo camiseta, crema. Sin precio todavía (ver «precios»). La imagen plana es el mockup de la propuesta, de baja resolución:
+    // falta el del diseñador.
     { id: 'papaya', nombre: 'A Papaya Puesta, Papaya Partida', precioCamiseta: 'papaya',
       texto: { en: 'A coastal saying about not giving “papaya”: not making it easy for others to take advantage of you.', es: 'Dicho costeño: no dar papaya, o sea, no facilitar que se aprovechen de ti.' },
       camiseta: { colores: ['crema'], galeria: ['lafarteda/estilo-07.webp', 'lafarteda/estilo-02.webp', 'lafarteda/estilo-01.webp', 'lafarteda/estilo-04.webp', 'lafarteda/estilo-05.webp'] } },
+    // Mamón (22 nov 2026): los dos mockups sueltos del Drive de Juan (9 nov: «camiseta verde MAMÓN, Est. 2026»): la espalda y el frente. Solo
+    // camiseta, verde oscuro. Sin precio todavía. El texto se apoya en lo que dice la propia camiseta (definición de «mamón» y la fruta).
+    { id: 'mamon', nombre: 'Mamón', precioCamiseta: 'mamon',
+      texto: { en: 'Mamón (adj.): a person, attitude or situation that is annoying, intense or heavy-going. It is also a tropical fruit.', es: 'Mamón (adj.): persona, actitud o situación fastidiosa, intensa o pesada. También es una fruta tropical.' },
+      camiseta: { colores: ['verde'], galeria: ['productos/camiseta-mamon-frente.webp'] } },
   ],
 
   // WuandaCrafts · tendedero de fotos: cómo se rotula cada pieza y a qué categoría del catálogo lleva «¿Quieres uno así?».
