@@ -75,12 +75,9 @@
               <li data-t="wc.chip1"></li>
               <li data-t="wc.chip2"></li>
             </ul>
+            <button class="regalos-pill" type="button" id="regalos-abrir" aria-haspopup="dialog"><svg class="icono" aria-hidden="true"><use href="#i-regalo"/></svg><span data-t="wc.regalos_pill"></span></button>
           </div>
-          <div class="regalos">
-            <svg class="icono" aria-hidden="true"><use href="#i-regalo"/></svg>
-            <p><strong data-t="wc.regalos_t"></strong> <span data-t="wc.regalos_x"></span></p>
-            <button class="boton boton--crema boton--chico" type="button" id="regalos-cta" data-t="wc.regalos_cta"></button>
-          </div>
+          <div class="cat-tabs" id="wc-tabs" role="group" data-t-aria="wc.categorias"></div>
           <div class="wc-moneda">
             <div class="pais">
               <svg class="icono" aria-hidden="true"><use href="#i-pais"/></svg>
@@ -92,7 +89,6 @@
             </div>
             <p class="wc-moneda-nota" id="wc-moneda-nota"></p>
           </div>
-          <div class="cat-tabs" id="wc-tabs" role="group" data-t-aria="wc.categorias"></div>
           <div class="cat-grilla" id="wc-grilla"></div>
         </div>
       </section>
@@ -119,6 +115,15 @@
   <!-- Barra fija del celular con el pedido (solo cuando hay piezas) y el cajón «Tu pedido». -->
   <div class="barra-pedido" id="barra-pedido" hidden></div>
   <dialog class="cajon" id="cajon-pedido"></dialog>
+  <dialog class="modal modal--regalos" id="modal-regalos" aria-labelledby="regalos-titulo">
+    <button class="modal-cerrar" type="button" data-cerrar data-t-aria="car.cerrar"><svg class="icono" aria-hidden="true"><use href="#i-cerrar"/></svg></button>
+    <div class="modal-cuerpo">
+      <svg class="icono regalos-icono" aria-hidden="true"><use href="#i-regalo"/></svg>
+      <h3 id="regalos-titulo" data-t="wc.regalos_t"></h3>
+      <p data-t="wc.regalos_x"></p>
+      <button class="boton boton--acento" type="button" id="regalos-cta" data-t="wc.regalos_cta"></button>
+    </div>
+  </dialog>
 
   <script src="../recursos/iconos.js"></script>
   <script src="../recursos/textos.js"></script>

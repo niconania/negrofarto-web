@@ -1666,7 +1666,8 @@
         elegirCategoria(tipo && tipo.categoria ? tipo.categoria : 'todo');
         saltarA('catalogo');
       }
-      if (e.target.closest('#regalos-cta')) { elegirCategoria('termos'); saltarA('catalogo'); } // regalos de empresa: termos y lámparas, con su logo y en cantidad
+      if (e.target.closest('#regalos-abrir')) $('#modal-regalos').showModal(); // los regalos de empresa salen en una ventana (Juan, 25 nov 2026: «llama más la atención… a menos que sea emergente»)
+      if (e.target.closest('#regalos-cta')) { $('#modal-regalos').close(); elegirCategoria('termos'); saltarA('catalogo'); } // regalos de empresa: termos y lámparas, con su logo y en cantidad
       if (e.target.closest('[data-abrir-pedido]')) { pintarPedido(); cajon.showModal(); }
     });
     $('#abrir-carrito').addEventListener('click', () => { pintarPedido(); cajon.showModal(); });

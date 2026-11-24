@@ -782,6 +782,11 @@ dialog.cajon[open] { display: flex; flex-direction: column; animation: deslizar 
 .wc-catalogo .cabeza-seccion { margin-bottom: 26px; }
 .wc-catalogo h2 { max-width: 15ch; font-size: clamp(32px, 4.2vw, 50px); }
 .wc-catalogo .chips-texto { margin: 20px 0 0; color: var(--wc-cafe); }
+.regalos-pill { display: inline-flex; align-items: center; gap: 8px; margin-top: 18px; padding: 8px 14px; border: 1.5px solid var(--wc-linea); border-radius: 999px; background: transparent; font: inherit; font-size: 13.5px; font-weight: 700; color: var(--wc-cafe); cursor: pointer; }
+.regalos-pill .icono { width: 18px; height: 18px; color: var(--acento); }
+.regalos-pill:hover { border-color: var(--acento); color: var(--texto); }
+.modal--regalos .modal-cuerpo { justify-items: start; gap: 12px; }
+.regalos-icono { width: 34px; height: 34px; color: #f9b27c; padding: 8px; box-sizing: content-box; border-radius: 14px; background: #2d2147; }
 .regalos { display: flex; align-items: center; gap: 18px; margin: 0 0 26px; padding: 16px 22px; border-radius: 20px; background: #2d2147; color: #fff; }
 .regalos > .icono { width: 30px; height: 30px; color: #f9b27c; }
 .regalos p { flex: 1; font-size: 15px; line-height: 1.45; color: rgba(255, 255, 255, .86); }
