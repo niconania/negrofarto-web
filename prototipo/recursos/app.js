@@ -1079,6 +1079,8 @@
     const diasHasta = (valor) => (valor ? (new Date(valor + 'T12:00:00') - new Date()) / 864e5 : Infinity);
 
     let categoria = 'todo';
+    // «Pedir en cantidad» (Juan, 25 nov 2026: «dice tumblers and lamps, pero las lamps no salen»): termos y lámparas juntas.
+    const REGALOS = ['termos', 'lamparas'];
     let elec = null; // lo que se está eligiendo en la ficha abierta
     let pedido = []; // las líneas de «Tu pedido»
     let scrollInicio = 0;
@@ -1111,7 +1113,7 @@
       $('#wc-tabs').innerHTML = [{ id: 'todo', icono: 'i-todo', titulo: t('wc.todo') }, ...W.categorias.map((c) => ({ id: c.id, icono: c.icono, titulo: L(c.titulo) }))]
         .map((c) => `<button class="cat-tab" type="button" data-cat="${c.id}" aria-pressed="${categoria === c.id}">${icono(c.icono)}${esc(c.titulo)}</button>`).join('');
       pintarMoneda();
-      const lista = W.catalogo.filter((p) => categoria === 'todo' || p.cat === categoria);
+      const lista = W.catalogo.filter((p) => categoria === 'todo' || (categoria === 'regalos' ? REGALOS.includes(p.cat) : p.cat === categoria));
       $('#wc-grilla').innerHTML = lista.length ? lista.map(tarjeta).join('') : `<p class="cat-vacio">${esc(t('wc.vacio_filtro'))}</p>`;
     }
     function elegirCategoria(id) { categoria = id; pintarCatalogo(); }
@@ -1667,7 +1669,7 @@
         saltarA('catalogo');
       }
       if (e.target.closest('#regalos-abrir')) $('#modal-regalos').showModal(); // los regalos de empresa salen en una ventana (Juan, 25 nov 2026: «llama más la atención… a menos que sea emergente»)
-      if (e.target.closest('#regalos-cta')) { $('#modal-regalos').close(); elegirCategoria('termos'); saltarA('catalogo'); } // regalos de empresa: termos y lámparas, con su logo y en cantidad
+      if (e.target.closest('#regalos-cta')) { $('#modal-regalos').close(); elegirCategoria('regalos'); saltarA('catalogo'); } // regalos de empresa: termos y lámparas, con su logo y en cantidad
       if (e.target.closest('[data-abrir-pedido]')) { pintarPedido(); cajon.showModal(); }
     });
     $('#abrir-carrito').addEventListener('click', () => { pintarPedido(); cajon.showModal(); });
