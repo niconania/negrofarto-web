@@ -424,13 +424,29 @@
       }, { rootMargin: '0px 0px 30% 0px' });
       io.observe($('#kit-resultado'));
     }
+    let ultimoHash = location.hash;
+    window.addEventListener('hashchange', () => { ultimoHash = location.hash; });
+    window.addEventListener('popstate', (e) => {
+      // Un cambio de ancla (#servicios…) no es un paso del recomendador: sus entradas del historial no cambian la dirección.
+      if (location.hash !== ultimoHash) { ultimoHash = location.hash; return; }
+      let paso = (e.state && e.state.nfgKit) || 1;
+      if (paso >= 2 && !kit.negocio) paso = 1; // tras recargar, la elección se perdió: se vuelve al principio
+      if (paso === 3 && !kit.etapa) paso = 2;
+      if (paso === kit.paso) return;
+      kit.paso = paso;
+      pintarKit({ animar: true });
+      verCaja();
+    });
     $('#kit').addEventListener('click', (e) => {
       const n = e.target.closest('[data-negocio]');
       const s = e.target.closest('[data-etapa]');
       const volver = e.target.closest('[data-volver]');
-      if (n) { kit.negocio = n.dataset.negocio; kit.paso = 2; }
-      if (s) { kit.etapa = s.dataset.etapa; kit.paso = 3; }
-      if (volver) kit.paso = 1;
+      // «Atrás» del navegador dentro del recomendador (Juan, 24 nov 2026: «sigo dando atrás y me saca de la página en lugar de volver a "What kind of
+      // business do you do"»): cada paso hacia adelante agrega una entrada al historial (misma dirección, sin cambiar la URL) y «atrás» vuelve al paso
+      // anterior en vez de salir de la página. «Cambiar» hace lo mismo que atrás hasta el paso 1.
+      if (n) { kit.negocio = n.dataset.negocio; kit.paso = 2; history.pushState({ nfgKit: 2 }, ''); }
+      if (s) { kit.etapa = s.dataset.etapa; kit.paso = 3; history.pushState({ nfgKit: 3 }, ''); }
+      if (volver) { kit.paso = 1; history.pushState({ nfgKit: 1 }, ''); } // «Cambiar» también es un paso: «atrás» lo deshace
       const trabajo = e.target.closest('[data-trabajo]');
       if (trabajo) { abrirProyecto(proyecto(trabajo.dataset.trabajo)); return; }
       if (n || s || volver) {
@@ -1007,23 +1023,27 @@
     // La moneda (Juan, 17 nov 2026): en Colombia, «los mismos precios pero en pesos», siempre como «desde»; el precio final se negocia por
     // WhatsApp. Se comparte con La Fartedá (nfg-pais). Cada precio por pieza se pasa a pesos (tipo de cambio W.cop.porUsd, redondeado al millar;
     // la camiseta, además, con su copFactor) y después se multiplica por la cantidad.
-    let moneda = leer('nfg-pais') === 'col' ? 'cop' : 'usd';
+    // La moneda de WuandaCrafts tiene su propia clave (Juan, 24 nov 2026: «entré a las Cans y estaban solo en COP»: venía de haber elegido Colombia en
+    // La Fartedá, que usa «nfg-pais»). Por defecto, dólares, sin importar el idioma.
+    let moneda = leer('nfg-moneda-wc') === 'cop' ? 'cop' : 'usd';
     const enCop = () => moneda === 'cop';
     const aMoneda = (n, p) => (enCop() ? Math.round((n * ((p && p.copFactor) || 1) * W.cop.porUsd) / W.cop.redondeo) * W.cop.redondeo : n);
     const dinero = (n) => (enCop() ? '$' + n.toLocaleString('es-CO') + ' COP' : usd(n));
+    // El «desde» de una pieza sin escala (calcomanía, camiseta): en pesos, el precio que dio Juan si lo hay (precioDesdeCop); si no, el convertido.
+    const desdeDe = (p) => (enCop() && p.precioDesdeCop != null ? p.precioDesdeCop : aMoneda(p.precioDesde, p));
     const tarifaDe = (p, estilo) => W.tarifas[(estiloDe(p, estilo) || {}).precio || p.precio] || null;
     const escalonDe = (cantidad) => Math.max(0, W.escalas.findIndex((r) => cantidad >= r.desde && (r.hasta == null || cantidad <= r.hasta)));
     // { unidad, desde }: el precio por pieza para esa cantidad (en la moneda de la página) y si es un «desde». null si la pieza no tiene precio.
     function precioDe(p, estilo, cantidad) {
       const tf = tarifaDe(p, estilo);
       if (tf) return { unidad: aMoneda(tf[escalonDe(cantidad)], p), desde: enCop() };
-      return p.precioDesde != null ? { unidad: aMoneda(p.precioDesde, p), desde: true } : null;
+      return p.precioDesde != null ? { unidad: desdeDe(p), desde: true } : null;
     }
     const montoTxt = (n, desde) => (desde ? t('wc.desde_precio', { precio: dinero(n) }) : dinero(n));
     // La tarjeta: el precio de 1 y el de 12 o más («desde» si cambia según el estilo o si es en pesos).
     function precioTarjeta(p) {
       const tarifas = (p.variantes && p.variantes.some((v) => v.precio) ? p.variantes.map((v) => W.tarifas[v.precio || p.precio]) : [W.tarifas[p.precio]]).filter(Boolean);
-      if (!tarifas.length) return p.precioDesde != null ? `<b>${esc(t('wc.desde_precio', { precio: dinero(aMoneda(p.precioDesde, p)) }))}</b>` : `${esc(t('wc.desde'))} <b>$ —</b>`;
+      if (!tarifas.length) return p.precioDesde != null ? `<b>${esc(t('wc.desde_precio', { precio: dinero(desdeDe(p)) }))}</b>` : `${esc(t('wc.desde'))} <b>$ —</b>`;
       const uno = Math.min(...tarifas.map((tf) => aMoneda(tf[0], p))), mucho = Math.min(...tarifas.map((tf) => aMoneda(tf[tf.length - 1], p)));
       const varios = enCop() || new Set(tarifas.map((tf) => tf[0])).size > 1;
       return `<b>${esc(varios ? t('wc.desde_precio', { precio: dinero(uno) }) : dinero(uno))}</b> <small>${esc(t('wc.precio_cantidad', { n: W.escalas[W.escalas.length - 1].desde, precio: dinero(mucho) }))}</small>`;
@@ -1103,7 +1123,7 @@
     function cambiarMoneda(nueva) {
       if ((nueva === 'cop') === enCop()) return;
       moneda = nueva;
-      guardar('nfg-pais', enCop() ? 'col' : 'usa');
+      guardar('nfg-moneda-wc', enCop() ? 'cop' : 'usd');
       pintarCatalogo();
       // «Tu pedido» se actualiza en su sitio (el formulario no se vuelve a dibujar: se pierde el foco y lo que se esté escribiendo)
       const f = cajon.querySelector('form');
@@ -1206,7 +1226,7 @@
       const gCantidad = `<div class="grupo"><div class="grupo-cab">${esc(t(esCalco ? 'wc.cuantos_pliegos' : 'wc.cuantos'))}</div>`
         + `<div class="cantidad-fila"><div class="cantidad"><button type="button" data-cant="-1" aria-label="${esc(t('car.menos'))}">${icono('i-menos')}</button>`
         + `<input id="p-cant" type="number" min="1" max="500" inputmode="numeric" aria-label="${esc(t(esCalco ? 'wc.cuantos_pliegos' : 'wc.cuantos'))}" />`
-        + `<button type="button" data-cant="1" aria-label="${esc(t('car.mas'))}">${icono('i-mas')}</button></div><p>${esc(t(esCalco ? 'wc.escala_nota_pliego' : 'wc.escala_nota'))}</p></div>`
+        + `<button type="button" data-cant="1" aria-label="${esc(t('car.mas'))}">${icono('i-mas')}</button></div><p>${esc(t(esCalco ? 'wc.escala_nota_pliego' : p.precioDesde != null ? 'wc.escala_nota_desde' : 'wc.escala_nota'))}</p></div>`
         + `<div class="escala"><div class="escala-cab"><span>${esc(t(esCalco ? 'wc.escala_pliego' : 'wc.escala_pieza'))}</span><span>${esc(t(enCop() ? 'wc.cop_ref' : 'wc.usd_envio'))}</span></div>`
         + (tarifaDe(p, elec.estilo) ? W.escalas : [{ desde: 1, hasta: null }]).map((r, i) => `<div class="escala-fila" data-fila="${i}"><span>${esc(r.hasta == null ? t('wc.rango_mas', { a: r.desde }) : t('wc.rango', { a: r.desde, b: r.hasta }))}<em hidden>${esc(t('wc.tu_cantidad'))}</em></span><span class="escala-precio"></span></div>`).join('')
         + '</div></div>';
@@ -1269,7 +1289,7 @@
       const tf = tarifaDe(p, elec.estilo), pr = precioDe(p, elec.estilo, elec.cantidad);
       const activa = tf ? escalonDe(elec.cantidad) : 0;
       $$('.escala-fila', v).forEach((f, i) => { f.classList.toggle('activa', i === activa); $('em', f).hidden = i !== activa; });
-      $$('.escala-precio', v).forEach((s, i) => { s.textContent = tf ? montoTxt(aMoneda(tf[i], p), enCop()) : montoTxt(aMoneda(p.precioDesde, p), true); });
+      $$('.escala-precio', v).forEach((s, i) => { s.textContent = tf ? montoTxt(aMoneda(tf[i], p), enCop()) : montoTxt(desdeDe(p), true); });
       $('.escala-cab span:last-child', v).textContent = t(enCop() ? 'wc.cop_ref' : 'wc.usd_envio');
       $('#p-envio-nota', v).textContent = t(enCop() ? 'wc.envio_cop' : 'wc.envio_incluido');
       if (pr) {

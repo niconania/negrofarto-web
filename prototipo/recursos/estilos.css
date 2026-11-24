@@ -800,7 +800,7 @@ dialog.cajon[open] { display: flex; flex-direction: column; animation: deslizar 
 .sub-grupo { display: grid; grid-template-columns: 76px minmax(0, 1fr); align-items: center; gap: 12px; }
 .sub-filtros .rotulo { font-size: 12.5px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--wc-cafe); }
 /* El selector USD / COP del catálogo (17 nov 2026): el mismo que el de La Fartedá, con una nota debajo. */
-.wc-moneda { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; margin: -6px 0 26px; }
+.wc-moneda { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; margin: 22px 0 0; }
 .wc-moneda .pais-botones { border-color: var(--wc-linea); }
 .wc-moneda .pais-botones button[aria-pressed="true"] { background: var(--acento); }
 .wc-moneda-nota { margin: 0; flex: 1 1 260px; font-size: 13px; color: var(--wc-cafe); }

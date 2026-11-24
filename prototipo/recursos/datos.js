@@ -229,13 +229,14 @@ window.NFG_DATOS = {
     camiseta: { usd: 39.95, cop: 69900 },
     clasica: { usd: 39.95, cop: 50000 },
     tote: { usd: 24.99, cop: 39900 },
-    // Papaya y Mamón: SIN precio todavía (Nicola, 22 nov 2026: «no le pongas el precio, Juan no me lo ha dado»). Juan había dicho el 10 nov «Papaya es
-    // 99.000 + envío» (COP); se quitó hasta que lo confirme. Con usd y cop en null la web dice «Precio por confirmar» en las dos monedas.
-    papaya: { usd: null, cop: null },
-    mamon: { usd: null, cop: null },
+    // Papaya y Mamón (Juan, 24 nov 2026): papaya 90.000 COP / US$30; mamón 120.000 COP / US$40. Entre el 22 y el 24 nov salieron «Precio por
+    // confirmar» (con usd y cop en null la web lo dice en las dos monedas; sirve para un diseño nuevo sin precio).
+    papaya: { usd: 30, cop: 90000 },
+    mamon: { usd: 40, cop: 120000 },
   },
   disenos: [
-    // Los dos diseños nuevos van de primeros y con la etiqueta «Más vendido» (Nicola, 22 nov 2026: «pon de primeritos la franela de la papaya y el mamón»).
+    // Los dos diseños nuevos van de primeros (Nicola, 22 nov 2026). La papaya lleva «Más vendido»; el mamón no «aún» (Juan, 24 nov); el Suero
+    // pierde el globo «Our Bestseller!» de su foto (la etiqueta «Más vendido» de la tarjeta se queda).
     // Diseño nuevo (Juan, 17 nov 2026: «agrega la camiseta de papaya, las fotos están debajo»): las fotos son las de la sección «Así se ve»
     // de la página. Solo camiseta, crema. Sin precio todavía (ver «precios»). La imagen plana es el mockup de la propuesta, de baja resolución:
     // falta el del diseñador.
@@ -244,7 +245,7 @@ window.NFG_DATOS = {
       camiseta: { colores: ['crema'], galeria: ['lafarteda/estilo-07.webp', 'lafarteda/estilo-02.webp', 'lafarteda/estilo-01.webp', 'lafarteda/estilo-04.webp', 'lafarteda/estilo-05.webp'] } },
     // Mamón (22 nov 2026): los dos mockups sueltos del Drive de Juan (9 nov: «camiseta verde MAMÓN, Est. 2026»): la espalda y el frente. Solo
     // camiseta, verde oscuro. Sin precio todavía. El texto se apoya en lo que dice la propia camiseta (definición de «mamón» y la fruta).
-    { id: 'mamon', nombre: 'Mamón', precioCamiseta: 'mamon', masVendido: true,
+    { id: 'mamon', nombre: 'Mamón', precioCamiseta: 'mamon', // sin «Más vendido» todavía (Juan, 24 nov 2026)
       texto: { en: 'Mamón (adj.): a person, attitude or situation that is annoying, intense or heavy-going. It is also a tropical fruit.', es: 'Mamón (adj.): persona, actitud o situación fastidiosa, intensa o pesada. También es una fruta tropical.' },
       camiseta: { colores: ['verde'], galeria: ['productos/camiseta-mamon-frente.webp'] } },
     { id: 'clasica', nombre: 'La Fartedá Clásica', precioCamiseta: 'clasica',
@@ -264,7 +265,7 @@ window.NFG_DATOS = {
       tote: { colores: ['crema'] } },
     { id: 'unboxing', nombre: 'Unboxing de Adulto',
       texto: { en: 'Horror stories of adult life. Black in Spanish, white in English.', es: 'Cuentos de terror de la vida adulta. Negra en español, blanca en inglés.' },
-      camiseta: { colores: ['negro', 'blanco'], notaColor: { negro: { en: 'in Spanish', es: 'en español' }, blanco: { en: 'in English', es: 'en inglés' } } },
+      camiseta: { colores: ['negro', 'blanco'], imgs: { blanco: 'camiseta-unboxing-blanco.webp' }, notaColor: { negro: { en: 'in Spanish', es: 'en español' }, blanco: { en: 'in English', es: 'en inglés' } } },
       tote: { colores: ['crema', 'negro'], imgs: { crema: 'tote-unboxing-crema.webp' } } },
     { id: 'burro', nombre: 'Puya El Burro',
       texto: { en: '“¡Puya el burro!” — coastal slang for “step on it.”', es: '¡Puya el burro! Para los que van con todo.' },
@@ -392,8 +393,9 @@ window.NFG_DATOS = {
       { id: 'tote', cat: 'totes', icono: 'i-bolsa', tono: 'verde', titulo: { en: 'Tote bag', es: 'Tote bag' }, fotos: fotosWC('tote', ['color:natural', 'color:natural', 'color:natural', 'color:natural', 'color:natural', 'color:natural', 'color:natural', 'color:natural', 'color:negro', 'color:negro']), encuadre: '50% 40%',
         precio: 'tote', pie: { en: 'Tote bags with your name, a photo or your art', es: 'Tote bags con tu nombre, una foto o tu arte' }, colores: ['natural', 'negro'], coloresReales: true },
       { id: 'camiseta', cat: 'camisetas', icono: 'i-camiseta', tono: 'rosa', titulo: { en: 'T-shirt', es: 'Camiseta' }, fotos: fotosWC('camiseta', ['color:blanco', 'color:blanco', 'color:blanco', 'color:blanco', 'color:blanco', 'color:negro', 'color:negro', 'color:negro', 'color:verdemilitar', 'color:azulrey', 'color:azulrey', 'color:azulmarino', 'color:malva', 'color:crema', 'color:crema']), encuadre: '50% 50%',
-        precio: 'can', pie: { en: 'T-shirts with your name, your art or your logo', es: 'Camisetas con tu nombre, tu arte o tu logo' },
-        copFactor: 0.95, // Juan, 17 nov 2026: en Colombia la camiseta se veía desfasada: -5 %
+        // Juan, 24 nov 2026: «en USD las camisetas empezarían en $25, en COP en $50.000, envío incluido»: solo un «desde», sin escala por cantidad
+        // (antes llevaba la tarifa de Can y en pesos bajaba 5 %). El precio en pesos va tal cual lo dio Juan, sin convertir (precioDesdeCop).
+        precioDesde: 25, precioDesdeCop: 50000, pie: { en: 'T-shirts with your name, your art or your logo', es: 'Camisetas con tu nombre, tu arte o tu logo' },
         tamanos: ['S', 'M', 'L', 'XL'], colores: ['blanco', 'negro', 'verdemilitar', 'azulrey', 'azulmarino', 'malva', 'crema'], coloresReales: true },
       { id: 'hoodie', cat: 'hoodies', icono: 'i-hoodie', tono: 'naranja', titulo: { en: 'Hoodie', es: 'Hoodie' }, fotos: fotosWC('hoodie', ['color:negro', 'color:negro', 'color:vinotinto', 'color:celeste']), encuadre: '50% 45%',
         precio: 'hoodie', pie: { en: 'Hoodies with your name, your art or your logo', es: 'Hoodies con tu nombre, tu arte o tu logo' },
